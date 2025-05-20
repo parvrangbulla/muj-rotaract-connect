@@ -99,18 +99,15 @@ const EventCalendar = () => {
                   color: 'white' 
                 },
               }}
-              styles={{
-                day_today: { 
-                  fontWeight: 'bold',
-                  border: '1px solid #F59120' 
-                }
+              classNames={{
+                day_today: "font-bold border border-rotaract-orange"
               }}
               components={{
-                DayContent: ({ day }) => {
-                  const hasEvent = isDayWithEvent(day);
+                DayContent: (props) => {
+                  const hasEvent = isDayWithEvent(props.date);
                   return (
                     <div className="relative w-full h-full flex items-center justify-center">
-                      {day.getDate()}
+                      {props.date.getDate()}
                       {hasEvent && (
                         <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 h-1 w-1 rounded-full bg-rotaract-orange" />
                       )}
