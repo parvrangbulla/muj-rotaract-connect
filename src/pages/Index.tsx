@@ -1,45 +1,75 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Users, Image } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import AnimatedBackground from "@/components/AnimatedBackground";
 
 const Index = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div 
-        className="min-h-screen relative flex items-center justify-center bg-black"
-        style={{
-          backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=3540&auto=format&fit=crop')",
-          backgroundPosition: "center",
-          backgroundSize: "cover",
-        }}
-      >
-        <div className="container mx-auto px-4 text-center text-white z-10">
+      <div className="min-h-screen relative flex items-center justify-center bg-black overflow-hidden">
+        {/* Animated Background */}
+        <AnimatedBackground />
+        
+        {/* Floating Geometric Shapes */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-20 left-10 w-20 h-20 border-2 border-rotaract-orange/30 rotate-45 animate-bounce" style={{animationDelay: '0s', animationDuration: '3s'}}></div>
+          <div className="absolute top-40 right-20 w-16 h-16 bg-rotaract-orange/20 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+          <div className="absolute bottom-40 left-20 w-12 h-12 border-2 border-white/20 animate-spin" style={{animationDuration: '8s'}}></div>
+          <div className="absolute bottom-20 right-40 w-24 h-24 border-2 border-rotaract-orange/40 rounded-full animate-ping" style={{animationDelay: '2s'}}></div>
+          <div className="absolute top-1/3 left-1/4 w-8 h-8 bg-white/10 rotate-45 animate-bounce" style={{animationDelay: '0.5s', animationDuration: '4s'}}></div>
+          <div className="absolute top-2/3 right-1/3 w-14 h-14 border-2 border-rotaract-orange/25 animate-pulse" style={{animationDelay: '1.5s'}}></div>
+        </div>
+        
+        {/* Background Image with Overlay */}
+        <div 
+          className="absolute inset-0 bg-black"
+          style={{
+            backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1511632765486-a01980e01a18?q=80&w=3540&auto=format&fit=crop')",
+            backgroundPosition: "center",
+            backgroundSize: "cover",
+          }}
+        />
+        
+        {/* Content */}
+        <div className="container mx-auto px-4 text-center text-white z-10 relative">
           <div className="flex justify-center mb-6">
-            <img 
-              src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
-              alt="Rotaract Club MUJ Logo" 
-              className="w-32 h-32 object-contain animate-fade-in"
-            />
+            <div className="relative">
+              <img 
+                src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
+                alt="Rotaract Club MUJ Logo" 
+                className="w-32 h-32 object-contain animate-fade-in hover:scale-110 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 w-32 h-32 rounded-full border-2 border-rotaract-orange/30 animate-ping"></div>
+            </div>
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-up">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-up bg-gradient-to-r from-white via-rotaract-orange to-white bg-clip-text text-transparent">
             Rotaract Club
           </h1>
           <h2 className="text-2xl md:text-4xl font-medium mb-6 animate-fade-up" style={{animationDelay: '200ms'}}>
             Manipal University Jaipur
           </h2>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-up" style={{animationDelay: '400ms'}}>
+          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-up text-gray-200" style={{animationDelay: '400ms'}}>
             Service Above Self
           </p>
           <div className="flex flex-wrap gap-4 justify-center animate-fade-up" style={{animationDelay: '600ms'}}>
-            <Button asChild className="bg-rotaract-orange hover:bg-orange-600 text-white">
+            <Button asChild className="bg-rotaract-orange hover:bg-orange-600 text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
               <Link to="/about">About Us</Link>
             </Button>
-            <Button asChild variant="outline" className="border-white text-white hover:bg-white hover:text-black">
+            <Button asChild variant="outline" className="border-white text-white hover:bg-white hover:text-black transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
               <Link to="/events">Our Events</Link>
             </Button>
+          </div>
+        </div>
+        
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
+          <div className="flex flex-col items-center">
+            <span className="text-sm mb-2">Scroll Down</span>
+            <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center">
+              <div className="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
+            </div>
           </div>
         </div>
       </div>
