@@ -35,15 +35,46 @@ const Index = () => {
         {/* Content */}
         <div className="container mx-auto px-4 text-center text-white z-10 relative">
           <div className="flex justify-center mb-6">
-            <div className="relative">
+            <div className="relative group">
+              {/* Outer rotating ring */}
+              <div className="absolute inset-0 w-40 h-40 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{animationDuration: '8s'}}></div>
+              
+              {/* Middle pulsing ring */}
+              <div className="absolute inset-2 w-36 h-36 rounded-full border border-white/30 animate-ping" style={{animationDelay: '1s'}}></div>
+              
+              {/* Logo with enhanced animations */}
               <img 
                 src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
                 alt="Rotaract Club MUJ Logo" 
-                className="w-32 h-32 object-contain animate-fade-in hover:scale-110 transition-transform duration-300"
+                className="relative w-32 h-32 object-contain z-10 animate-pulse group-hover:animate-none group-hover:scale-110 transition-all duration-500 filter drop-shadow-2xl"
+                style={{
+                  animation: 'logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate'
+                }}
               />
-              <div className="absolute inset-0 w-32 h-32 rounded-full border-2 border-rotaract-orange/30 animate-ping"></div>
+              
+              {/* Inner glowing effect */}
+              <div className="absolute inset-4 w-32 h-32 rounded-full bg-gradient-to-r from-rotaract-orange/20 to-white/20 blur-md animate-pulse" style={{animationDelay: '0.5s'}}></div>
             </div>
           </div>
+          
+          {/* Custom keyframes for logo animations */}
+          <style jsx>{`
+            @keyframes logoFloat {
+              0%, 100% { transform: translateY(0px) rotate(0deg); }
+              50% { transform: translateY(-10px) rotate(5deg); }
+            }
+            
+            @keyframes logoGlow {
+              0% { filter: drop-shadow(0 0 10px rgba(245, 145, 32, 0.5)) drop-shadow(0 0 20px rgba(245, 145, 32, 0.3)); }
+              100% { filter: drop-shadow(0 0 20px rgba(245, 145, 32, 0.8)) drop-shadow(0 0 30px rgba(245, 145, 32, 0.5)); }
+            }
+            
+            @keyframes logoSpin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          
           <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-up bg-gradient-to-r from-white via-rotaract-orange to-white bg-clip-text text-transparent">
             Rotaract Club
           </h1>
