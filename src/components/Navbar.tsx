@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Menu, LogIn } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, LogIn, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
@@ -9,6 +8,7 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -44,13 +44,17 @@ const Navbar = () => {
     setIsLoggedIn(loginState);
   }, []);
 
-  const handleLogin = () => {
-    const newLoginState = !isLoggedIn;
-    setIsLoggedIn(newLoginState);
-    localStorage.setItem('isLoggedIn', newLoginState.toString());
-    
-    // Trigger storage event for other components
-    window.dispatchEvent(new Event('storage'));
+  const handleAuthAction = () => {
+    if (isLoggedIn) {
+      // Logout
+      setIsLoggedIn(false);
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('userEmail');
+      window.dispatchEvent(new Event('storage'));
+    } else {
+      // Redirect to login page
+      navigate('/login');
+    }
   };
 
   return (
@@ -92,14 +96,14 @@ const Navbar = () => {
               </Link>
             ))}
             <Button
-              onClick={handleLogin}
+              onClick={handleAuthAction}
               className={`ml-4 ${
                 isLoggedIn
                   ? "bg-black hover:bg-gray-800 text-white"
                   : "bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
               }`}
             >
-              <LogIn className="w-4 h-4 mr-2" />
+              {isLoggedIn ? <LogOut className="w-4 h-4 mr-2" /> : <LogIn className="w-4 h-4 mr-2" />}
               {isLoggedIn ? "Logout" : "Login"}
             </Button>
           </div>
@@ -107,7 +111,7 @@ const Navbar = () => {
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center gap-2">
             <Button
-              onClick={handleLogin}
+              onClick={handleAuthAction}
               size="sm"
               className={
                 isLoggedIn
@@ -115,7 +119,7 @@ const Navbar = () => {
                   : "bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
               }
             >
-              <LogIn className="w-4 h-4" />
+              {isLoggedIn ? <LogOut className="w-4 h-4" /> : <LogIn className="w-4 h-4" />}
             </Button>
             <Button
               variant="ghost"

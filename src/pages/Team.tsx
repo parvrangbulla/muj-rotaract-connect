@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Instagram, Phone } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import TeamMemberPopup from "@/components/TeamMemberPopup";
 
 // Define team member type
 type TeamMember = {
@@ -13,9 +13,12 @@ type TeamMember = {
   image: string;
   instagram: string;
   phone: string;
+  email?: string;
+  bio?: string;
 };
 
 const Team = () => {
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [teamMembers] = useState<TeamMember[]>([
     {
       id: 1,
@@ -23,7 +26,9 @@ const Team = () => {
       position: "President",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=3387&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_president",
-      phone: "+919876543210"
+      phone: "+919876543210",
+      email: "president@rotaractmuj.com",
+      bio: "Leading the club with vision and dedication to service above self."
     },
     {
       id: 2,
@@ -31,7 +36,9 @@ const Team = () => {
       position: "Secretary",
       image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=3387&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_secretary",
-      phone: "+919876543211"
+      phone: "+919876543211",
+      email: "secretary@rotaractmuj.com",
+      bio: "Ensuring smooth operations and maintaining club records."
     },
     {
       id: 3,
@@ -128,7 +135,11 @@ const Team = () => {
           <TooltipProvider>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
               {teamMembers.map((member) => (
-                <Card key={member.id} className="team-card overflow-hidden border-0 shadow-lg transition-all hover:shadow-xl">
+                <Card 
+                  key={member.id} 
+                  className="team-card overflow-hidden border-0 shadow-lg transition-all hover:shadow-xl cursor-pointer"
+                  onClick={() => setSelectedMember(member)}
+                >
                   <div className="h-64 overflow-hidden">
                     <img 
                       src={member.image} 
@@ -144,7 +155,7 @@ const Team = () => {
                         <p className="text-gray-600 cursor-help">{member.position}</p>
                       </TooltipTrigger>
                       <TooltipContent className="bg-black text-white p-2">
-                        <p>Click to view contact info</p>
+                        <p>Click to view more details</p>
                       </TooltipContent>
                     </Tooltip>
                     
@@ -153,12 +164,14 @@ const Team = () => {
                         href={member.instagram} 
                         target="_blank" 
                         rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
                         className="bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition-colors"
                       >
                         <Instagram size={18} />
                       </a>
                       <a 
                         href={`tel:${member.phone}`}
+                        onClick={(e) => e.stopPropagation()}
                         className="bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transition-colors"
                       >
                         <Phone size={18} />
@@ -171,6 +184,12 @@ const Team = () => {
           </TooltipProvider>
         </div>
       </section>
+
+      {/* Team Member Popup */}
+      <TeamMemberPopup 
+        member={selectedMember} 
+        onClose={() => setSelectedMember(null)} 
+      />
     </div>
   );
 };
