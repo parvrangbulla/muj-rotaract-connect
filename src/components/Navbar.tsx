@@ -1,12 +1,13 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu } from "lucide-react";
+import { Menu, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
 
   const navLinks = [
@@ -36,6 +37,21 @@ const Navbar = () => {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    // Check initial login state
+    const loginState = localStorage.getItem('isLoggedIn') === 'true';
+    setIsLoggedIn(loginState);
+  }, []);
+
+  const handleLogin = () => {
+    const newLoginState = !isLoggedIn;
+    setIsLoggedIn(newLoginState);
+    localStorage.setItem('isLoggedIn', newLoginState.toString());
+    
+    // Trigger storage event for other components
+    window.dispatchEvent(new Event('storage'));
+  };
 
   return (
     <nav
@@ -75,17 +91,40 @@ const Navbar = () => {
                 {link.name}
               </Link>
             ))}
+            <Button
+              onClick={handleLogin}
+              className={`ml-4 ${
+                isLoggedIn
+                  ? "bg-black hover:bg-gray-800 text-white"
+                  : "bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+              }`}
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              {isLoggedIn ? "Logout" : "Login"}
+            </Button>
           </div>
 
           {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            <Menu className={isScrolled ? "text-black" : "text-white"} />
-          </Button>
+          <div className="md:hidden flex items-center gap-2">
+            <Button
+              onClick={handleLogin}
+              size="sm"
+              className={
+                isLoggedIn
+                  ? "bg-black hover:bg-gray-800 text-white"
+                  : "bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+              }
+            >
+              <LogIn className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <Menu className={isScrolled ? "text-black" : "text-white"} />
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
