@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Users, Image } from "lucide-react";
@@ -28,25 +27,30 @@ const Index = () => {
         {/* Content */}
         <div className="container mx-auto px-4 text-center text-white z-10 relative">
           <div className="flex justify-center mb-6">
-            <div className="relative group">
+            <div className="relative group cursor-pointer">
               {/* Outer rotating ring */}
-              <div className="absolute inset-0 w-40 h-40 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{animationDuration: '8s'}}></div>
+              <div className="absolute inset-0 w-48 h-48 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{animationDuration: '8s'}}></div>
               
               {/* Middle pulsing ring */}
-              <div className="absolute inset-2 w-36 h-36 rounded-full border border-white/30 animate-ping" style={{animationDelay: '1s'}}></div>
+              <div className="absolute inset-2 w-44 h-44 rounded-full border border-white/30 animate-ping" style={{animationDelay: '1s'}}></div>
+              
+              {/* Background circle for logo */}
+              <div className="absolute inset-4 w-40 h-40 rounded-full bg-gradient-to-br from-rotaract-orange/20 via-white/10 to-rotaract-orange/30 backdrop-blur-sm border border-white/20"></div>
               
               {/* Logo with enhanced animations */}
-              <img 
-                src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
-                alt="Rotaract Club MUJ Logo" 
-                className="relative w-32 h-32 object-contain z-10 group-hover:scale-110 transition-all duration-500 filter drop-shadow-2xl"
-                style={{
-                  animation: 'logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate'
-                }}
-              />
+              <div className="relative w-48 h-48 flex items-center justify-center">
+                <img 
+                  src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
+                  alt="Rotaract Club MUJ Logo" 
+                  className="w-32 h-32 object-contain z-10 rounded-full group-hover:scale-125 transition-all duration-500 filter drop-shadow-2xl"
+                  style={{
+                    animation: 'logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate'
+                  }}
+                />
+              </div>
               
               {/* Inner glowing effect */}
-              <div className="absolute inset-4 w-32 h-32 rounded-full bg-gradient-to-r from-rotaract-orange/20 to-white/20 blur-md animate-pulse" style={{animationDelay: '0.5s'}}></div>
+              <div className="absolute inset-8 w-32 h-32 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{animationDelay: '0.5s'}}></div>
             </div>
           </div>
           
@@ -58,8 +62,8 @@ const Index = () => {
             }
             
             @keyframes logoGlow {
-              0% { filter: drop-shadow(0 0 10px rgba(245, 145, 32, 0.5)) drop-shadow(0 0 20px rgba(255, 255, 255, 0.3)); }
-              100% { filter: drop-shadow(0 0 20px rgba(245, 145, 32, 0.8)) drop-shadow(0 0 30px rgba(255, 255, 255, 0.5)); }
+              0% { filter: drop-shadow(0 0 15px rgba(245, 145, 32, 0.6)) drop-shadow(0 0 25px rgba(255, 255, 255, 0.4)); }
+              100% { filter: drop-shadow(0 0 25px rgba(245, 145, 32, 0.9)) drop-shadow(0 0 35px rgba(255, 255, 255, 0.6)); }
             }
           `}</style>
           
