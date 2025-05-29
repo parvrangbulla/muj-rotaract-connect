@@ -10,7 +10,6 @@ const Index = () => {
     <div className="min-h-screen">
       {/* Hero Section */}
       <div className="min-h-screen relative flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
-        {/* Animated Background */}
         <AnimatedBackground />
         
         {/* Floating Geometric Shapes */}
@@ -265,7 +264,7 @@ const Index = () => {
             </Button>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
