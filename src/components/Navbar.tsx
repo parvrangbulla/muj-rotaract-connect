@@ -71,7 +71,7 @@ const Navbar = () => {
             <img 
               src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
               alt="Rotaract Club MUJ Logo" 
-              className="h-10 w-10 object-contain"
+              className="h-10 w-10 object-contain rounded-full"
             />
             <span className={`font-bold text-lg ${isScrolled ? "text-black" : "text-white"}`}>
               Rotaract MUJ

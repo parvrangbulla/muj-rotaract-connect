@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
+import AnimatedBackground from '@/components/AnimatedBackground';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,13 +29,15 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center p-4 relative overflow-hidden">
+      <AnimatedBackground />
+      
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
           <img 
             src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
             alt="Rotaract Club MUJ Logo" 
-            className="h-20 w-20 object-contain mx-auto mb-4"
+            className="h-20 w-20 object-contain mx-auto mb-4 rounded-full"
           />
           <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
           <p className="text-gray-400">Sign in to access your dashboard</p>

@@ -29,20 +29,20 @@ const Index = () => {
           <div className="flex justify-center mb-6">
             <div className="relative group cursor-pointer">
               {/* Outer rotating ring */}
-              <div className="absolute inset-0 w-48 h-48 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{animationDuration: '8s'}}></div>
+              <div className="absolute inset-0 w-64 h-64 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{animationDuration: '8s'}}></div>
               
               {/* Middle pulsing ring */}
-              <div className="absolute inset-2 w-44 h-44 rounded-full border border-white/30 animate-ping" style={{animationDelay: '1s'}}></div>
+              <div className="absolute inset-2 w-60 h-60 rounded-full border border-white/30 animate-ping" style={{animationDelay: '1s'}}></div>
               
               {/* Background circle for logo */}
-              <div className="absolute inset-4 w-40 h-40 rounded-full bg-gradient-to-br from-rotaract-orange/20 via-white/10 to-rotaract-orange/30 backdrop-blur-sm border border-white/20"></div>
+              <div className="absolute inset-4 w-56 h-56 rounded-full bg-gradient-to-br from-rotaract-orange/20 via-white/10 to-rotaract-orange/30 backdrop-blur-sm border border-white/20"></div>
               
               {/* Logo with enhanced animations */}
-              <div className="relative w-48 h-48 flex items-center justify-center">
+              <div className="relative w-64 h-64 flex items-center justify-center">
                 <img 
                   src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
                   alt="Rotaract Club MUJ Logo" 
-                  className="w-32 h-32 object-contain z-10 rounded-full group-hover:scale-125 transition-all duration-500 filter drop-shadow-2xl"
+                  className="w-44 h-44 object-contain z-10 rounded-full group-hover:scale-125 transition-all duration-500 filter drop-shadow-2xl"
                   style={{
                     animation: 'logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate'
                   }}
@@ -50,7 +50,7 @@ const Index = () => {
               </div>
               
               {/* Inner glowing effect */}
-              <div className="absolute inset-8 w-32 h-32 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{animationDelay: '0.5s'}}></div>
+              <div className="absolute inset-12 w-40 h-40 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{animationDelay: '0.5s'}}></div>
             </div>
           </div>
           
@@ -122,7 +122,7 @@ const Index = () => {
             </div>
             <div className="flex justify-center">
               <img 
-                src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?q=80&w=3432&auto=format&fit=crop" 
+                src="https://images.unsplash.com/photo-1529156066841-6116e61058f4?q=80&w=3432&auto=format&fit=crop" 
                 alt="Rotaract members" 
                 className="rounded-lg shadow-lg max-w-full h-auto"
               />
