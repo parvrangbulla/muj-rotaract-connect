@@ -1,7 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Calendar, Users, Image } from "lucide-react";
+import { ArrowRight, Calendar, Users, Instagram } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import AnimatedBackground from "@/components/AnimatedBackground";
 
@@ -24,20 +24,20 @@ const Index = () => {
           <div className="flex justify-center mb-6">
             <div className="relative group cursor-pointer">
               {/* Outer rotating ring */}
-              <div className="absolute inset-0 w-96 h-96 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{animationDuration: '8s'}}></div>
+              <div className="absolute inset-0 w-80 h-80 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{animationDuration: '8s'}}></div>
               
               {/* Middle pulsing ring */}
-              <div className="absolute inset-2 w-92 h-92 rounded-full border border-white/30 animate-ping" style={{animationDelay: '1s'}}></div>
+              <div className="absolute inset-2 w-76 h-76 rounded-full border border-white/30 animate-ping" style={{animationDelay: '1s'}}></div>
               
               {/* Background circle for logo */}
-              <div className="absolute inset-4 w-88 h-88 rounded-full bg-gradient-to-br from-rotaract-orange/20 via-white/10 to-rotaract-orange/30 backdrop-blur-sm border border-white/20"></div>
+              <div className="absolute inset-4 w-72 h-72 rounded-full bg-gradient-to-br from-rotaract-orange/20 via-white/10 to-rotaract-orange/30 backdrop-blur-sm border border-white/20"></div>
               
-              {/* Logo with enhanced animations */}
-              <div className="relative w-96 h-96 flex items-center justify-center">
+              {/* Logo with enhanced animations - made smaller */}
+              <div className="relative w-80 h-80 flex items-center justify-center">
                 <img 
                   src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
                   alt="Rotaract Club MUJ Logo" 
-                  className="w-72 h-72 object-contain z-10 rounded-full group-hover:scale-125 transition-all duration-500 filter drop-shadow-2xl"
+                  className="w-56 h-56 object-contain z-10 rounded-full group-hover:scale-110 transition-all duration-500 filter drop-shadow-2xl"
                   style={{
                     animation: 'logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate'
                   }}
@@ -45,7 +45,7 @@ const Index = () => {
               </div>
               
               {/* Inner glowing effect */}
-              <div className="absolute inset-12 w-72 h-72 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{animationDelay: '0.5s'}}></div>
+              <div className="absolute inset-12 w-56 h-56 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{animationDelay: '0.5s'}}></div>
             </div>
           </div>
           
@@ -79,6 +79,18 @@ const Index = () => {
               <Link to="/events">Our Events</Link>
             </Button>
           </div>
+        </div>
+
+        {/* Instagram Icon */}
+        <div className="absolute bottom-6 right-6 z-20">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => window.open('https://instagram.com/rotaractclubmuj', '_blank')}
+            className="text-white hover:text-rotaract-orange hover:bg-white/10 rounded-full"
+          >
+            <Instagram className="w-6 h-6" />
+          </Button>
         </div>
       </div>
 
@@ -116,10 +128,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Flagship Events Section */}
+      {/* Our Events Section - Made visible without hovering */}
       <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="section-title text-black">Our Flagship Events</h2>
+          <h2 className="section-title text-black">Our Events</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
             {/* Blood Donation Camp Card */}
             <Card className="overflow-hidden transition-all hover:shadow-lg border-gray-200 hover:border-rotaract-orange">
