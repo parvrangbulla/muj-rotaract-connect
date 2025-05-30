@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import EventCalendar from './EventCalendar';
+import WeeklyCalendar from './WeeklyCalendar';
 
 interface UserSidebarProps {
   isOpen: boolean;
@@ -14,7 +14,7 @@ interface UserSidebarProps {
 }
 
 const UserSidebar = ({ isOpen, onClose }: UserSidebarProps) => {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'registration' | 'feedback'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'register' | 'feedback'>('calendar');
   const [feedbackData, setFeedbackData] = useState({
     subject: '',
     message: ''
@@ -22,11 +22,8 @@ const UserSidebar = ({ isOpen, onClose }: UserSidebarProps) => {
 
   const handleFeedbackSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle feedback submission here
     console.log('Feedback submitted:', feedbackData);
-    // Reset form
     setFeedbackData({ subject: '', message: '' });
-    // Show success message (you can add toast here)
     alert('Feedback submitted successfully!');
   };
 
@@ -34,16 +31,13 @@ const UserSidebar = ({ isOpen, onClose }: UserSidebarProps) => {
 
   return (
     <div className="fixed inset-0 z-50 flex">
-      {/* Overlay */}
       <div 
         className="fixed inset-0 bg-black/50" 
         onClick={onClose}
       />
       
-      {/* Sidebar */}
-      <div className="relative ml-auto w-full max-w-md bg-white shadow-xl overflow-hidden">
+      <div className="relative ml-auto w-full max-w-2xl bg-white shadow-xl overflow-hidden">
         <div className="flex flex-col h-full">
-          {/* Header */}
           <div className="bg-rotaract-orange text-white p-4 flex items-center justify-between">
             <h2 className="text-xl font-bold">Dashboard</h2>
             <Button
@@ -56,7 +50,6 @@ const UserSidebar = ({ isOpen, onClose }: UserSidebarProps) => {
             </Button>
           </div>
 
-          {/* Tabs */}
           <div className="bg-gray-100 p-2 flex">
             <Button
               variant={activeTab === 'calendar' ? 'default' : 'ghost'}
@@ -72,11 +65,11 @@ const UserSidebar = ({ isOpen, onClose }: UserSidebarProps) => {
               Calendar
             </Button>
             <Button
-              variant={activeTab === 'registration' ? 'default' : 'ghost'}
+              variant={activeTab === 'register' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => setActiveTab('registration')}
+              onClick={() => setActiveTab('register')}
               className={`flex-1 mx-1 ${
-                activeTab === 'registration' 
+                activeTab === 'register' 
                   ? 'bg-rotaract-orange text-white' 
                   : 'text-gray-600 hover:text-rotaract-orange'
               }`}
@@ -99,15 +92,14 @@ const UserSidebar = ({ isOpen, onClose }: UserSidebarProps) => {
             </Button>
           </div>
 
-          {/* Content */}
           <div className="flex-1 overflow-y-auto p-4">
             {activeTab === 'calendar' && (
               <div>
-                <EventCalendar />
+                <WeeklyCalendar />
               </div>
             )}
 
-            {activeTab === 'registration' && (
+            {activeTab === 'register' && (
               <div className="space-y-4">
                 <Card>
                   <CardHeader>

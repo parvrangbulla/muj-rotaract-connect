@@ -11,7 +11,7 @@ import AnimatedBackground from '@/components/AnimatedBackground';
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
+    username: '',
     password: ''
   });
   const navigate = useNavigate();
@@ -20,9 +20,9 @@ const Login = () => {
     e.preventDefault();
     
     // Simple validation - in real app, you'd validate against backend
-    if (formData.email && formData.password) {
+    if (formData.username && formData.password) {
       localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userEmail', formData.email);
+      localStorage.setItem('username', formData.username);
       window.dispatchEvent(new Event('storage'));
       navigate('/');
     }
@@ -34,11 +34,13 @@ const Login = () => {
       
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <img 
-            src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
-            alt="Rotaract Club MUJ Logo" 
-            className="h-20 w-20 object-contain mx-auto mb-4 rounded-full"
-          />
+          <div className="flex justify-center mb-4">
+            <img 
+              src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
+              alt="Rotaract Club MUJ Logo" 
+              className="h-20 w-20 object-contain rounded-full border-2 border-rotaract-orange/50 p-1"
+            />
+          </div>
           <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
           <p className="text-gray-400">Sign in to access your dashboard</p>
         </div>
@@ -50,13 +52,13 @@ const Login = () => {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-white">Email</Label>
+                <Label htmlFor="username" className="text-white">Username</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  id="username"
+                  type="text"
+                  placeholder="Enter your username"
+                  value={formData.username}
+                  onChange={(e) => setFormData({...formData, username: e.target.value})}
                   className="bg-white/10 border-gray-600 text-white placeholder:text-gray-400"
                   required
                 />

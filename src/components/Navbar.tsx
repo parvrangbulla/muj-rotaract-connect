@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, LogIn, LogOut } from "lucide-react";
@@ -16,7 +17,6 @@ const Navbar = () => {
     { name: "Events", path: "/events" },
     { name: "Domains", path: "/domains" },
     { name: "Team", path: "/team" },
-    { name: "Gallery", path: "/gallery" },
   ];
 
   useEffect(() => {
@@ -39,9 +39,24 @@ const Navbar = () => {
   }, [location.pathname]);
 
   useEffect(() => {
+    const checkLoginState = () => {
+      const loginState = localStorage.getItem('isLoggedIn') === 'true';
+      setIsLoggedIn(loginState);
+    };
+
     // Check initial login state
-    const loginState = localStorage.getItem('isLoggedIn') === 'true';
-    setIsLoggedIn(loginState);
+    checkLoginState();
+
+    // Listen for storage changes
+    const handleStorageChange = () => {
+      checkLoginState();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const handleAuthAction = () => {
@@ -49,8 +64,9 @@ const Navbar = () => {
       // Logout
       setIsLoggedIn(false);
       localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('userEmail');
+      localStorage.removeItem('username');
       window.dispatchEvent(new Event('storage'));
+      navigate('/');
     } else {
       // Redirect to login page
       navigate('/login');
@@ -71,7 +87,7 @@ const Navbar = () => {
             <img 
               src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
               alt="Rotaract Club MUJ Logo" 
-              className="h-10 w-10 object-contain rounded-full"
+              className="h-10 w-10 object-contain rounded-full border border-rotaract-orange/30"
             />
             <span className={`font-bold text-lg ${isScrolled ? "text-black" : "text-white"}`}>
               Rotaract MUJ

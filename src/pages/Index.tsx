@@ -29,20 +29,20 @@ const Index = () => {
           <div className="flex justify-center mb-6">
             <div className="relative group cursor-pointer">
               {/* Outer rotating ring */}
-              <div className="absolute inset-0 w-64 h-64 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{animationDuration: '8s'}}></div>
+              <div className="absolute inset-0 w-80 h-80 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{animationDuration: '8s'}}></div>
               
               {/* Middle pulsing ring */}
-              <div className="absolute inset-2 w-60 h-60 rounded-full border border-white/30 animate-ping" style={{animationDelay: '1s'}}></div>
+              <div className="absolute inset-2 w-76 h-76 rounded-full border border-white/30 animate-ping" style={{animationDelay: '1s'}}></div>
               
               {/* Background circle for logo */}
-              <div className="absolute inset-4 w-56 h-56 rounded-full bg-gradient-to-br from-rotaract-orange/20 via-white/10 to-rotaract-orange/30 backdrop-blur-sm border border-white/20"></div>
+              <div className="absolute inset-4 w-72 h-72 rounded-full bg-gradient-to-br from-rotaract-orange/20 via-white/10 to-rotaract-orange/30 backdrop-blur-sm border border-white/20"></div>
               
               {/* Logo with enhanced animations */}
-              <div className="relative w-64 h-64 flex items-center justify-center">
+              <div className="relative w-80 h-80 flex items-center justify-center">
                 <img 
                   src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
                   alt="Rotaract Club MUJ Logo" 
-                  className="w-44 h-44 object-contain z-10 rounded-full group-hover:scale-125 transition-all duration-500 filter drop-shadow-2xl"
+                  className="w-60 h-60 object-contain z-10 rounded-full group-hover:scale-125 transition-all duration-500 filter drop-shadow-2xl"
                   style={{
                     animation: 'logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate'
                   }}
@@ -50,7 +50,7 @@ const Index = () => {
               </div>
               
               {/* Inner glowing effect */}
-              <div className="absolute inset-12 w-40 h-40 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{animationDelay: '0.5s'}}></div>
+              <div className="absolute inset-12 w-56 h-56 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{animationDelay: '0.5s'}}></div>
             </div>
           </div>
           
@@ -83,16 +83,6 @@ const Index = () => {
             <Button asChild variant="outline" className="border-white text-white hover:bg-white hover:text-black transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
               <Link to="/events">Our Events</Link>
             </Button>
-          </div>
-        </div>
-        
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-gray-300 animate-bounce">
-          <div className="flex flex-col items-center">
-            <span className="text-sm mb-2">Scroll Down</span>
-            <div className="w-6 h-10 border-2 border-gray-300 rounded-full flex justify-center">
-              <div className="w-1 h-3 bg-rotaract-orange rounded-full mt-2 animate-pulse"></div>
-            </div>
           </div>
         </div>
       </div>
