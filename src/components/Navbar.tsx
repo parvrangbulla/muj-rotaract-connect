@@ -17,6 +17,7 @@ const Navbar = () => {
     { name: "Events", path: "/events" },
     { name: "Domains", path: "/domains" },
     { name: "Team", path: "/team" },
+    { name: "NGO", path: "/ngo" },
   ];
 
   useEffect(() => {
@@ -44,10 +45,8 @@ const Navbar = () => {
       setIsLoggedIn(loginState);
     };
 
-    // Check initial login state
     checkLoginState();
 
-    // Listen for storage changes
     const handleStorageChange = () => {
       checkLoginState();
     };
@@ -61,14 +60,12 @@ const Navbar = () => {
 
   const handleAuthAction = () => {
     if (isLoggedIn) {
-      // Logout
       setIsLoggedIn(false);
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('username');
       window.dispatchEvent(new Event('storage'));
       navigate('/');
     } else {
-      // Redirect to login page
       navigate('/login');
     }
   };
@@ -78,7 +75,7 @@ const Navbar = () => {
       className={`fixed w-full top-0 z-50 transition-all duration-300 ${
         isScrolled
           ? "bg-white bg-opacity-95 shadow-md py-2"
-          : "bg-transparent py-4"
+          : "bg-black bg-opacity-80 py-4"
       }`}
     >
       <div className="container mx-auto px-4 md:px-6">

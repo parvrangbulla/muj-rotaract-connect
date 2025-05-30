@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Users, Image } from "lucide-react";
@@ -5,21 +6,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import AnimatedBackground from "@/components/AnimatedBackground";
 
 const Index = () => {
+  const handleBecomeMember = () => {
+    window.open('https://docs.google.com/forms/d/e/1FAIpQLSeN_0YXl6S4QJrcTJXSfPk_j0Ev_42DUAh6KPnYbYqzd1hVEA/viewform', '_blank');
+  };
+
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-stone-50">
       {/* Hero Section */}
       <div className="min-h-screen relative flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black overflow-hidden">
         <AnimatedBackground />
-        
-        {/* Floating Geometric Shapes */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-10 w-20 h-20 border-2 border-rotaract-orange/30 rotate-45 animate-bounce" style={{animationDelay: '0s', animationDuration: '3s'}}></div>
-          <div className="absolute top-40 right-20 w-16 h-16 bg-rotaract-orange/20 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-          <div className="absolute bottom-40 left-20 w-12 h-12 border-2 border-white/20 animate-spin" style={{animationDuration: '8s'}}></div>
-          <div className="absolute bottom-20 right-40 w-24 h-24 border-2 border-rotaract-orange/40 rounded-full animate-ping" style={{animationDelay: '2s'}}></div>
-          <div className="absolute top-1/3 left-1/4 w-8 h-8 bg-rotaract-orange/10 rotate-45 animate-bounce" style={{animationDelay: '0.5s', animationDuration: '4s'}}></div>
-          <div className="absolute top-2/3 right-1/3 w-14 h-14 border-2 border-white/25 animate-pulse" style={{animationDelay: '1.5s'}}></div>
-        </div>
         
         {/* Background Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60" />
@@ -29,20 +24,20 @@ const Index = () => {
           <div className="flex justify-center mb-6">
             <div className="relative group cursor-pointer">
               {/* Outer rotating ring */}
-              <div className="absolute inset-0 w-80 h-80 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{animationDuration: '8s'}}></div>
+              <div className="absolute inset-0 w-96 h-96 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{animationDuration: '8s'}}></div>
               
               {/* Middle pulsing ring */}
-              <div className="absolute inset-2 w-76 h-76 rounded-full border border-white/30 animate-ping" style={{animationDelay: '1s'}}></div>
+              <div className="absolute inset-2 w-92 h-92 rounded-full border border-white/30 animate-ping" style={{animationDelay: '1s'}}></div>
               
               {/* Background circle for logo */}
-              <div className="absolute inset-4 w-72 h-72 rounded-full bg-gradient-to-br from-rotaract-orange/20 via-white/10 to-rotaract-orange/30 backdrop-blur-sm border border-white/20"></div>
+              <div className="absolute inset-4 w-88 h-88 rounded-full bg-gradient-to-br from-rotaract-orange/20 via-white/10 to-rotaract-orange/30 backdrop-blur-sm border border-white/20"></div>
               
               {/* Logo with enhanced animations */}
-              <div className="relative w-80 h-80 flex items-center justify-center">
+              <div className="relative w-96 h-96 flex items-center justify-center">
                 <img 
                   src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
                   alt="Rotaract Club MUJ Logo" 
-                  className="w-60 h-60 object-contain z-10 rounded-full group-hover:scale-125 transition-all duration-500 filter drop-shadow-2xl"
+                  className="w-72 h-72 object-contain z-10 rounded-full group-hover:scale-125 transition-all duration-500 filter drop-shadow-2xl"
                   style={{
                     animation: 'logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate'
                   }}
@@ -50,7 +45,7 @@ const Index = () => {
               </div>
               
               {/* Inner glowing effect */}
-              <div className="absolute inset-12 w-56 h-56 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{animationDelay: '0.5s'}}></div>
+              <div className="absolute inset-12 w-72 h-72 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{animationDelay: '0.5s'}}></div>
             </div>
           </div>
           
@@ -88,7 +83,7 @@ const Index = () => {
       </div>
 
       {/* About Section */}
-      <section className="py-16 md:py-24 bg-white">
+      <section className="py-16 md:py-24 bg-stone-50">
         <div className="container mx-auto px-4">
           <h2 className="section-title text-black">About Rotaract MUJ</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -122,7 +117,7 @@ const Index = () => {
       </section>
 
       {/* Flagship Events Section */}
-      <section className="py-16 md:py-24 bg-gray-100">
+      <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="section-title text-black">Our Flagship Events</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
@@ -176,7 +171,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Domains Quick Links */}
+      {/* Domains Section */}
       <section className="py-16 md:py-24 bg-black text-white">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Our Domains</h2>
@@ -233,7 +228,7 @@ const Index = () => {
       </section>
 
       {/* Call to Action */}
-      <section className="py-16 md:py-24 bg-white">
+      <section className="py-16 md:py-24 bg-stone-50">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6 text-black">Explore More About Rotaract MUJ</h2>
           <p className="text-lg mb-8 max-w-3xl mx-auto text-gray-600">
@@ -251,10 +246,12 @@ const Index = () => {
                 <Users className="mr-2 h-4 w-4" /> Meet Our Team
               </Link>
             </Button>
-            <Button asChild variant="outline" className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white">
-              <Link to="/gallery" className="inline-flex items-center">
-                <Image className="mr-2 h-4 w-4" /> Photo Gallery
-              </Link>
+            <Button 
+              onClick={handleBecomeMember}
+              variant="outline" 
+              className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white"
+            >
+              <Users className="mr-2 h-4 w-4" /> Become a Member
             </Button>
           </div>
         </div>

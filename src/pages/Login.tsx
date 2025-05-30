@@ -19,7 +19,6 @@ const Login = () => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simple validation - in real app, you'd validate against backend
     if (formData.username && formData.password) {
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('username', formData.username);
