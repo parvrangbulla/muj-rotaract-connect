@@ -1,45 +1,71 @@
 
-import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Download } from 'lucide-react';
 
-interface EventRegistrationProps {
-  eventTitle: string;
-  eventDate: string;
-  onCertificateDownload: (eventTitle: string, attendeeName: string, eventDate: string) => void;
-}
-
-const EventRegistration = ({ eventTitle, eventDate, onCertificateDownload }: EventRegistrationProps) => {
-  const [attendeeName, setAttendeeName] = useState('');
-
-  const handleDownloadCertificate = () => {
-    if (attendeeName.trim()) {
-      onCertificateDownload(eventTitle, attendeeName, eventDate);
+const EventRegistration = () => {
+  const upcomingEvents = [
+    {
+      id: 1,
+      title: "Mural Painting",
+      date: "June 2, 2025",
+      time: "2:00 PM - 5:00 PM",
+      location: "Art Block",
+      description: "Creative mural painting workshop for community beautification."
+    },
+    {
+      id: 2,
+      title: "Professional Development Seminar",
+      date: "June 15, 2025",
+      time: "2:00 PM - 4:00 PM",
+      location: "MUJ Auditorium",
+      description: "Career development and networking seminar for professional growth."
     }
+  ];
+
+  const handleRegister = (eventId: number) => {
+    console.log('Registering for event:', eventId);
+    alert('Registration successful! Check the calendar for more details.');
   };
 
   return (
-    <div className="space-y-4 border-t pt-4">
-      <h3 className="font-medium">Download Certificate</h3>
+    <div className="space-y-6">
       <div>
-        <Label htmlFor="attendeeName">Your Full Name</Label>
-        <Input
-          id="attendeeName"
-          value={attendeeName}
-          onChange={(e) => setAttendeeName(e.target.value)}
-          placeholder="Enter your full name for certificate"
-        />
+        <h1 className="text-2xl font-bold text-black mb-2">Event Registration</h1>
+        <p className="text-gray-600">Register for upcoming events that require pre-registration.</p>
       </div>
-      <Button 
-        onClick={handleDownloadCertificate}
-        disabled={!attendeeName.trim()}
-        className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90"
-      >
-        <Download className="w-4 h-4 mr-2" />
-        Download Certificate
-      </Button>
+
+      <div className="grid gap-4">
+        {upcomingEvents.map(event => (
+          <Card key={event.id} className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle className="text-lg">{event.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-1">
+                <p className="text-sm text-gray-600">📅 {event.date}</p>
+                <p className="text-sm text-gray-600">🕐 {event.time}</p>
+                <p className="text-sm text-gray-600">📍 {event.location}</p>
+              </div>
+              <p className="text-sm text-gray-700">{event.description}</p>
+              <Button 
+                onClick={() => handleRegister(event.id)}
+                className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+              >
+                Register Now
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+
+        {upcomingEvents.length === 0 && (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <p className="text-gray-500">No events requiring registration at the moment.</p>
+              <p className="text-sm text-gray-400 mt-2">Check back later for upcoming events!</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 };
