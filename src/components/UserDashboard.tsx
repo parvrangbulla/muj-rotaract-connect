@@ -1,15 +1,15 @@
 
 import { useState } from 'react';
-import { Calendar, FileText, MessageSquare, LogOut, Menu, Camera } from 'lucide-react';
+import { Calendar, MessageSquare, LogOut, Menu, Camera, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import WeeklyCalendar from './WeeklyCalendar';
-import EventRegistration from './EventRegistration';
 import FeedbackForm from './FeedbackForm';
 import EventManagement from './EventManagement';
+import Certificates from './Certificates';
 
 const UserDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'register' | 'feedback' | 'events'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'feedback' | 'events'>('calendar');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const navigate = useNavigate();
 
@@ -66,16 +66,16 @@ const UserDashboard = () => {
               {isSidebarOpen && 'Calendar'}
             </Button>
             <Button
-              variant={activeTab === 'register' ? 'default' : 'ghost'}
+              variant={activeTab === 'certificates' ? 'default' : 'ghost'}
               className={`w-full justify-start ${
-                activeTab === 'register' 
+                activeTab === 'certificates' 
                   ? 'bg-rotaract-orange text-white' 
                   : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
               }`}
-              onClick={() => setActiveTab('register')}
+              onClick={() => setActiveTab('certificates')}
             >
-              <FileText className="w-4 h-4 mr-2" />
-              {isSidebarOpen && 'Register'}
+              <Award className="w-4 h-4 mr-2" />
+              {isSidebarOpen && 'Certificates'}
             </Button>
             <Button
               variant={activeTab === 'events' ? 'default' : 'ghost'}
@@ -119,7 +119,7 @@ const UserDashboard = () => {
       {/* Main Content */}
       <div className="flex-1 p-6">
         {activeTab === 'calendar' && <WeeklyCalendar />}
-        {activeTab === 'register' && <EventRegistration />}
+        {activeTab === 'certificates' && <Certificates />}
         {activeTab === 'events' && <EventManagement />}
         {activeTab === 'feedback' && <FeedbackForm />}
       </div>
