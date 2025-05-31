@@ -12,6 +12,7 @@ import UserDashboard from "./components/UserDashboard";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Domains from "./pages/Domains";
 import Team from "./pages/Team";
 import Gallery from "./pages/Gallery";
@@ -55,6 +56,7 @@ const App = () => {
                     <Route path="/" element={<Index />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/events" element={<Events />} />
+                    <Route path="/event/:id" element={<EventDetail />} />
                     <Route path="/domains" element={<Domains />} />
                     <Route path="/team" element={<Team />} />
                     <Route path="/gallery" element={<Gallery />} />

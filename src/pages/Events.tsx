@@ -1,8 +1,7 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PageHeader from "@/components/PageHeader";
-import EventCalendar from "@/components/EventCalendar";
-import EventDetailModal from "@/components/EventDetailModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,12 +19,8 @@ interface EventData {
 }
 
 const Events = () => {
-  const [selectedEvent, setSelectedEvent] = useState<EventData | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
   
-  // Check if user is admin (you can replace this with your actual auth logic)
-  const isAdmin = localStorage.getItem('isLoggedIn') === 'true';
-
   // Sample data - replace with your actual data source
   const flagshipEvents: EventData[] = [
     {
@@ -110,8 +105,7 @@ const Events = () => {
   ];
 
   const handleEventClick = (event: EventData) => {
-    setSelectedEvent(event);
-    setIsModalOpen(true);
+    navigate(`/event/${event.id}`, { state: { event } });
   };
 
   const getCategoryColor = (category: string) => {
@@ -126,7 +120,6 @@ const Events = () => {
   };
 
   const filterEventsByCategory = (events: EventData[], category: string) => {
-    if (category === 'all') return events;
     return events.filter(event => event.category === category);
   };
 
@@ -199,16 +192,15 @@ const Events = () => {
         <div className="container mx-auto px-4">
           <h2 className="section-title">Past Events</h2>
           
-          <Tabs defaultValue="all" className="mt-12">
-            <TabsList className="grid w-full md:w-[600px] mx-auto grid-cols-5">
-              <TabsTrigger value="all">All</TabsTrigger>
+          <Tabs defaultValue="csd" className="mt-12">
+            <TabsList className="grid w-full md:w-[500px] mx-auto grid-cols-4">
               <TabsTrigger value="csd">CSD</TabsTrigger>
               <TabsTrigger value="cmd">CMD</TabsTrigger>
               <TabsTrigger value="isd">ISD</TabsTrigger>
               <TabsTrigger value="pdd">PDD</TabsTrigger>
             </TabsList>
             
-            {['all', 'csd', 'cmd', 'isd', 'pdd'].map((category) => (
+            {['csd', 'cmd', 'isd', 'pdd'].map((category) => (
               <TabsContent key={category} value={category} className="mt-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {filterEventsByCategory(pastEvents, category.toUpperCase()).map((event) => (
@@ -249,13 +241,6 @@ const Events = () => {
           </Tabs>
         </div>
       </section>
-
-      <EventDetailModal
-        event={selectedEvent}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        isAdmin={isAdmin}
-      />
     </div>
   );
 };

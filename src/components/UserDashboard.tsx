@@ -1,14 +1,15 @@
 
 import { useState } from 'react';
-import { Calendar, FileText, MessageSquare, LogOut, Menu } from 'lucide-react';
+import { Calendar, FileText, MessageSquare, LogOut, Menu, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import WeeklyCalendar from './WeeklyCalendar';
 import EventRegistration from './EventRegistration';
 import FeedbackForm from './FeedbackForm';
+import EventManagement from './EventManagement';
 
 const UserDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'register' | 'feedback'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'register' | 'feedback' | 'events'>('calendar');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const navigate = useNavigate();
 
@@ -77,6 +78,18 @@ const UserDashboard = () => {
               {isSidebarOpen && 'Register'}
             </Button>
             <Button
+              variant={activeTab === 'events' ? 'default' : 'ghost'}
+              className={`w-full justify-start ${
+                activeTab === 'events' 
+                  ? 'bg-rotaract-orange text-white' 
+                  : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
+              }`}
+              onClick={() => setActiveTab('events')}
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              {isSidebarOpen && 'Events'}
+            </Button>
+            <Button
               variant={activeTab === 'feedback' ? 'default' : 'ghost'}
               className={`w-full justify-start ${
                 activeTab === 'feedback' 
@@ -107,6 +120,7 @@ const UserDashboard = () => {
       <div className="flex-1 p-6">
         {activeTab === 'calendar' && <WeeklyCalendar />}
         {activeTab === 'register' && <EventRegistration />}
+        {activeTab === 'events' && <EventManagement />}
         {activeTab === 'feedback' && <FeedbackForm />}
       </div>
     </div>
