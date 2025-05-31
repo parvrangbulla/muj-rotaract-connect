@@ -1,27 +1,13 @@
-
 import PageHeader from "@/components/PageHeader";
 import EventCalendar from "@/components/EventCalendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
 const Events = () => {
-  return (
-    <div className="min-h-screen">
-      <PageHeader
-        title="Events"
-        subtitle="Annual event calendar and flagship events" 
-        backgroundImage="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=3540&auto=format&fit=crop"
-      />
+  return <div className="min-h-screen">
+      <PageHeader title="Events" subtitle="Annual event calendar and flagship events" backgroundImage="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=3540&auto=format&fit=crop" />
       
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <h2 className="section-title">Annual Event Calendar</h2>
-          <div className="mt-12">
-            <EventCalendar />
-          </div>
-        </div>
-      </section>
+      
       
       <section className="py-16 md:py-24 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -31,11 +17,7 @@ const Events = () => {
             {/* Blood Donation Camp */}
             <Card className="overflow-hidden border-0 shadow-lg">
               <div className="h-64 overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" 
-                  alt="Blood Donation Camp" 
-                  className="w-full h-full object-cover"
-                />
+                <img src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" alt="Blood Donation Camp" className="w-full h-full object-cover" />
               </div>
               <CardHeader>
                 <div className="flex justify-between items-start">
@@ -75,11 +57,7 @@ const Events = () => {
             {/* Daan Utsav */}
             <Card className="overflow-hidden border-0 shadow-lg">
               <div className="h-64 overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop" 
-                  alt="Daan Utsav" 
-                  className="w-full h-full object-cover"
-                />
+                <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop" alt="Daan Utsav" className="w-full h-full object-cover" />
               </div>
               <CardHeader>
                 <div className="flex justify-between items-start">
@@ -300,8 +278,6 @@ const Events = () => {
           </Tabs>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Events;
