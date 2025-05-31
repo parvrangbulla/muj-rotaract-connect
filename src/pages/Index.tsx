@@ -85,7 +85,7 @@ const Index = () => {
               <Link to="/about">About Us</Link>
             </Button>
             <Button asChild variant="outline" className="border-white text-white hover:bg-white hover:text-black transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
-              <Link to="/events">Our Events</Link>
+              <Link to="/events" className="remove the hover only drop down behaviour">Our Events</Link>
             </Button>
           </div>
           
