@@ -1,35 +1,8 @@
-import React, { useEffect, useRef } from 'react';
 
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  size: number;
-  opacity: number;
-  baseX: number;
-  baseY: number;
-}
-
-interface GeometricShape {
-  x: number;
-  y: number;
-  size: number;
-  rotation: number;
-  rotationSpeed: number;
-  type: 'square' | 'triangle' | 'circle';
-  opacity: number;
-  pulseSpeed: number;
-  bounceDirection: number;
-  bounceSpeed: number;
-}
+import { useEffect, useRef } from 'react';
 
 const AnimatedBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const particlesRef = useRef<Particle[]>([]);
-  const shapesRef = useRef<GeometricShape[]>([]);
-  const animationRef = useRef<number>();
-  const mouseRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,221 +11,188 @@ const AnimatedBackground = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const resizeCanvas = () => {
+    // Set canvas size
+    const updateCanvasSize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     };
+    updateCanvasSize();
+    window.addEventListener('resize', updateCanvasSize);
 
-    const createParticles = () => {
-      const particles: Particle[] = [];
-      const particleCount = Math.floor(window.innerWidth / 12);
+    // Particle system
+    const particles: Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      opacity: number;
+      hue: number;
+    }> = [];
 
-      for (let i = 0; i < particleCount; i++) {
-        const x = Math.random() * canvas.width;
-        const y = Math.random() * canvas.height;
-        particles.push({
-          x,
-          y,
-          baseX: x,
-          baseY: y,
-          vx: (Math.random() - 0.5) * 1.5,
-          vy: (Math.random() - 0.5) * 1.5,
-          size: Math.random() * 5 + 2,
-          opacity: Math.random() * 0.7 + 0.3,
-        });
-      }
-      particlesRef.current = particles;
-    };
+    // Floating shapes
+    const shapes: Array<{
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      size: number;
+      rotation: number;
+      rotationSpeed: number;
+      type: 'circle' | 'square' | 'triangle';
+      opacity: number;
+    }> = [];
 
-    const createGeometricShapes = () => {
-      const shapes: GeometricShape[] = [];
-      const shapeCount = 15;
+    // Background dots (made smaller)
+    const dots: Array<{
+      x: number;
+      y: number;
+      size: number;
+      opacity: number;
+      pulseSpeed: number;
+      pulseOffset: number;
+    }> = [];
 
-      for (let i = 0; i < shapeCount; i++) {
-        shapes.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: Math.random() * 30 + 20,
-          rotation: Math.random() * Math.PI * 2,
-          rotationSpeed: (Math.random() - 0.5) * 0.02,
-          type: ['square', 'triangle', 'circle'][Math.floor(Math.random() * 3)] as 'square' | 'triangle' | 'circle',
-          opacity: Math.random() * 0.3 + 0.1,
+    // Initialize particles
+    for (let i = 0; i < 50; i++) {
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        size: Math.random() * 3 + 1,
+        opacity: Math.random() * 0.3 + 0.1,
+        hue: Math.random() * 60 + 15 // Orange-ish colors
+      });
+    }
+
+    // Initialize floating shapes
+    for (let i = 0; i < 8; i++) {
+      shapes.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: Math.random() * 20 + 10,
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.02,
+        type: ['circle', 'square', 'triangle'][Math.floor(Math.random() * 3)] as 'circle' | 'square' | 'triangle',
+        opacity: Math.random() * 0.1 + 0.05
+      });
+    }
+
+    // Initialize background dots (smaller size)
+    const spacing = 60; // Increased spacing between dots
+    for (let x = 0; x < canvas.width; x += spacing) {
+      for (let y = 0; y < canvas.height; y += spacing) {
+        dots.push({
+          x: x + Math.random() * 20,
+          y: y + Math.random() * 20,
+          size: Math.random() * 1.5 + 0.5, // Much smaller dots (0.5-2px instead of 2-6px)
+          opacity: Math.random() * 0.15 + 0.05, // Lower opacity
           pulseSpeed: Math.random() * 0.02 + 0.01,
-          bounceDirection: Math.random() * Math.PI * 2,
-          bounceSpeed: Math.random() * 0.5 + 0.2,
+          pulseOffset: Math.random() * Math.PI * 2
         });
       }
-      shapesRef.current = shapes;
-    };
+    }
 
-    const drawParticles = () => {
-      particlesRef.current.forEach((particle) => {
+    let time = 0;
+
+    const animate = () => {
+      time += 0.016;
+      
+      // Clear canvas with slight trail effect
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.02)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw background dots (smaller)
+      dots.forEach(dot => {
+        const pulse = Math.sin(time * dot.pulseSpeed + dot.pulseOffset) * 0.3 + 0.7;
+        ctx.fillStyle = `rgba(245, 145, 32, ${dot.opacity * pulse})`;
         ctx.beginPath();
-        ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(245, 145, 32, ${particle.opacity})`;
+        ctx.arc(dot.x, dot.y, dot.size * pulse, 0, Math.PI * 2);
         ctx.fill();
-        
-        // Add glow effect
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = 'rgba(245, 145, 32, 0.5)';
-        ctx.fill();
-        ctx.shadowBlur = 0;
       });
-    };
 
-    const drawGeometricShapes = () => {
-      shapesRef.current.forEach((shape) => {
-        ctx.save();
-        ctx.translate(shape.x, shape.y);
-        ctx.rotate(shape.rotation);
-        ctx.globalAlpha = shape.opacity;
-        
-        ctx.strokeStyle = `rgba(245, 145, 32, ${shape.opacity})`;
-        ctx.lineWidth = 2;
-        
-        switch (shape.type) {
-          case 'square':
-            ctx.strokeRect(-shape.size / 2, -shape.size / 2, shape.size, shape.size);
-            break;
-          case 'triangle':
-            ctx.beginPath();
-            ctx.moveTo(0, -shape.size / 2);
-            ctx.lineTo(-shape.size / 2, shape.size / 2);
-            ctx.lineTo(shape.size / 2, shape.size / 2);
-            ctx.closePath();
-            ctx.stroke();
-            break;
-          case 'circle':
-            ctx.beginPath();
-            ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
-            ctx.stroke();
-            break;
-        }
-        
-        ctx.restore();
-      });
-    };
-
-    const updateParticles = () => {
-      particlesRef.current.forEach((particle) => {
-        // Calculate distance from mouse
-        const dx = mouseRef.current.x - particle.x;
-        const dy = mouseRef.current.y - particle.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const maxDistance = 150;
-
-        // Apply mouse influence
-        if (distance < maxDistance) {
-          const force = (maxDistance - distance) / maxDistance;
-          particle.x += dx * force * 0.05;
-          particle.y += dy * force * 0.05;
-        }
-
-        // Return to base position
-        particle.x += (particle.baseX - particle.x) * 0.05;
-        particle.y += (particle.baseY - particle.y) * 0.05;
-
-        // Apply velocity
+      // Update and draw particles
+      particles.forEach(particle => {
         particle.x += particle.vx;
         particle.y += particle.vy;
 
-        // Boundary checks
-        if (particle.x < 0 || particle.x > canvas.width) {
-          particle.vx *= -0.8;
-          particle.x = Math.max(0, Math.min(canvas.width, particle.x));
-        }
-        if (particle.y < 0 || particle.y > canvas.height) {
-          particle.vy *= -0.8;
-          particle.y = Math.max(0, Math.min(canvas.height, particle.y));
-        }
+        // Wrap around edges
+        if (particle.x < 0) particle.x = canvas.width;
+        if (particle.x > canvas.width) particle.x = 0;
+        if (particle.y < 0) particle.y = canvas.height;
+        if (particle.y > canvas.height) particle.y = 0;
 
-        // Update base position
-        particle.baseX += particle.vx * 0.1;
-        particle.baseY += particle.vy * 0.1;
+        // Draw particle with glow effect
+        const gradient = ctx.createRadialGradient(
+          particle.x, particle.y, 0,
+          particle.x, particle.y, particle.size * 3
+        );
+        gradient.addColorStop(0, `hsla(${particle.hue}, 70%, 60%, ${particle.opacity})`);
+        gradient.addColorStop(1, `hsla(${particle.hue}, 70%, 60%, 0)`);
 
-        // Keep base position in bounds
-        if (particle.baseX < 0 || particle.baseX > canvas.width) {
-          particle.baseX = Math.max(0, Math.min(canvas.width, particle.baseX));
-        }
-        if (particle.baseY < 0 || particle.baseY > canvas.height) {
-          particle.baseY = Math.max(0, Math.min(canvas.height, particle.baseY));
-        }
-
-        // Dynamic opacity changes
-        particle.opacity += (Math.random() - 0.5) * 0.01;
-        particle.opacity = Math.max(0.2, Math.min(0.8, particle.opacity));
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
+        ctx.fill();
       });
-    };
 
-    const updateGeometricShapes = () => {
-      shapesRef.current.forEach((shape) => {
-        // Rotation animation
+      // Update and draw floating shapes
+      shapes.forEach(shape => {
+        shape.x += shape.vx;
+        shape.y += shape.vy;
         shape.rotation += shape.rotationSpeed;
-        
-        // Pulse animation
-        shape.opacity += Math.sin(Date.now() * shape.pulseSpeed) * 0.001;
-        shape.opacity = Math.max(0.05, Math.min(0.4, shape.opacity));
-        
-        // Bounce animation
-        shape.x += Math.cos(shape.bounceDirection) * shape.bounceSpeed;
-        shape.y += Math.sin(shape.bounceDirection) * shape.bounceSpeed;
-        
-        // Boundary bounce
-        if (shape.x < 0 || shape.x > canvas.width) {
-          shape.bounceDirection = Math.PI - shape.bounceDirection;
-          shape.x = Math.max(0, Math.min(canvas.width, shape.x));
+
+        // Wrap around edges
+        if (shape.x < -shape.size) shape.x = canvas.width + shape.size;
+        if (shape.x > canvas.width + shape.size) shape.x = -shape.size;
+        if (shape.y < -shape.size) shape.y = canvas.height + shape.size;
+        if (shape.y > canvas.height + shape.size) shape.y = -shape.size;
+
+        ctx.save();
+        ctx.translate(shape.x, shape.y);
+        ctx.rotate(shape.rotation);
+        ctx.fillStyle = `rgba(245, 145, 32, ${shape.opacity})`;
+
+        // Draw different shapes
+        switch (shape.type) {
+          case 'circle':
+            ctx.beginPath();
+            ctx.arc(0, 0, shape.size, 0, Math.PI * 2);
+            ctx.fill();
+            break;
+          case 'square':
+            ctx.fillRect(-shape.size, -shape.size, shape.size * 2, shape.size * 2);
+            break;
+          case 'triangle':
+            ctx.beginPath();
+            ctx.moveTo(0, -shape.size);
+            ctx.lineTo(-shape.size, shape.size);
+            ctx.lineTo(shape.size, shape.size);
+            ctx.closePath();
+            ctx.fill();
+            break;
         }
-        if (shape.y < 0 || shape.y > canvas.height) {
-          shape.bounceDirection = -shape.bounceDirection;
-          shape.y = Math.max(0, Math.min(canvas.height, shape.y));
-        }
+        ctx.restore();
       });
+
+      requestAnimationFrame(animate);
     };
 
-    const handleMouseMove = (event: MouseEvent) => {
-      mouseRef.current.x = event.clientX;
-      mouseRef.current.y = event.clientY;
-    };
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      updateParticles();
-      updateGeometricShapes();
-      drawGeometricShapes();
-      drawParticles();
-      
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    resizeCanvas();
-    createParticles();
-    createGeometricShapes();
     animate();
 
-    const handleResize = () => {
-      resizeCanvas();
-      createParticles();
-      createGeometricShapes();
-    };
-
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('mousemove', handleMouseMove);
-
     return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      window.removeEventListener('resize', updateCanvasSize);
     };
   }, []);
 
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
-      style={{ pointerEvents: 'none' }}
+      className="absolute inset-0 pointer-events-none"
+      style={{ zIndex: 1 }}
     />
   );
 };
