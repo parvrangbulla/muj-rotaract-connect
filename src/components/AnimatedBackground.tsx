@@ -11,9 +11,23 @@ interface Particle {
   baseY: number;
 }
 
+interface GeometricShape {
+  x: number;
+  y: number;
+  size: number;
+  rotation: number;
+  rotationSpeed: number;
+  type: 'square' | 'triangle' | 'circle';
+  opacity: number;
+  pulseSpeed: number;
+  bounceDirection: number;
+  bounceSpeed: number;
+}
+
 const AnimatedBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
+  const shapesRef = useRef<GeometricShape[]>([]);
   const animationRef = useRef<number>();
   const mouseRef = useRef({ x: 0, y: 0 });
 
@@ -31,7 +45,7 @@ const AnimatedBackground = () => {
 
     const createParticles = () => {
       const particles: Particle[] = [];
-      const particleCount = Math.floor(window.innerWidth / 15); // Increased density
+      const particleCount = Math.floor(window.innerWidth / 12);
 
       for (let i = 0; i < particleCount; i++) {
         const x = Math.random() * canvas.width;
@@ -41,23 +55,81 @@ const AnimatedBackground = () => {
           y,
           baseX: x,
           baseY: y,
-          vx: (Math.random() - 0.5) * 1.2, // Increased base velocity
-          vy: (Math.random() - 0.5) * 1.2,
-          size: Math.random() * 4 + 1, // Slightly larger particles
-          opacity: Math.random() * 0.6 + 0.3,
+          vx: (Math.random() - 0.5) * 1.5,
+          vy: (Math.random() - 0.5) * 1.5,
+          size: Math.random() * 5 + 2,
+          opacity: Math.random() * 0.7 + 0.3,
         });
       }
       particlesRef.current = particles;
     };
 
+    const createGeometricShapes = () => {
+      const shapes: GeometricShape[] = [];
+      const shapeCount = 15;
+
+      for (let i = 0; i < shapeCount; i++) {
+        shapes.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 30 + 20,
+          rotation: Math.random() * Math.PI * 2,
+          rotationSpeed: (Math.random() - 0.5) * 0.02,
+          type: ['square', 'triangle', 'circle'][Math.floor(Math.random() * 3)] as 'square' | 'triangle' | 'circle',
+          opacity: Math.random() * 0.3 + 0.1,
+          pulseSpeed: Math.random() * 0.02 + 0.01,
+          bounceDirection: Math.random() * Math.PI * 2,
+          bounceSpeed: Math.random() * 0.5 + 0.2,
+        });
+      }
+      shapesRef.current = shapes;
+    };
+
     const drawParticles = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
       particlesRef.current.forEach((particle) => {
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(245, 145, 32, ${particle.opacity})`;
         ctx.fill();
+        
+        // Add glow effect
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = 'rgba(245, 145, 32, 0.5)';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+    };
+
+    const drawGeometricShapes = () => {
+      shapesRef.current.forEach((shape) => {
+        ctx.save();
+        ctx.translate(shape.x, shape.y);
+        ctx.rotate(shape.rotation);
+        ctx.globalAlpha = shape.opacity;
+        
+        ctx.strokeStyle = `rgba(245, 145, 32, ${shape.opacity})`;
+        ctx.lineWidth = 2;
+        
+        switch (shape.type) {
+          case 'square':
+            ctx.strokeRect(-shape.size / 2, -shape.size / 2, shape.size, shape.size);
+            break;
+          case 'triangle':
+            ctx.beginPath();
+            ctx.moveTo(0, -shape.size / 2);
+            ctx.lineTo(-shape.size / 2, shape.size / 2);
+            ctx.lineTo(shape.size / 2, shape.size / 2);
+            ctx.closePath();
+            ctx.stroke();
+            break;
+          case 'circle':
+            ctx.beginPath();
+            ctx.arc(0, 0, shape.size / 2, 0, Math.PI * 2);
+            ctx.stroke();
+            break;
+        }
+        
+        ctx.restore();
       });
     };
 
@@ -67,24 +139,24 @@ const AnimatedBackground = () => {
         const dx = mouseRef.current.x - particle.x;
         const dy = mouseRef.current.y - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        const maxDistance = 200; // Increased influence range
+        const maxDistance = 150;
 
-        // Apply stronger mouse influence
+        // Apply mouse influence
         if (distance < maxDistance) {
           const force = (maxDistance - distance) / maxDistance;
-          particle.x += dx * force * 0.08; // Much stronger force
-          particle.y += dy * force * 0.08;
+          particle.x += dx * force * 0.05;
+          particle.y += dy * force * 0.05;
         }
 
-        // Return to base position more quickly
-        particle.x += (particle.baseX - particle.x) * 0.08;
-        particle.y += (particle.baseY - particle.y) * 0.08;
+        // Return to base position
+        particle.x += (particle.baseX - particle.x) * 0.05;
+        particle.y += (particle.baseY - particle.y) * 0.05;
 
         // Apply velocity
         particle.x += particle.vx;
         particle.y += particle.vy;
 
-        // Boundary checks with more responsive bouncing
+        // Boundary checks
         if (particle.x < 0 || particle.x > canvas.width) {
           particle.vx *= -0.8;
           particle.x = Math.max(0, Math.min(canvas.width, particle.x));
@@ -94,9 +166,9 @@ const AnimatedBackground = () => {
           particle.y = Math.max(0, Math.min(canvas.height, particle.y));
         }
 
-        // Update base position more dynamically
-        particle.baseX += particle.vx * 0.15;
-        particle.baseY += particle.vy * 0.15;
+        // Update base position
+        particle.baseX += particle.vx * 0.1;
+        particle.baseY += particle.vy * 0.1;
 
         // Keep base position in bounds
         if (particle.baseX < 0 || particle.baseX > canvas.width) {
@@ -106,9 +178,34 @@ const AnimatedBackground = () => {
           particle.baseY = Math.max(0, Math.min(canvas.height, particle.baseY));
         }
 
-        // More dynamic opacity changes
-        particle.opacity += (Math.random() - 0.5) * 0.02;
+        // Dynamic opacity changes
+        particle.opacity += (Math.random() - 0.5) * 0.01;
         particle.opacity = Math.max(0.2, Math.min(0.8, particle.opacity));
+      });
+    };
+
+    const updateGeometricShapes = () => {
+      shapesRef.current.forEach((shape) => {
+        // Rotation animation
+        shape.rotation += shape.rotationSpeed;
+        
+        // Pulse animation
+        shape.opacity += Math.sin(Date.now() * shape.pulseSpeed) * 0.001;
+        shape.opacity = Math.max(0.05, Math.min(0.4, shape.opacity));
+        
+        // Bounce animation
+        shape.x += Math.cos(shape.bounceDirection) * shape.bounceSpeed;
+        shape.y += Math.sin(shape.bounceDirection) * shape.bounceSpeed;
+        
+        // Boundary bounce
+        if (shape.x < 0 || shape.x > canvas.width) {
+          shape.bounceDirection = Math.PI - shape.bounceDirection;
+          shape.x = Math.max(0, Math.min(canvas.width, shape.x));
+        }
+        if (shape.y < 0 || shape.y > canvas.height) {
+          shape.bounceDirection = -shape.bounceDirection;
+          shape.y = Math.max(0, Math.min(canvas.height, shape.y));
+        }
       });
     };
 
@@ -118,18 +215,25 @@ const AnimatedBackground = () => {
     };
 
     const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
       updateParticles();
+      updateGeometricShapes();
+      drawGeometricShapes();
       drawParticles();
+      
       animationRef.current = requestAnimationFrame(animate);
     };
 
     resizeCanvas();
     createParticles();
+    createGeometricShapes();
     animate();
 
     const handleResize = () => {
       resizeCanvas();
       createParticles();
+      createGeometricShapes();
     };
 
     window.addEventListener('resize', handleResize);

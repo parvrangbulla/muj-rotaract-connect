@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Instagram, Mail, Phone } from "lucide-react";
+import { Instagram, Mail } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -22,10 +22,11 @@ const Footer = () => {
             </p>
             <div className="flex space-x-4">
               <a
-                href="https://www.instagram.com/rotaract_muj/"
+                href="https://instagram.com/rotaractclubmuj"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-rotaract-orange transition-colors"
+                title="@rotaractclubmuj"
               >
                 <Instagram size={20} />
               </a>
@@ -34,12 +35,6 @@ const Footer = () => {
                 className="text-white hover:text-rotaract-orange transition-colors"
               >
                 <Mail size={20} />
-              </a>
-              <a
-                href="tel:+919876543210"
-                className="text-white hover:text-rotaract-orange transition-colors"
-              >
-                <Phone size={20} />
               </a>
             </div>
           </div>
@@ -73,8 +68,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/gallery" className="text-gray-300 hover:text-rotaract-orange transition-colors">
-                  Gallery
+                <Link to="/ngo" className="text-gray-300 hover:text-rotaract-orange transition-colors">
+                  NGO
                 </Link>
               </li>
             </ul>
@@ -94,6 +89,9 @@ const Footer = () => {
                 <a href="mailto:rotaract@muj.manipal.edu" className="hover:text-rotaract-orange transition-colors">
                   rotaract@muj.manipal.edu
                 </a>
+              </p>
+              <p className="text-sm text-gray-400 mt-2">
+                Follow us: @rotaractclubmuj
               </p>
             </address>
           </div>
