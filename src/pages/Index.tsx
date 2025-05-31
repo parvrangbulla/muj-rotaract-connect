@@ -1,17 +1,13 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Users, Image, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import AnimatedBackground from "@/components/AnimatedBackground";
-
 const Index = () => {
   const handleBecomeMember = () => {
     window.open('https://docs.google.com/forms/d/e/1FAIpQLSeN_0YXl6S4QJrcTJXSfPk_j0Ev_42DUAh6KPnYbYqzd1hVEA/viewform', '_blank');
   };
-
-  return (
-    <div className="min-h-screen bg-stone-50">
+  return <div className="min-h-screen bg-stone-50">
       {/* Hero Section */}
       <div className="min-h-screen relative flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black overflow-hidden">
         <AnimatedBackground />
@@ -24,28 +20,29 @@ const Index = () => {
           <div className="flex justify-center mb-6">
             <div className="relative group cursor-pointer">
               {/* Outer rotating ring */}
-              <div className="absolute inset-0 w-80 h-80 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{animationDuration: '8s'}}></div>
+              <div className="absolute inset-0 w-80 h-80 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{
+              animationDuration: '8s'
+            }}></div>
               
               {/* Middle pulsing ring */}
-              <div className="absolute inset-2 w-76 h-76 rounded-full border border-white/30 animate-ping" style={{animationDelay: '1s'}}></div>
+              <div className="absolute inset-2 w-76 h-76 rounded-full border border-white/30 animate-ping" style={{
+              animationDelay: '1s'
+            }}></div>
               
               {/* Background circle for logo */}
               <div className="absolute inset-4 w-72 h-72 rounded-full bg-gradient-to-br from-rotaract-orange/20 via-white/10 to-rotaract-orange/30 backdrop-blur-sm border border-white/20"></div>
               
               {/* Logo with enhanced animations - made smaller */}
               <div className="relative w-80 h-80 flex items-center justify-center">
-                <img 
-                  src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
-                  alt="Rotaract Club MUJ Logo" 
-                  className="w-56 h-56 object-contain z-10 rounded-full group-hover:scale-125 transition-all duration-500 filter drop-shadow-2xl"
-                  style={{
-                    animation: 'logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate'
-                  }}
-                />
+                <img src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" alt="Rotaract Club MUJ Logo" className="w-56 h-56 object-contain z-10 rounded-full group-hover:scale-125 transition-all duration-500 filter drop-shadow-2xl" style={{
+                animation: 'logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate'
+              }} />
               </div>
               
               {/* Inner glowing effect */}
-              <div className="absolute inset-12 w-56 h-56 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{animationDelay: '0.5s'}}></div>
+              <div className="absolute inset-12 w-56 h-56 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{
+              animationDelay: '0.5s'
+            }}></div>
             </div>
           </div>
           
@@ -71,13 +68,19 @@ const Index = () => {
           <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-up bg-gradient-to-r from-white via-rotaract-orange to-white bg-clip-text text-transparent">
             Rotaract Club
           </h1>
-          <h2 className="text-2xl md:text-4xl font-medium mb-6 animate-fade-up text-gray-200" style={{animationDelay: '200ms'}}>
+          <h2 className="text-2xl md:text-4xl font-medium mb-6 animate-fade-up text-gray-200" style={{
+          animationDelay: '200ms'
+        }}>
             Manipal University Jaipur
           </h2>
-          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-up text-gray-300" style={{animationDelay: '400ms'}}>
+          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-up text-gray-300" style={{
+          animationDelay: '400ms'
+        }}>
             Service Above Self
           </p>
-          <div className="flex flex-wrap gap-4 justify-center animate-fade-up" style={{animationDelay: '600ms'}}>
+          <div className="flex flex-wrap gap-4 justify-center animate-fade-up" style={{
+          animationDelay: '600ms'
+        }}>
             <Button asChild className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0">
               <Link to="/about">About Us</Link>
             </Button>
@@ -87,10 +90,12 @@ const Index = () => {
           </div>
           
           {/* Scroll Indicator */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-fade-up" style={{animationDelay: '800ms'}}>
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-fade-up" style={{
+          animationDelay: '800ms'
+        }}>
             <div className="flex flex-col items-center">
-              <span className="text-sm text-gray-400 mb-2">Scroll to explore</span>
-              <ChevronDown className="w-6 h-6 text-rotaract-orange animate-bounce" style={{animation: 'scrollBounce 2s infinite'}} />
+              
+              
             </div>
           </div>
         </div>
@@ -120,11 +125,7 @@ const Index = () => {
               </Button>
             </div>
             <div className="flex justify-center">
-              <img 
-                src="https://images.unsplash.com/photo-1529156066841-6116e61058f4?q=80&w=3432&auto=format&fit=crop" 
-                alt="Rotaract members" 
-                className="rounded-lg shadow-lg max-w-full h-auto transform hover:scale-105 transition-transform duration-300"
-              />
+              <img src="https://images.unsplash.com/photo-1529156066841-6116e61058f4?q=80&w=3432&auto=format&fit=crop" alt="Rotaract members" className="rounded-lg shadow-lg max-w-full h-auto transform hover:scale-105 transition-transform duration-300" />
             </div>
           </div>
         </div>
@@ -138,11 +139,7 @@ const Index = () => {
             {/* Blood Donation Camp Card */}
             <Card className="overflow-hidden transition-all hover:shadow-xl border-gray-200 hover:border-rotaract-orange transform hover:scale-105 duration-300">
               <div className="h-64 overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" 
-                  alt="Blood Donation Camp" 
-                  className="w-full h-full object-cover transition-transform hover:scale-110 duration-300"
-                />
+                <img src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" alt="Blood Donation Camp" className="w-full h-full object-cover transition-transform hover:scale-110 duration-300" />
               </div>
               <CardContent className="p-6">
                 <h3 className="text-2xl font-bold mb-2 text-black">Blood Donation Camp (BDC)</h3>
@@ -161,11 +158,7 @@ const Index = () => {
             {/* Daan Utsav Card */}
             <Card className="overflow-hidden transition-all hover:shadow-xl border-gray-200 hover:border-rotaract-orange transform hover:scale-105 duration-300">
               <div className="h-64 overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop" 
-                  alt="Daan Utsav" 
-                  className="w-full h-full object-cover transition-transform hover:scale-110 duration-300"
-                />
+                <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop" alt="Daan Utsav" className="w-full h-full object-cover transition-transform hover:scale-110 duration-300" />
               </div>
               <CardContent className="p-6">
                 <h3 className="text-2xl font-bold mb-2 text-black">Daan Utsav</h3>
@@ -260,18 +253,12 @@ const Index = () => {
                 <Users className="mr-2 h-4 w-4" /> Meet Our Team
               </Link>
             </Button>
-            <Button 
-              onClick={handleBecomeMember}
-              variant="outline" 
-              className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-            >
+            <Button onClick={handleBecomeMember} variant="outline" className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
               <Users className="mr-2 h-4 w-4" /> Become a Member
             </Button>
           </div>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
