@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,7 +23,7 @@ const Team = () => {
   const [teamMembers] = useState<TeamMember[]>([
     {
       id: 1,
-      name: "Rohan Sharma",
+      name: "Arjun Mehta",
       position: "President",
       image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=3387&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_president",
@@ -32,7 +33,7 @@ const Team = () => {
     },
     {
       id: 2,
-      name: "Priya Patel",
+      name: "Kavya Singh",
       position: "Secretary",
       image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=3387&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_secretary",
@@ -42,7 +43,7 @@ const Team = () => {
     },
     {
       id: 3,
-      name: "Amit Kumar",
+      name: "Dhruv Agarwal",
       position: "Joint Secretary",
       image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=3387&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_jointsec",
@@ -50,7 +51,7 @@ const Team = () => {
     },
     {
       id: 4,
-      name: "Neha Gupta",
+      name: "Ishita Sharma",
       position: "Treasurer",
       image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=3456&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_treasurer",
@@ -58,7 +59,7 @@ const Team = () => {
     },
     {
       id: 5,
-      name: "Vikram Singh",
+      name: "Siddharth Rao",
       position: "CSD Director",
       image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=3387&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_csd",
@@ -66,7 +67,7 @@ const Team = () => {
     },
     {
       id: 6,
-      name: "Ananya Reddy",
+      name: "Riya Joshi",
       position: "CMD Director",
       image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=3270&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_cmd",
@@ -74,7 +75,7 @@ const Team = () => {
     },
     {
       id: 7,
-      name: "Rahul Verma",
+      name: "Aarav Bansal",
       position: "ISD Director",
       image: "https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?q=80&w=3366&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_isd",
@@ -82,7 +83,7 @@ const Team = () => {
     },
     {
       id: 8,
-      name: "Meera Kapoor",
+      name: "Sneha Gupta",
       position: "PDD Director",
       image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=3376&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_pdd",
@@ -90,7 +91,7 @@ const Team = () => {
     },
     {
       id: 9,
-      name: "Karan Malhotra",
+      name: "Arnav Thakur",
       position: "PID Director",
       image: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?q=80&w=3387&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_pid",
@@ -98,7 +99,7 @@ const Team = () => {
     },
     {
       id: 10,
-      name: "Aditya Nair",
+      name: "Vaibhav Desai",
       position: "Sergeant at Arms",
       image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=3540&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_sergeant",
@@ -106,7 +107,7 @@ const Team = () => {
     },
     {
       id: 11,
-      name: "Tanvi Shah",
+      name: "Ananya Reddy",
       position: "Social Media Director",
       image: "https://images.unsplash.com/photo-1619895862022-09114b41f16f?q=80&w=3387&auto=format&fit=crop",
       instagram: "https://instagram.com/rotaractmuj_social",

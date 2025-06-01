@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Trash2, Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { format } from 'date-fns';
 
 interface Event {
@@ -22,8 +21,10 @@ interface Event {
   type: 'event' | 'gbm' | 'flagship';
   location?: string;
   attendanceEnabled: boolean;
+  registrationEnabled: boolean;
   createdBy?: string;
   userAttendance?: 'present' | 'absent' | null;
+  userRegistered?: boolean;
 }
 
 const WeeklyCalendar = () => {
@@ -32,6 +33,7 @@ const WeeklyCalendar = () => {
   const [showEventForm, setShowEventForm] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [events, setEvents] = useState<Event[]>([
     {
       id: 1,
@@ -43,6 +45,7 @@ const WeeklyCalendar = () => {
       type: 'flagship',
       location: "MUJ Main Campus",
       attendanceEnabled: true,
+      registrationEnabled: true,
       createdBy: "admin"
     },
     {
@@ -50,11 +53,12 @@ const WeeklyCalendar = () => {
       title: "GBM - General Body Meeting",
       date: new Date(2025, 4, 31),
       startTime: "17:00",
-      endTime: "18:30",
+      endTime: "18:00",
       description: "Monthly general body meeting to discuss upcoming events and club activities.",
       type: 'gbm',
       location: "Conference Room A",
       attendanceEnabled: true,
+      registrationEnabled: false,
       createdBy: "admin"
     },
     {
@@ -67,6 +71,7 @@ const WeeklyCalendar = () => {
       type: 'flagship',
       location: "MUJ Campus",
       attendanceEnabled: false,
+      registrationEnabled: true,
       createdBy: "admin"
     },
     {
@@ -79,6 +84,7 @@ const WeeklyCalendar = () => {
       type: 'event',
       location: "Art Block",
       attendanceEnabled: true,
+      registrationEnabled: false,
       createdBy: "admin"
     }
   ]);
@@ -89,15 +95,21 @@ const WeeklyCalendar = () => {
     startTime: '',
     endTime: '',
     description: '',
-    location: '',
-    attendanceEnabled: false
+    location: ''
+  });
+
+  const [registrationForm, setRegistrationForm] = useState({
+    name: '',
+    phone: '',
+    registrationNumber: ''
   });
 
   const currentUser = localStorage.getItem('username') || 'user';
-  const isAdmin = true; // In real app, this would be based on user roles
+  const isAdmin = true;
 
-  const timeSlots = Array.from({ length: 13 }, (_, i) => {
-    const hour = i + 8;
+  // Updated time slots for 09:00 AM to 06:00 PM
+  const timeSlots = Array.from({ length: 10 }, (_, i) => {
+    const hour = i + 9;
     return `${hour.toString().padStart(2, '0')}:00`;
   });
 
@@ -146,6 +158,7 @@ const WeeklyCalendar = () => {
 
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
+    setEditMode(false);
   };
 
   const handleCreateEvent = (e: React.FormEvent) => {
@@ -160,9 +173,11 @@ const WeeklyCalendar = () => {
       description: newEvent.description,
       location: newEvent.location,
       type: 'event',
-      attendanceEnabled: newEvent.attendanceEnabled,
+      attendanceEnabled: false,
+      registrationEnabled: false,
       createdBy: currentUser,
-      userAttendance: null
+      userAttendance: null,
+      userRegistered: false
     };
     
     setEvents([...events, createdEvent]);
@@ -173,10 +188,39 @@ const WeeklyCalendar = () => {
       startTime: '',
       endTime: '',
       description: '',
-      location: '',
-      attendanceEnabled: false
+      location: ''
     });
     console.log('Event created:', createdEvent);
+  };
+
+  const handleUpdateEvent = () => {
+    if (!selectedEvent) return;
+    
+    setEvents(events.map(event => 
+      event.id === selectedEvent.id ? selectedEvent : event
+    ));
+    setEditMode(false);
+    console.log('Event updated:', selectedEvent);
+  };
+
+  const handleToggleAttendance = () => {
+    if (!selectedEvent) return;
+    
+    const updatedEvent = { ...selectedEvent, attendanceEnabled: !selectedEvent.attendanceEnabled };
+    setSelectedEvent(updatedEvent);
+    setEvents(events.map(event => 
+      event.id === selectedEvent.id ? updatedEvent : event
+    ));
+  };
+
+  const handleToggleRegistration = () => {
+    if (!selectedEvent) return;
+    
+    const updatedEvent = { ...selectedEvent, registrationEnabled: !selectedEvent.registrationEnabled };
+    setSelectedEvent(updatedEvent);
+    setEvents(events.map(event => 
+      event.id === selectedEvent.id ? updatedEvent : event
+    ));
   };
 
   const handleAttendanceMarkPresent = () => {
@@ -190,25 +234,35 @@ const WeeklyCalendar = () => {
       return;
     }
     
+    const updatedEvent = { ...selectedEvent, userAttendance: 'present' as const };
     setEvents(events.map(event => 
-      event.id === selectedEvent.id 
-        ? { ...event, userAttendance: 'present' }
-        : event
+      event.id === selectedEvent.id ? updatedEvent : event
     ));
-    setSelectedEvent({ ...selectedEvent, userAttendance: 'present' });
+    setSelectedEvent(updatedEvent);
     console.log('Marked present for event:', selectedEvent.id);
   };
 
   const handleAttendanceMarkAbsent = () => {
     if (!selectedEvent) return;
     
+    const updatedEvent = { ...selectedEvent, userAttendance: 'absent' as const };
     setEvents(events.map(event => 
-      event.id === selectedEvent.id 
-        ? { ...event, userAttendance: 'absent' }
-        : event
+      event.id === selectedEvent.id ? updatedEvent : event
     ));
-    setSelectedEvent({ ...selectedEvent, userAttendance: 'absent' });
+    setSelectedEvent(updatedEvent);
     console.log('Marked absent for event:', selectedEvent.id);
+  };
+
+  const handleRegistration = () => {
+    if (!selectedEvent) return;
+    
+    const updatedEvent = { ...selectedEvent, userRegistered: true };
+    setEvents(events.map(event => 
+      event.id === selectedEvent.id ? updatedEvent : event
+    ));
+    setSelectedEvent(updatedEvent);
+    setRegistrationForm({ name: '', phone: '', registrationNumber: '' });
+    console.log('Registered for event:', selectedEvent.id, registrationForm);
   };
 
   const handleDeleteEvent = () => {
@@ -339,52 +393,149 @@ const WeeklyCalendar = () => {
         </div>
       </div>
 
-      {/* Event Details Modal */}
-      <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
-        <DialogContent className="max-w-lg">
+      {/* Enhanced Event Details Modal */}
+      <Dialog open={!!selectedEvent} onOpenChange={() => {setSelectedEvent(null); setEditMode(false);}}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
-              <span>{selectedEvent?.title}</span>
-              {selectedEvent && canDeleteEvent(selectedEvent) && (
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+              {editMode ? (
+                <Input 
+                  value={selectedEvent?.title || ''} 
+                  onChange={(e) => setSelectedEvent(prev => prev ? {...prev, title: e.target.value} : null)}
+                  className="text-lg font-semibold"
+                />
+              ) : (
+                <span>{selectedEvent?.title}</span>
               )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => editMode ? handleUpdateEvent() : setEditMode(true)}
+              >
+                <Edit3 className="w-4 h-4" />
+                {editMode ? 'Save' : 'Edit'}
+              </Button>
             </DialogTitle>
           </DialogHeader>
           {selectedEvent && (
-            <div className="space-y-4">
-              <div>
-                <Badge 
-                  style={{
-                    backgroundColor: selectedEvent.type === 'flagship' ? '#f59120' : 
-                                   selectedEvent.type === 'gbm' ? '#3b82f6' : '#10b981'
-                  }}
-                  className="text-white"
-                >
-                  {selectedEvent.type === 'flagship' ? 'Flagship Event' : 
-                   selectedEvent.type === 'gbm' ? 'General Body Meeting' : 'Event'}
-                </Badge>
+            <div className="space-y-6">
+              {/* Event Details */}
+              <div className="space-y-3">
+                <div>
+                  <Badge 
+                    style={{
+                      backgroundColor: selectedEvent.type === 'flagship' ? '#f59120' : 
+                                     selectedEvent.type === 'gbm' ? '#3b82f6' : '#10b981'
+                    }}
+                    className="text-white"
+                  >
+                    {selectedEvent.type === 'flagship' ? 'Flagship Event' : 
+                     selectedEvent.type === 'gbm' ? 'General Body Meeting' : 'Event'}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">
+                    📅 {selectedEvent.date.toLocaleDateString()}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    🕐 {selectedEvent.startTime} - {selectedEvent.endTime}
+                  </p>
+                  {selectedEvent.location && (
+                    <p className="text-sm text-gray-600">📍 {selectedEvent.location}</p>
+                  )}
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Description</Label>
+                  {editMode ? (
+                    <Textarea 
+                      value={selectedEvent.description} 
+                      onChange={(e) => setSelectedEvent(prev => prev ? {...prev, description: e.target.value} : null)}
+                      className="mt-1"
+                    />
+                  ) : (
+                    <p className="text-sm mt-1">{selectedEvent.description}</p>
+                  )}
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-gray-600">
-                  📅 {selectedEvent.date.toLocaleDateString()}
-                </p>
-                <p className="text-sm text-gray-600">
-                  🕐 {selectedEvent.startTime} - {selectedEvent.endTime}
-                </p>
-                {selectedEvent.location && (
-                  <p className="text-sm text-gray-600">📍 {selectedEvent.location}</p>
-                )}
-              </div>
-              <p className="text-sm">{selectedEvent.description}</p>
+
+              {/* Toggle Options */}
+              {(isAdmin || selectedEvent.createdBy === currentUser) && (
+                <div className="space-y-4 border-t pt-4">
+                  <h4 className="font-medium">Event Settings</h4>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="attendance-toggle">Enable Attendance</Label>
+                    <Switch 
+                      id="attendance-toggle"
+                      checked={selectedEvent.attendanceEnabled}
+                      onCheckedChange={handleToggleAttendance}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="registration-toggle">Enable Registration</Label>
+                    <Switch 
+                      id="registration-toggle"
+                      checked={selectedEvent.registrationEnabled}
+                      onCheckedChange={handleToggleRegistration}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Registration Section */}
+              {selectedEvent.registrationEnabled && !selectedEvent.userRegistered && (
+                <div className="space-y-3 border-t pt-4">
+                  <h4 className="font-medium">Event Registration</h4>
+                  <div className="grid grid-cols-1 gap-3">
+                    <div>
+                      <Label htmlFor="reg-name">Name</Label>
+                      <Input
+                        id="reg-name"
+                        placeholder="Enter your name"
+                        value={registrationForm.name}
+                        onChange={(e) => setRegistrationForm(prev => ({...prev, name: e.target.value}))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="reg-phone">Phone Number</Label>
+                      <Input
+                        id="reg-phone"
+                        type="tel"
+                        placeholder="Enter your phone number"
+                        value={registrationForm.phone}
+                        onChange={(e) => setRegistrationForm(prev => ({...prev, phone: e.target.value}))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="reg-number">Registration Number</Label>
+                      <Input
+                        id="reg-number"
+                        placeholder="Enter your registration number"
+                        value={registrationForm.registrationNumber}
+                        onChange={(e) => setRegistrationForm(prev => ({...prev, registrationNumber: e.target.value}))}
+                      />
+                    </div>
+                    <Button 
+                      onClick={handleRegistration}
+                      className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+                      disabled={!registrationForm.name || !registrationForm.phone || !registrationForm.registrationNumber}
+                    >
+                      Register for Event
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {selectedEvent.registrationEnabled && selectedEvent.userRegistered && (
+                <div className="space-y-3 border-t pt-4">
+                  <div className="text-sm text-green-600 font-medium">
+                    ✅ You are registered for this event
+                  </div>
+                </div>
+              )}
               
+              {/* Attendance Section */}
               {selectedEvent.attendanceEnabled && (
-                <div className="space-y-3">
+                <div className="space-y-3 border-t pt-4">
                   <h4 className="font-medium">Mark Attendance</h4>
                   {selectedEvent.userAttendance ? (
                     <div className="text-sm text-gray-600">
@@ -410,6 +561,21 @@ const WeeklyCalendar = () => {
                       </Button>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Delete Button */}
+              {canDeleteEvent(selectedEvent) && (
+                <div className="border-t pt-4">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="w-full"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Event
+                  </Button>
                 </div>
               )}
             </div>
@@ -528,17 +694,6 @@ const WeeklyCalendar = () => {
                 onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
                 required
               />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="attendance"
-                checked={newEvent.attendanceEnabled}
-                onCheckedChange={(checked) => 
-                  setNewEvent({...newEvent, attendanceEnabled: checked === true})
-                }
-              />
-              <Label htmlFor="attendance">Enable Attendance</Label>
             </div>
             
             <div className="flex gap-2">
