@@ -1,4 +1,3 @@
-
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,12 +16,23 @@ interface EventData {
   impact?: string;
 }
 
+interface PastEvent {
+  id: string;
+  title: string;
+  description: string;
+  domain: 'CMD' | 'CSD' | 'PDD' | 'ISD';
+  date: Date;
+  bannerPhoto: string;
+  galleryImages: string[];
+}
+
 const EventDetail = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const event: EventData = location.state?.event;
+  const pastEvent: PastEvent = location.state?.pastEvent;
 
-  if (!event) {
+  if (!event && !pastEvent) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -46,6 +56,96 @@ const EventDetail = () => {
     }
   };
 
+  const formatDate = (date: Date | string) => {
+    if (typeof date === 'string') return date;
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  // Render past event
+  if (pastEvent) {
+    return (
+      <div className="min-h-screen bg-gray-50 pt-16">
+        <div className="container mx-auto px-4 py-8">
+          {/* Back Button */}
+          <Button
+            variant="outline"
+            onClick={() => navigate('/events')}
+            className="mb-6"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Events
+          </Button>
+
+          {/* Event Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-4 mb-4">
+              <h1 className="text-4xl font-bold text-gray-800">{pastEvent.title}</h1>
+              <Badge className={`${getCategoryColor(pastEvent.domain)} text-white`}>
+                {pastEvent.domain}
+              </Badge>
+            </div>
+            
+            <div className="text-gray-600">
+              <span className="font-semibold">Date: </span>
+              <span>{formatDate(pastEvent.date)}</span>
+            </div>
+          </div>
+
+          {/* Hero Image */}
+          <div className="mb-8 h-96 overflow-hidden rounded-lg shadow-lg">
+            <img 
+              src={pastEvent.bannerPhoto || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=3540&auto=format&fit=crop"}
+              alt={pastEvent.title} 
+              className="w-full h-full object-cover" 
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Event Description */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-2xl font-semibold mb-4">About This Event</h2>
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">{pastEvent.description}</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Photo Gallery */}
+            <div>
+              <Card>
+                <CardContent className="p-6">
+                  <h3 className="text-xl font-semibold mb-4">Photo Gallery</h3>
+                  {pastEvent.galleryImages.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8">
+                      <p>No images uploaded yet for this event.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      {pastEvent.galleryImages.map((image, index) => (
+                        <img
+                          key={index}
+                          src={image}
+                          alt={`Gallery ${index + 1}`}
+                          className="w-full h-24 object-cover rounded shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                        />
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render regular event (keep existing code)
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       <div className="container mx-auto px-4 py-8">

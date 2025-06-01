@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Calendar, MessageSquare, LogOut, Menu, Camera, Award } from 'lucide-react';
+import { Calendar, MessageSquare, LogOut, Menu, Camera, Award, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import WeeklyCalendar from './WeeklyCalendar';
@@ -9,7 +9,7 @@ import EventManagement from './EventManagement';
 import Certificates from './Certificates';
 
 const UserDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'feedback' | 'events'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'feedback' | 'events' | 'pastEvents'>('calendar');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const navigate = useNavigate();
 
@@ -18,6 +18,10 @@ const UserDashboard = () => {
     localStorage.removeItem('username');
     window.dispatchEvent(new Event('storage'));
     navigate('/');
+  };
+
+  const handlePastEventsClick = () => {
+    navigate('/admin/past-events');
   };
 
   const username = localStorage.getItem('username') || 'User';
@@ -88,6 +92,14 @@ const UserDashboard = () => {
             >
               <Camera className="w-4 h-4 mr-2" />
               {isSidebarOpen && 'Events'}
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-gray-600 hover:text-rotaract-orange hover:bg-stone-100"
+              onClick={handlePastEventsClick}
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              {isSidebarOpen && 'Manage Past Events'}
             </Button>
             <Button
               variant={activeTab === 'feedback' ? 'default' : 'ghost'}

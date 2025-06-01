@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Calendar } from "lucide-react";
 import { Toaster } from "@/components/ui/toaster";
@@ -19,6 +18,7 @@ import Gallery from "./pages/Gallery";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import NGO from "./pages/NGO";
+import AdminPastEvents from "./pages/AdminPastEvents";
 
 const queryClient = new QueryClient();
 
@@ -47,7 +47,11 @@ const App = () => {
         <div className="min-h-screen bg-stone-50">
           <BrowserRouter>
             {isLoggedIn ? (
-              <UserDashboard />
+              <Routes>
+                <Route path="/" element={<UserDashboard />} />
+                <Route path="/admin/past-events" element={<AdminPastEvents />} />
+                <Route path="*" element={<UserDashboard />} />
+              </Routes>
             ) : (
               <>
                 <Navbar />
