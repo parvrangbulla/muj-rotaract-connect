@@ -1,6 +1,5 @@
 
-import { useState } from 'react';
-import { X, Instagram, Phone, Mail } from 'lucide-react';
+import { X, Instagram, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface TeamMember {
@@ -9,7 +8,6 @@ interface TeamMember {
   position: string;
   image: string;
   instagram: string;
-  phone: string;
   email?: string;
   bio?: string;
 }
@@ -26,18 +24,18 @@ const TeamMemberPopup = ({ member, onClose }: TeamMemberPopupProps) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Overlay */}
       <div 
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm" 
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity duration-300" 
         onClick={onClose}
       />
       
       {/* Popup */}
-      <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in zoom-in-95 duration-300">
+      <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in zoom-in-95 fade-in-0 duration-500">
         {/* Close Button */}
         <Button
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 text-gray-600 hover:text-gray-900"
+          className="absolute top-4 right-4 z-10 text-gray-600 hover:text-gray-900 transition-colors duration-200"
         >
           <X className="w-5 h-5" />
         </Button>
@@ -47,7 +45,7 @@ const TeamMemberPopup = ({ member, onClose }: TeamMemberPopupProps) => {
           <img 
             src={member.image} 
             alt={member.name} 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
           />
         </div>
 
@@ -68,20 +66,14 @@ const TeamMemberPopup = ({ member, onClose }: TeamMemberPopupProps) => {
               href={member.instagram} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="bg-pink-600 text-white p-3 rounded-full hover:bg-pink-700 transition-colors"
+              className="bg-pink-600 text-white p-3 rounded-full hover:bg-pink-700 transition-all duration-300 hover:scale-110 transform"
             >
               <Instagram size={20} />
-            </a>
-            <a 
-              href={`tel:${member.phone}`}
-              className="bg-green-600 text-white p-3 rounded-full hover:bg-green-700 transition-colors"
-            >
-              <Phone size={20} />
             </a>
             {member.email && (
               <a 
                 href={`mailto:${member.email}`}
-                className="bg-rotaract-orange text-white p-3 rounded-full hover:bg-rotaract-orange/90 transition-colors"
+                className="bg-rotaract-orange text-white p-3 rounded-full hover:bg-rotaract-orange/90 transition-all duration-300 hover:scale-110 transform"
               >
                 <Mail size={20} />
               </a>
