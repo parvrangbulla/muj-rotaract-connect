@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
-import { Upload, Trash2, Star } from 'lucide-react';
+import { Upload, Trash2, Star, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useNavigate } from 'react-router-dom';
 
 interface EventImage {
   id: string;
@@ -26,6 +26,7 @@ interface EventData {
 }
 
 const EventManagement = () => {
+  const navigate = useNavigate();
   // Sample events data - in real app, this would come from your data source
   const [flagshipEvents, setFlagshipEvents] = useState<EventData[]>([
     {
@@ -245,9 +246,18 @@ const EventManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">Event Management</h2>
-        <p className="text-gray-600">Upload and manage images for events</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">Past Events Management</h2>
+          <p className="text-gray-600">Upload and manage images for events</p>
+        </div>
+        <Button
+          onClick={() => navigate('/admin/past-events')}
+          className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Create New Event
+        </Button>
       </div>
 
       <Tabs defaultValue="flagship" className="space-y-6">

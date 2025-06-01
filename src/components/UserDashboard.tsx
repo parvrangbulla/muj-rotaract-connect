@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Calendar, MessageSquare, LogOut, Menu, Camera, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import EventManagement from './EventManagement';
 import Certificates from './Certificates';
 
 const UserDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'feedback' | 'events'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'past-events' | 'feedback'>('calendar');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const navigate = useNavigate();
 
@@ -26,6 +25,7 @@ const UserDashboard = () => {
     <div className="min-h-screen bg-stone-50 flex">
       {/* Sidebar */}
       <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} bg-white shadow-lg transition-all duration-300 flex flex-col`}>
+        {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -78,16 +78,16 @@ const UserDashboard = () => {
               {isSidebarOpen && 'Certificates'}
             </Button>
             <Button
-              variant={activeTab === 'events' ? 'default' : 'ghost'}
+              variant={activeTab === 'past-events' ? 'default' : 'ghost'}
               className={`w-full justify-start ${
-                activeTab === 'events' 
+                activeTab === 'past-events' 
                   ? 'bg-rotaract-orange text-white' 
                   : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
               }`}
-              onClick={() => setActiveTab('events')}
+              onClick={() => setActiveTab('past-events')}
             >
               <Camera className="w-4 h-4 mr-2" />
-              {isSidebarOpen && 'Events'}
+              {isSidebarOpen && 'Past Events'}
             </Button>
             <Button
               variant={activeTab === 'feedback' ? 'default' : 'ghost'}
@@ -120,7 +120,7 @@ const UserDashboard = () => {
       <div className="flex-1 p-6">
         {activeTab === 'calendar' && <WeeklyCalendar />}
         {activeTab === 'certificates' && <Certificates />}
-        {activeTab === 'events' && <EventManagement />}
+        {activeTab === 'past-events' && <EventManagement />}
         {activeTab === 'feedback' && <FeedbackForm />}
       </div>
     </div>

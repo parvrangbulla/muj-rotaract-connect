@@ -1,9 +1,9 @@
-
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 
 interface EventData {
   id: string;
@@ -15,12 +15,26 @@ interface EventData {
   shortDescription: string;
   venue?: string;
   impact?: string;
+  bannerUrl?: string;
+  galleryUrls?: string[];
 }
 
 const EventDetail = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const event: EventData = location.state?.event;
+  const { id } = useParams();
+  const [event, setEvent] = useState<EventData | null>(location.state?.event || null);
+
+  useEffect(() => {
+    if (!event && id) {
+      // Try to find the event in stored events
+      const storedEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+      const foundEvent = storedEvents.find((e: EventData) => e.id === id);
+      if (foundEvent) {
+        setEvent(foundEvent);
+      }
+    }
+  }, [id, event]);
 
   if (!event) {
     return (
@@ -43,6 +57,19 @@ const EventDetail = () => {
       case 'PDD': return 'bg-red-600';
       case 'Flagship': return 'bg-rotaract-orange';
       default: return 'bg-gray-600';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    } catch {
+      return dateString;
     }
   };
 
@@ -73,7 +100,7 @@ const EventDetail = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-gray-600">
             <div>
               <span className="font-semibold">Date: </span>
-              <span>{event.date}</span>
+              <span>{formatDate(event.date)}</span>
             </div>
             {event.venue && (
               <div>
@@ -93,7 +120,7 @@ const EventDetail = () => {
         {/* Hero Image */}
         <div className="mb-8 h-96 overflow-hidden rounded-lg shadow-lg">
           <img 
-            src={event.id === 'bdc-2024' 
+            src={event.bannerUrl || (event.id === 'bdc-2024' 
               ? "https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" 
               : event.id === 'daan-utsav-2024'
               ? "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop"
@@ -105,7 +132,7 @@ const EventDetail = () => {
                   event.id.includes('orphanage') ? '1607988795691-3d0147b43231' :
                   '1528605248644-14dd04022da1'
                 }?q=80&w=3540&auto=format&fit=crop`
-            }
+            )}
             alt={event.title} 
             className="w-full h-full object-cover" 
           />
@@ -127,13 +154,23 @@ const EventDetail = () => {
             <Card>
               <CardContent className="p-6">
                 <h3 className="text-xl font-semibold mb-4">Photo Gallery</h3>
-                {event.images.length === 0 ? (
+                {(!event.galleryUrls || event.galleryUrls.length === 0) && (!event.images || event.images.length === 0) ? (
                   <div className="text-center text-gray-500 py-8">
                     <p>No images uploaded yet for this event.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-2">
-                    {event.images.map((image) => (
+                    {/* Display gallery URLs for stored events */}
+                    {event.galleryUrls?.map((url, index) => (
+                      <img
+                        key={index}
+                        src={url}
+                        alt={`Gallery ${index + 1}`}
+                        className="w-full h-24 object-cover rounded shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                      />
+                    ))}
+                    {/* Display traditional images for legacy events */}
+                    {event.images?.map((image) => (
                       <img
                         key={image.id}
                         src={image.url}
