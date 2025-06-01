@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "@/components/PageHeader";
@@ -15,6 +16,8 @@ interface EventData {
   shortDescription: string;
   venue?: string;
   impact?: string;
+  bannerUrl?: string;
+  galleryUrls?: string[];
 }
 
 const Events = () => {
