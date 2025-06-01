@@ -1,6 +1,8 @@
-import { useState } from 'react';
-import { Calendar, MessageSquare, LogOut, Menu, Camera, Award } from 'lucide-react';
+
+import { useState, useEffect } from 'react';
+import { Calendar, MessageSquare, LogOut, Menu, Camera, Award, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import WeeklyCalendar from './WeeklyCalendar';
 import FeedbackForm from './FeedbackForm';
@@ -10,7 +12,38 @@ import Certificates from './Certificates';
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'past-events' | 'feedback'>('calendar');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [userProfile, setUserProfile] = useState({
+    fullName: '',
+    profilePicture: null as string | null
+  });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const username = localStorage.getItem('username') || 'User';
+      const savedProfile = localStorage.getItem('userProfile');
+      
+      if (savedProfile) {
+        const profile = JSON.parse(savedProfile);
+        setUserProfile({
+          fullName: profile.fullName || username,
+          profilePicture: profile.profilePicture
+        });
+      } else {
+        setUserProfile({
+          fullName: username,
+          profilePicture: null
+        });
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    handleStorageChange();
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
@@ -18,8 +51,6 @@ const UserDashboard = () => {
     window.dispatchEvent(new Event('storage'));
     navigate('/');
   };
-
-  const username = localStorage.getItem('username') || 'User';
 
   return (
     <div className="min-h-screen bg-stone-50 flex">
@@ -46,11 +77,32 @@ const UserDashboard = () => {
               <Menu className="w-4 h-4" />
             </Button>
           </div>
+          
+          {/* User Profile Section */}
           {isSidebarOpen && (
-            <p className="text-sm text-gray-600 mt-2">Welcome, {username}</p>
+            <div 
+              className="mt-4 p-3 bg-stone-50 rounded-lg cursor-pointer hover:bg-stone-100 transition-colors"
+              onClick={() => navigate('/profile')}
+            >
+              <div className="flex items-center gap-3">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={userProfile.profilePicture || ''} alt="Profile" />
+                  <AvatarFallback>
+                    <User className="w-5 h-5" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {userProfile.fullName}
+                  </p>
+                  <p className="text-xs text-gray-500">View Profile</p>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
+        {/* Navigation */}
         <nav className="flex-1 p-4">
           <div className="space-y-2">
             <Button
@@ -104,6 +156,7 @@ const UserDashboard = () => {
           </div>
         </nav>
 
+        {/* Logout */}
         <div className="p-4 border-t border-gray-200">
           <Button
             variant="outline"

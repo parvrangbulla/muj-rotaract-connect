@@ -1,5 +1,6 @@
+
 import { useState } from 'react';
-import { Upload, Trash2, Star, Plus } from 'lucide-react';
+import { Edit, Trash2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +28,7 @@ interface EventData {
 
 const EventManagement = () => {
   const navigate = useNavigate();
+  
   // Sample events data - in real app, this would come from your data source
   const [flagshipEvents, setFlagshipEvents] = useState<EventData[]>([
     {
@@ -74,92 +76,27 @@ const EventManagement = () => {
     }
   ]);
 
-  const [uploading, setUploading] = useState<string | null>(null);
+  const handleEditEvent = (eventId: string) => {
+    // Navigate to edit form with event data
+    console.log('Editing event:', eventId);
+    // In a real implementation, you would navigate to an edit form
+    alert(`Edit functionality for event ${eventId} would open here`);
+  };
 
-  const handleImageUpload = async (eventId: string, files: FileList, eventType: 'flagship' | 'past') => {
-    setUploading(eventId);
-    try {
-      // Simulate file upload - in real implementation, this would upload to your backend
-      const newImages: EventImage[] = Array.from(files).map((file, index) => ({
-        id: `${Date.now()}-${index}`,
-        url: URL.createObjectURL(file),
-        name: file.name,
-        isCover: false
-      }));
-
+  const handleDeleteEvent = (eventId: string, eventType: 'flagship' | 'past') => {
+    if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
       if (eventType === 'flagship') {
-        setFlagshipEvents(prev => 
-          prev.map(event => 
-            event.id === eventId 
-              ? { ...event, images: [...event.images, ...newImages] }
-              : event
-          )
-        );
+        setFlagshipEvents(prev => prev.filter(event => event.id !== eventId));
       } else {
-        setPastEvents(prev => 
-          prev.map(event => 
-            event.id === eventId 
-              ? { ...event, images: [...event.images, ...newImages] }
-              : event
-          )
-        );
+        setPastEvents(prev => prev.filter(event => event.id !== eventId));
       }
-    } catch (error) {
-      console.error('Upload failed:', error);
-    } finally {
-      setUploading(null);
-    }
-  };
-
-  const handleImageDelete = (eventId: string, imageId: string, eventType: 'flagship' | 'past') => {
-    if (eventType === 'flagship') {
-      setFlagshipEvents(prev => 
-        prev.map(event => 
-          event.id === eventId 
-            ? { ...event, images: event.images.filter(img => img.id !== imageId) }
-            : event
-        )
-      );
-    } else {
-      setPastEvents(prev => 
-        prev.map(event => 
-          event.id === eventId 
-            ? { ...event, images: event.images.filter(img => img.id !== imageId) }
-            : event
-        )
-      );
-    }
-  };
-
-  const handleSetCoverImage = (eventId: string, imageId: string, eventType: 'flagship' | 'past') => {
-    if (eventType === 'flagship') {
-      setFlagshipEvents(prev => 
-        prev.map(event => 
-          event.id === eventId 
-            ? { 
-                ...event, 
-                images: event.images.map(img => ({ 
-                  ...img, 
-                  isCover: img.id === imageId 
-                })) 
-              }
-            : event
-        )
-      );
-    } else {
-      setPastEvents(prev => 
-        prev.map(event => 
-          event.id === eventId 
-            ? { 
-                ...event, 
-                images: event.images.map(img => ({ 
-                  ...img, 
-                  isCover: img.id === imageId 
-                })) 
-              }
-            : event
-        )
-      );
+      
+      // Also remove from localStorage if it exists
+      const storedEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+      const updatedEvents = storedEvents.filter((event: any) => event.id !== eventId);
+      localStorage.setItem('pastEvents', JSON.stringify(updatedEvents));
+      
+      alert('Event deleted successfully!');
     }
   };
 
@@ -178,65 +115,34 @@ const EventManagement = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Upload Section */}
-          <div className="flex items-center gap-2">
+          <p className="text-gray-600">{event.shortDescription}</p>
+          
+          {/* Action Buttons */}
+          <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
-              disabled={uploading === event.id}
-              onClick={() => document.getElementById(`upload-${event.id}`)?.click()}
+              onClick={() => handleEditEvent(event.id)}
+              className="flex items-center gap-2"
             >
-              <Upload className="w-4 h-4 mr-2" />
-              {uploading === event.id ? 'Uploading...' : 'Upload Images'}
+              <Edit className="w-4 h-4" />
+              Edit Event
             </Button>
-            <input
-              id={`upload-${event.id}`}
-              type="file"
-              multiple
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => e.target.files && handleImageUpload(event.id, e.target.files, eventType)}
-            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleDeleteEvent(event.id, eventType)}
+              className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-600"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Event
+            </Button>
           </div>
 
-          {/* Images Grid */}
+          {/* Show uploaded images count if any */}
           {event.images.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {event.images.map((image) => (
-                <div key={image.id} className="relative group">
-                  <img
-                    src={image.url}
-                    alt={image.name}
-                    className={`w-full h-24 object-cover rounded shadow-sm ${
-                      image.isCover ? 'ring-2 ring-rotaract-orange' : ''
-                    }`}
-                  />
-                  {image.isCover && (
-                    <div className="absolute top-1 left-1">
-                      <Star className="w-4 h-4 text-rotaract-orange fill-current" />
-                    </div>
-                  )}
-                  <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="p-1 h-6 w-6"
-                      onClick={() => handleSetCoverImage(event.id, image.id, eventType)}
-                      title="Set as cover image"
-                    >
-                      <Star className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="p-1 h-6 w-6"
-                      onClick={() => handleImageDelete(event.id, image.id, eventType)}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+            <div className="text-sm text-gray-500">
+              📸 {event.images.length} image{event.images.length !== 1 ? 's' : ''} uploaded
             </div>
           )}
         </div>
@@ -249,7 +155,7 @@ const EventManagement = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Past Events Management</h2>
-          <p className="text-gray-600">Upload and manage images for events</p>
+          <p className="text-gray-600">Create, edit, and manage events</p>
         </div>
         <Button
           onClick={() => navigate('/admin/past-events')}
@@ -260,18 +166,34 @@ const EventManagement = () => {
         </Button>
       </div>
 
-      <Tabs defaultValue="flagship" className="space-y-6">
+      <Tabs defaultValue="past" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="flagship">Flagship Events</TabsTrigger>
           <TabsTrigger value="past">Past Events</TabsTrigger>
+          <TabsTrigger value="flagship">Flagship Events</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="past" className="space-y-4">
+          {pastEvents.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center text-gray-500">
+                  <p>No past events found.</p>
+                  <Button
+                    onClick={() => navigate('/admin/past-events')}
+                    className="mt-4 bg-rotaract-orange hover:bg-rotaract-orange/90"
+                  >
+                    Create Your First Event
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            pastEvents.map((event) => renderEventCard(event, 'past'))
+          )}
+        </TabsContent>
 
         <TabsContent value="flagship" className="space-y-4">
           {flagshipEvents.map((event) => renderEventCard(event, 'flagship'))}
-        </TabsContent>
-
-        <TabsContent value="past" className="space-y-4">
-          {pastEvents.map((event) => renderEventCard(event, 'past'))}
         </TabsContent>
       </Tabs>
     </div>

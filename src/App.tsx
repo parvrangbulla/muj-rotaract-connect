@@ -19,6 +19,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import NGO from "./pages/NGO";
 import AdminPastEvents from "./pages/AdminPastEvents";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<UserDashboard />} />
                 <Route path="/admin/past-events" element={<AdminPastEvents />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="*" element={<UserDashboard />} />
               </Routes>
             ) : (
