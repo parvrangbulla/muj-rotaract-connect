@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { useNavigate } from 'react-router-dom';
 
 interface GBMFormData {
@@ -14,6 +15,7 @@ interface GBMFormData {
   time: string;
   venue: string;
   description: string;
+  enableAttendance: boolean;
 }
 
 const AdminGBM = () => {
@@ -23,11 +25,12 @@ const AdminGBM = () => {
     date: '',
     time: '',
     venue: '',
-    description: ''
+    description: '',
+    enableAttendance: false
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -51,13 +54,29 @@ const AdminGBM = () => {
       existingGBMs.push(newGBM);
       localStorage.setItem('gbmMeetings', JSON.stringify(existingGBMs));
 
+      // If attendance is enabled, create attendance record
+      if (formData.enableAttendance) {
+        const attendanceRecord = {
+          eventId: newGBM.id,
+          eventTitle: formData.title,
+          eventDate: formData.date,
+          registeredMembers: [], // Will be populated when members register
+          attendance: {}
+        };
+
+        const existingAttendance = JSON.parse(localStorage.getItem('attendanceRecords') || '[]');
+        existingAttendance.push(attendanceRecord);
+        localStorage.setItem('attendanceRecords', JSON.stringify(existingAttendance));
+      }
+
       // Reset form
       setFormData({
         title: '',
         date: '',
         time: '',
         venue: '',
-        description: ''
+        description: '',
+        enableAttendance: false
       });
 
       alert('GBM/Meeting created successfully!');
@@ -166,6 +185,16 @@ const AdminGBM = () => {
                   rows={4}
                   required
                 />
+              </div>
+
+              {/* Enable Attendance */}
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="enableAttendance"
+                  checked={formData.enableAttendance}
+                  onCheckedChange={(checked) => handleInputChange('enableAttendance', checked)}
+                />
+                <Label htmlFor="enableAttendance">Enable Attendance Tracking</Label>
               </div>
 
               {/* Submit Button */}
