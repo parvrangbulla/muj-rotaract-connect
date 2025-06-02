@@ -229,13 +229,22 @@ const EventManagement = () => {
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Event Management</h2>
           <p className="text-gray-600">Create, edit, and manage all events</p>
         </div>
-        <Button
-          onClick={() => navigate('/admin/past-events')}
-          className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create New Event
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => navigate('/admin/gbm')}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            New GBM / Meeting
+          </Button>
+          <Button
+            onClick={() => navigate('/admin/past-events')}
+            className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Create New Event
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="past" className="space-y-6">

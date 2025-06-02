@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import NGO from "./pages/NGO";
 import AdminPastEvents from "./pages/AdminPastEvents";
 import Profile from "./pages/Profile";
+import AdminGBM from "./pages/AdminGBM";
 
 const queryClient = new QueryClient();
 

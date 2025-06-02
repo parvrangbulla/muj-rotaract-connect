@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Calendar, MessageSquare, LogOut, Menu, Camera, Award, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,9 +7,10 @@ import WeeklyCalendar from './WeeklyCalendar';
 import FeedbackForm from './FeedbackForm';
 import EventManagement from './EventManagement';
 import Certificates from './Certificates';
+import Attendance from './Attendance';
 
 const UserDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'past-events' | 'feedback'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'past-events' | 'feedback' | 'attendance'>('calendar');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [userProfile, setUserProfile] = useState({
     fullName: '',
@@ -142,6 +142,18 @@ const UserDashboard = () => {
               {isSidebarOpen && 'Past Events'}
             </Button>
             <Button
+              variant={activeTab === 'attendance' ? 'default' : 'ghost'}
+              className={`w-full justify-start ${
+                activeTab === 'attendance' 
+                  ? 'bg-rotaract-orange text-white' 
+                  : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
+              }`}
+              onClick={() => setActiveTab('attendance')}
+            >
+              <User className="w-4 h-4 mr-2" />
+              {isSidebarOpen && 'Attendance'}
+            </Button>
+            <Button
               variant={activeTab === 'feedback' ? 'default' : 'ghost'}
               className={`w-full justify-start ${
                 activeTab === 'feedback' 
@@ -174,6 +186,7 @@ const UserDashboard = () => {
         {activeTab === 'calendar' && <WeeklyCalendar />}
         {activeTab === 'certificates' && <Certificates />}
         {activeTab === 'past-events' && <EventManagement />}
+        {activeTab === 'attendance' && <Attendance />}
         {activeTab === 'feedback' && <FeedbackForm />}
       </div>
     </div>
