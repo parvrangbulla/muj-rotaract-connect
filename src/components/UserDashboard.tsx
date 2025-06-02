@@ -1,193 +1,124 @@
 import { useState, useEffect } from 'react';
-import { Calendar, MessageSquare, LogOut, Menu, Camera, Award, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { useNavigate } from 'react-router-dom';
-import WeeklyCalendar from './WeeklyCalendar';
-import FeedbackForm from './FeedbackForm';
+import { Calendar, LayoutDashboard, Users, MessageSquare, Award } from 'lucide-react';
+import UserSidebar from './UserSidebar';
+import EventCalendar from './EventCalendar';
 import EventManagement from './EventManagement';
-import Certificates from './Certificates';
-import Attendance from './Attendance';
 
 const UserDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'past-events' | 'feedback' | 'attendance'>('calendar');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [userProfile, setUserProfile] = useState({
-    fullName: '',
-    profilePicture: null as string | null
-  });
-  const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState('User');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      const username = localStorage.getItem('username') || 'User';
-      const savedProfile = localStorage.getItem('userProfile');
-      
-      if (savedProfile) {
-        const profile = JSON.parse(savedProfile);
-        setUserProfile({
-          fullName: profile.fullName || username,
-          profilePicture: profile.profilePicture
-        });
-      } else {
-        setUserProfile({
-          fullName: username,
-          profilePicture: null
-        });
-      }
+    const username = localStorage.getItem('username') || 'User';
+    const userType = localStorage.getItem('userType') || 'member';
+    setCurrentUser(username);
+    setIsAdmin(username === 'admin' || userType === 'member');
+    setIsGuest(userType === 'guest');
+
+    const handleLogout = () => {
+      localStorage.removeItem('isLoggedIn');
+      localStorage.removeItem('username');
+      localStorage.removeItem('userType');
+      window.location.href = '/login';
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    handleStorageChange();
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    setHandleLogout(() => handleLogout);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('username');
-    window.dispatchEvent(new Event('storage'));
-    navigate('/');
+  const [isGuest, setIsGuest] = useState(false);
+  const [handleLogout, setHandleLogout] = useState<() => void>(() => {});
+
+  const renderCalendarContent = () => {
+    if (activeTab === 'weekly') {
+      // For guests, show a simplified calendar without editing capabilities
+      if (isGuest) {
+        return <EventCalendar />;
+      }
+      return <EventCalendar />;
+    }
+    return <EventCalendar />;
   };
 
   return (
     <div className="min-h-screen bg-stone-50 flex">
-      {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} bg-white shadow-lg transition-all duration-300 flex flex-col`}>
-        {/* Sidebar Header */}
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <img 
-                src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
-                alt="Rotaract Club MUJ Logo" 
-                className="h-8 w-8 object-contain rounded-full"
-              />
-              {isSidebarOpen && (
-                <span className="font-bold text-lg text-black">Rotaract MUJ</span>
-              )}
+      <UserSidebar 
+        currentUser={currentUser}
+        isAdmin={isAdmin}
+        isGuest={isGuest}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onLogout={handleLogout}
+      />
+      
+      <div className="flex-1 p-6 ml-64">
+        <div className="max-w-7xl mx-auto">
+          <header className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-semibold text-gray-800">
+                {activeTab === 'dashboard' ? 'Dashboard' : 
+                 activeTab === 'calendar' ? 'Calendar' : 
+                 activeTab === 'events' ? 'Event Management' : 
+                 activeTab === 'attendance' ? 'Attendance' : 
+                 activeTab === 'feedback' ? 'Feedback' : 
+                 activeTab === 'certificates' ? 'Certificates' : 'Dashboard'}
+              </h1>
+              <p className="text-gray-600">
+                {activeTab === 'dashboard' ? 'Welcome to your dashboard' : 
+                 activeTab === 'calendar' ? 'View upcoming events and meetings' : 
+                 activeTab === 'events' ? 'Manage club events' : 
+                 activeTab === 'attendance' ? 'Track member attendance' : 
+                 activeTab === 'feedback' ? 'View member feedback' : 
+                 activeTab === 'certificates' ? 'Issue certificates' : ''}
+              </p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            >
-              <Menu className="w-4 h-4" />
-            </Button>
-          </div>
+          </header>
           
-          {/* User Profile Section */}
-          {isSidebarOpen && (
-            <div 
-              className="mt-4 p-3 bg-stone-50 rounded-lg cursor-pointer hover:bg-stone-100 transition-colors"
-              onClick={() => navigate('/profile')}
-            >
-              <div className="flex items-center gap-3">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={userProfile.profilePicture || ''} alt="Profile" />
-                  <AvatarFallback>
-                    <User className="w-5 h-5" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {userProfile.fullName}
-                  </p>
-                  <p className="text-xs text-gray-500">View Profile</p>
-                </div>
+          <div className="mt-8">
+            {activeTab === 'dashboard' && !isGuest && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-700">Quick Actions</h2>
+                <p>This is the dashboard content. Add quick actions and summaries here.</p>
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-4">
-          <div className="space-y-2">
-            <Button
-              variant={activeTab === 'calendar' ? 'default' : 'ghost'}
-              className={`w-full justify-start ${
-                activeTab === 'calendar' 
-                  ? 'bg-rotaract-orange text-white' 
-                  : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-              }`}
-              onClick={() => setActiveTab('calendar')}
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              {isSidebarOpen && 'Calendar'}
-            </Button>
-            <Button
-              variant={activeTab === 'certificates' ? 'default' : 'ghost'}
-              className={`w-full justify-start ${
-                activeTab === 'certificates' 
-                  ? 'bg-rotaract-orange text-white' 
-                  : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-              }`}
-              onClick={() => setActiveTab('certificates')}
-            >
-              <Award className="w-4 h-4 mr-2" />
-              {isSidebarOpen && 'Certificates'}
-            </Button>
-            <Button
-              variant={activeTab === 'past-events' ? 'default' : 'ghost'}
-              className={`w-full justify-start ${
-                activeTab === 'past-events' 
-                  ? 'bg-rotaract-orange text-white' 
-                  : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-              }`}
-              onClick={() => setActiveTab('past-events')}
-            >
-              <Camera className="w-4 h-4 mr-2" />
-              {isSidebarOpen && 'Past Events'}
-            </Button>
-            <Button
-              variant={activeTab === 'attendance' ? 'default' : 'ghost'}
-              className={`w-full justify-start ${
-                activeTab === 'attendance' 
-                  ? 'bg-rotaract-orange text-white' 
-                  : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-              }`}
-              onClick={() => setActiveTab('attendance')}
-            >
-              <User className="w-4 h-4 mr-2" />
-              {isSidebarOpen && 'Attendance'}
-            </Button>
-            <Button
-              variant={activeTab === 'feedback' ? 'default' : 'ghost'}
-              className={`w-full justify-start ${
-                activeTab === 'feedback' 
-                  ? 'bg-rotaract-orange text-white' 
-                  : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-              }`}
-              onClick={() => setActiveTab('feedback')}
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              {isSidebarOpen && 'Feedback'}
-            </Button>
+            )}
+            
+            {activeTab === 'calendar' && renderCalendarContent()}
+            
+            {activeTab === 'events' && !isGuest && (
+              <EventManagement />
+            )}
+            
+            {/* Guest users only see calendar */}
+            {isGuest && activeTab !== 'calendar' && (
+              <div className="text-center py-12">
+                <Calendar className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">Guest Access</h3>
+                <p className="text-gray-500">As a guest, you can only view the calendar.</p>
+              </div>
+            )}
+            
+            {activeTab === 'attendance' && !isGuest && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-700">Attendance</h2>
+                <p>Manage and track attendance for club events.</p>
+              </div>
+            )}
+            
+            {activeTab === 'feedback' && !isGuest && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-700">Feedback</h2>
+                <p>Collect and review feedback from club members.</p>
+              </div>
+            )}
+            
+            {activeTab === 'certificates' && !isGuest && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-gray-700">Certificates</h2>
+                <p>Issue certificates to recognize member contributions.</p>
+              </div>
+            )}
           </div>
-        </nav>
-
-        {/* Logout */}
-        <div className="p-4 border-t border-gray-200">
-          <Button
-            variant="outline"
-            className="w-full justify-start text-gray-600 hover:text-red-600 hover:border-red-600"
-            onClick={handleLogout}
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            {isSidebarOpen && 'Logout'}
-          </Button>
         </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 p-6">
-        {activeTab === 'calendar' && <WeeklyCalendar />}
-        {activeTab === 'certificates' && <Certificates />}
-        {activeTab === 'past-events' && <EventManagement />}
-        {activeTab === 'attendance' && <Attendance />}
-        {activeTab === 'feedback' && <FeedbackForm />}
       </div>
     </div>
   );

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Calendar } from 'lucide-react';
 import AnimatedBackground from '@/components/AnimatedBackground';
 
 const Login = () => {
@@ -22,9 +22,18 @@ const Login = () => {
     if (formData.username && formData.password) {
       localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('username', formData.username);
+      localStorage.setItem('userType', 'member');
       window.dispatchEvent(new Event('storage'));
       navigate('/');
     }
+  };
+
+  const handleGuestAccess = () => {
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('username', 'guest');
+    localStorage.setItem('userType', 'guest');
+    window.dispatchEvent(new Event('storage'));
+    navigate('/');
   };
 
   return (
@@ -96,10 +105,30 @@ const Login = () => {
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-gray-400 text-sm">
-                Don't have an account? Contact your club administrator
-              </p>
+            <div className="mt-6 space-y-4">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-gray-600" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-black px-2 text-gray-400">Or</span>
+                </div>
+              </div>
+
+              <Button 
+                onClick={handleGuestAccess}
+                variant="outline"
+                className="w-full border-gray-600 text-white hover:bg-white/10"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Continue as Guest
+              </Button>
+
+              <div className="text-center">
+                <p className="text-gray-400 text-sm">
+                  Don't have an account? Contact your club administrator
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
