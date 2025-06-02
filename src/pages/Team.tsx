@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
@@ -121,7 +120,7 @@ const Team = () => {
       position: "Service Project Chair",
       image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=3387&auto=format&fit=crop",
       instagram: "https://www.instagram.com/tanisha1607/"
-    },
+    }
   ]);
 
   return (
@@ -129,7 +128,7 @@ const Team = () => {
       <PageHeader 
         title="Our Team" 
         subtitle="Meet the dedicated team behind Rotaract MUJ" 
-        backgroundImage="/lovable-uploads/d0be44e1-cf28-4ec5-b799-16ceec5a62ec.png"
+        backgroundImage="/lovable-uploads/1d89dd56-232e-4dc4-b8ea-1eaecea76977.png"
       />
       
       <section className="py-16 md:py-24">
@@ -175,7 +174,7 @@ const Team = () => {
                         target="_blank" 
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition-all duration-300 hover:scale-110"
+                        className="bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition-all duration-300 hover:scale-110 flex items-center justify-center"
                       >
                         <Instagram size={18} />
                       </a>

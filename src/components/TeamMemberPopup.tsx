@@ -66,14 +66,14 @@ const TeamMemberPopup = ({ member, onClose }: TeamMemberPopupProps) => {
               href={member.instagram} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="bg-pink-600 text-white p-3 rounded-full hover:bg-pink-700 transition-all duration-300 hover:scale-110 transform"
+              className="bg-pink-600 text-white p-3 rounded-full hover:bg-pink-700 transition-all duration-300 hover:scale-110 transform flex items-center justify-center"
             >
               <Instagram size={20} />
             </a>
             {member.email && (
               <a 
                 href={`mailto:${member.email}`}
-                className="bg-rotaract-orange text-white p-3 rounded-full hover:bg-rotaract-orange/90 transition-all duration-300 hover:scale-110 transform"
+                className="bg-rotaract-orange text-white p-3 rounded-full hover:bg-rotaract-orange/90 transition-all duration-300 hover:scale-110 transform flex items-center justify-center"
               >
                 <Mail size={20} />
               </a>
