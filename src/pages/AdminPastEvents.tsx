@@ -14,6 +14,7 @@ interface PastEventFormData {
   description: string;
   domain: string;
   date: string;
+  eventType: 'past' | 'flagship';
   bannerPhoto: File | null;
   galleryImages: File[];
 }
@@ -25,6 +26,7 @@ const AdminPastEvents = () => {
     description: '',
     domain: '',
     date: '',
+    eventType: 'past',
     bannerPhoto: null,
     galleryImages: []
   });
@@ -75,8 +77,6 @@ const AdminPastEvents = () => {
     setIsSubmitting(true);
 
     try {
-      // In a real implementation, you would upload files and save to database
-      // For now, we'll simulate the process
       console.log('Submitting event:', formData);
       
       // Create event object with mock URLs
@@ -86,15 +86,24 @@ const AdminPastEvents = () => {
         description: formData.description,
         domain: formData.domain,
         date: formData.date,
+        eventType: formData.eventType,
+        category: formData.eventType === 'flagship' ? 'Flagship' : formData.domain,
         bannerUrl: bannerPreview || '',
         galleryUrls: galleryPreviews,
-        shortDescription: formData.description.substring(0, 150) + '...'
+        shortDescription: formData.description.substring(0, 150) + '...',
+        images: []
       };
 
-      // Store in localStorage for demo purposes
-      const existingEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-      existingEvents.push(newEvent);
-      localStorage.setItem('pastEvents', JSON.stringify(existingEvents));
+      // Store based on event type
+      if (formData.eventType === 'flagship') {
+        const existingFlagship = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
+        existingFlagship.push(newEvent);
+        localStorage.setItem('flagshipEvents', JSON.stringify(existingFlagship));
+      } else {
+        const existingEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+        existingEvents.push(newEvent);
+        localStorage.setItem('pastEvents', JSON.stringify(existingEvents));
+      }
 
       // Reset form
       setFormData({
@@ -102,13 +111,14 @@ const AdminPastEvents = () => {
         description: '',
         domain: '',
         date: '',
+        eventType: 'past',
         bannerPhoto: null,
         galleryImages: []
       });
       setBannerPreview(null);
       setGalleryPreviews([]);
 
-      alert('Event created successfully!');
+      alert(`${formData.eventType === 'flagship' ? 'Flagship' : 'Past'} event created successfully!`);
       
     } catch (error) {
       console.error('Error creating event:', error);
@@ -131,7 +141,7 @@ const AdminPastEvents = () => {
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </Button>
-          <h1 className="text-3xl font-bold text-gray-800">Create Past Event</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Create Event</h1>
         </div>
 
         {/* Form */}
@@ -141,6 +151,20 @@ const AdminPastEvents = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Event Type */}
+              <div className="space-y-2">
+                <Label htmlFor="eventType">Event Type</Label>
+                <Select value={formData.eventType} onValueChange={(value: 'past' | 'flagship') => handleInputChange('eventType', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select event type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="past">Past Event</SelectItem>
+                    <SelectItem value="flagship">Flagship Event</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Event Title */}
               <div className="space-y-2">
                 <Label htmlFor="title">Event Title</Label>
@@ -245,7 +269,7 @@ const AdminPastEvents = () => {
 
               {/* Photo Gallery */}
               <div className="space-y-2">
-                <Label htmlFor="gallery">Photo Gallery</Label>
+                <Label htmlFor="gallery">Photo Gallery (Multiple Images)</Label>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
                   <div className="text-center mb-4">
                     <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
@@ -299,7 +323,7 @@ const AdminPastEvents = () => {
                 className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating Event...' : 'Create Event'}
+                {isSubmitting ? 'Creating Event...' : `Create ${formData.eventType === 'flagship' ? 'Flagship' : 'Past'} Event`}
               </Button>
             </form>
           </CardContent>
