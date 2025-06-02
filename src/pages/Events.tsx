@@ -18,25 +18,24 @@ interface EventData {
   impact?: string;
   bannerUrl?: string;
   galleryUrls?: string[];
-  eventType?: string;
+  domain?: string;
 }
 
 const Events = () => {
   const navigate = useNavigate();
   const [storedEvents, setStoredEvents] = useState<EventData[]>([]);
+  const [storedFlagship, setStoredFlagship] = useState<EventData[]>([]);
   
   // Load stored events from localStorage
   useEffect(() => {
     const savedEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-    // Filter out GBM/Meeting events from past events display
-    const filteredEvents = savedEvents.filter((event: EventData) => 
-      event.eventType !== 'gbm' && event.eventType !== 'meeting'
-    );
-    setStoredEvents(filteredEvents);
+    const savedFlagship = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
+    setStoredEvents(savedEvents);
+    setStoredFlagship(savedFlagship);
   }, []);
   
-  // Sample data - replace with your actual data source
-  const flagshipEvents: EventData[] = [
+  // Default flagship events data
+  const defaultFlagshipEvents: EventData[] = [
     {
       id: 'bdc-2024',
       title: 'Blood Donation Camp (BDC)',
@@ -61,6 +60,9 @@ const Events = () => {
     }
   ];
 
+  // Combine default and stored flagship events
+  const allFlagshipEvents = [...defaultFlagshipEvents, ...storedFlagship];
+
   // Demo past events for design consistency
   const demoPastEvents: EventData[] = [
     {
@@ -70,6 +72,7 @@ const Events = () => {
       shortDescription: 'Welcome session for new members and introduction to Rotaract Club.',
       description: 'A comprehensive orientation session designed to welcome new members to the Rotaract Club family. The session included introduction to Rotaract values, club structure, upcoming events, and networking opportunities for all members.',
       category: 'CSD',
+      domain: 'CSD',
       images: []
     },
     {
@@ -79,6 +82,7 @@ const Events = () => {
       shortDescription: 'Environmental initiative to plant trees around campus and nearby areas.',
       description: 'An environmental sustainability initiative where club members participated in planting trees around the campus and nearby community areas. This event aimed to increase green cover and raise awareness about environmental conservation.',
       category: 'CMD',
+      domain: 'CMD',
       images: []
     },
     {
@@ -88,12 +92,13 @@ const Events = () => {
       shortDescription: 'Virtual exchange program with Rotaract clubs from other countries.',
       description: 'A virtual cultural exchange program connecting our club with Rotaract clubs from different countries. The event featured cultural presentations, discussions on global issues, and collaborative project planning.',
       category: 'ISD',
+      domain: 'ISD',
       images: []
     }
   ];
 
-  // Combine stored events with demo events
-  const allPastEvents = [...storedEvents, ...demoPastEvents];
+  // Combine stored events with demo events (exclude GBMs)
+  const allPastEvents = [...storedEvents.filter(event => event.category !== 'GBM'), ...demoPastEvents];
 
   const handleEventClick = (event: EventData) => {
     navigate(`/event/${event.id}`, { state: { event } });
@@ -111,7 +116,9 @@ const Events = () => {
   };
 
   const filterEventsByCategory = (events: EventData[], category: string) => {
-    return events.filter(event => event.category === category);
+    return events.filter(event => 
+      event.category === category || event.domain === category
+    );
   };
 
   const formatDate = (dateString: string) => {
@@ -140,7 +147,7 @@ const Events = () => {
           <h2 className="section-title">Our Flagship Events</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-12">
-            {flagshipEvents.map((event) => (
+            {allFlagshipEvents.map((event) => (
               <Card 
                 key={event.id}
                 className="overflow-hidden border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
@@ -148,10 +155,10 @@ const Events = () => {
               >
                 <div className="h-64 overflow-hidden">
                   <img 
-                    src={event.id === 'bdc-2024' 
+                    src={event.bannerUrl || (event.id === 'bdc-2024' 
                       ? "https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" 
                       : "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop"
-                    } 
+                    )} 
                     alt={event.title} 
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
                   />
@@ -197,13 +204,13 @@ const Events = () => {
           <h2 className="section-title">Past Events</h2>
           
           <Tabs defaultValue="csd" className="mt-12">
-            <TabsList className="grid w-full md:w-[480px] mx-auto grid-cols-4">
+            <TabsList className="grid w-full md:w-[500px] mx-auto grid-cols-4">
               <TabsTrigger value="csd">CSD</TabsTrigger>
               <TabsTrigger value="cmd">CMD</TabsTrigger>
               <TabsTrigger value="isd">ISD</TabsTrigger>
               <TabsTrigger value="pdd">PDD</TabsTrigger>
             </TabsList>
-            
+
             {['csd', 'cmd', 'isd', 'pdd'].map((category) => (
               <TabsContent key={category} value={category} className="mt-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -226,11 +233,9 @@ const Events = () => {
                         />
                       </div>
                       <CardContent className="pt-4">
-                        {event.category && (
-                          <Badge className={`${getCategoryColor(event.category)} mb-2`}>
-                            {event.category}
-                          </Badge>
-                        )}
+                        <Badge className={`${getCategoryColor(event.category || event.domain || '')} mb-2`}>
+                          {event.category || event.domain}
+                        </Badge>
                         <h3 className="font-semibold text-lg">{event.title}</h3>
                         <p className="text-sm text-gray-500">{formatDate(event.date)}</p>
                         <p className="mt-2 text-sm">{event.shortDescription}</p>

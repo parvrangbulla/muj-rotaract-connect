@@ -1,80 +1,194 @@
-import {
-  Calendar,
-  LayoutDashboard,
-  Users,
-  MessageSquare,
-  Award,
-  LogOut
-} from 'lucide-react';
+
+import { useState } from 'react';
+import { Calendar, FileText, MessageSquare, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import WeeklyCalendar from './WeeklyCalendar';
 
 interface UserSidebarProps {
-  currentUser: string;
-  isAdmin: boolean;
-  isGuest: boolean;
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  onLogout: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-const UserSidebar = ({ currentUser, isAdmin, isGuest, activeTab, setActiveTab, onLogout }: UserSidebarProps) => {
-  const navigate = useNavigate();
+const UserSidebar = ({ isOpen, onClose }: UserSidebarProps) => {
+  const [activeTab, setActiveTab] = useState<'calendar' | 'register' | 'feedback'>('calendar');
+  const [feedbackData, setFeedbackData] = useState({
+    subject: '',
+    message: ''
+  });
 
-  const menuItems = [
-    // Only show calendar for guests
-    ...(isGuest ? [
-      { id: 'calendar', label: 'Calendar', icon: Calendar },
-    ] : [
-      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { id: 'calendar', label: 'Calendar', icon: Calendar },
-      { id: 'events', label: 'Event Management', icon: Calendar },
-      { id: 'attendance', label: 'Attendance', icon: Users },
-      { id: 'feedback', label: 'Feedback', icon: MessageSquare },
-      { id: 'certificates', label: 'Certificates', icon: Award },
-    ])
-  ];
+  const handleFeedbackSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Feedback submitted:', feedbackData);
+    setFeedbackData({ subject: '', message: '' });
+    alert('Feedback submitted successfully!');
+  };
+
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed left-0 top-0 h-full w-64 bg-white shadow-lg border-r border-gray-200 flex flex-col">
-      <div className="flex items-center justify-center h-20 border-b border-gray-200">
-        <Avatar className="w-12 h-12">
-          <AvatarImage src="https://github.com/shadcn.png" alt={currentUser} />
-          <AvatarFallback>{currentUser.substring(0, 2).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <span className="ml-3 text-lg font-semibold">{currentUser}</span>
-      </div>
+    <div className="fixed inset-0 z-50 flex">
+      <div 
+        className="fixed inset-0 bg-black/50" 
+        onClick={onClose}
+      />
       
-      <nav className="flex-1 px-4 py-6">
-        <ul className="space-y-2">
-          {menuItems.map((item) => (
-            <li key={item.id}>
-              <button
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors ${
-                  activeTab === item.id
-                    ? 'bg-rotaract-orange text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                <item.icon className="w-5 h-5 mr-3" />
-                {item.label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <div className="relative ml-auto w-full max-w-2xl bg-white shadow-xl overflow-hidden">
+        <div className="flex flex-col h-full">
+          <div className="bg-rotaract-orange text-white p-4 flex items-center justify-between">
+            <h2 className="text-xl font-bold">Dashboard</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-white hover:bg-white/20"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
 
-      <div className="p-4 border-t border-gray-200">
-        <Button
-          variant="outline"
-          className="w-full justify-start"
-          onClick={onLogout}
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Logout
-        </Button>
+          <div className="bg-gray-100 p-2 flex">
+            <Button
+              variant={activeTab === 'calendar' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveTab('calendar')}
+              className={`flex-1 mr-1 ${
+                activeTab === 'calendar' 
+                  ? 'bg-rotaract-orange text-white' 
+                  : 'text-gray-600 hover:text-rotaract-orange'
+              }`}
+            >
+              <Calendar className="w-4 h-4 mr-1" />
+              Calendar
+            </Button>
+            <Button
+              variant={activeTab === 'register' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveTab('register')}
+              className={`flex-1 mx-1 ${
+                activeTab === 'register' 
+                  ? 'bg-rotaract-orange text-white' 
+                  : 'text-gray-600 hover:text-rotaract-orange'
+              }`}
+            >
+              <FileText className="w-4 h-4 mr-1" />
+              Register
+            </Button>
+            <Button
+              variant={activeTab === 'feedback' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveTab('feedback')}
+              className={`flex-1 ml-1 ${
+                activeTab === 'feedback' 
+                  ? 'bg-rotaract-orange text-white' 
+                  : 'text-gray-600 hover:text-rotaract-orange'
+              }`}
+            >
+              <MessageSquare className="w-4 h-4 mr-1" />
+              Feedback
+            </Button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4">
+            {activeTab === 'calendar' && (
+              <div>
+                <WeeklyCalendar />
+              </div>
+            )}
+
+            {activeTab === 'register' && (
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Event Registration</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-3">
+                      <div className="p-3 border border-gray-200 rounded-lg hover:border-rotaract-orange transition-colors">
+                        <h3 className="font-semibold text-black">Blood Donation Camp</h3>
+                        <p className="text-sm text-gray-600">July 15, 2025</p>
+                        <Button 
+                          size="sm" 
+                          className="mt-2 bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+                        >
+                          Register Now
+                        </Button>
+                      </div>
+                      
+                      <div className="p-3 border border-gray-200 rounded-lg hover:border-rotaract-orange transition-colors">
+                        <h3 className="font-semibold text-black">Daan Utsav</h3>
+                        <p className="text-sm text-gray-600">October 2, 2025</p>
+                        <Button 
+                          size="sm" 
+                          className="mt-2 bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+                        >
+                          Register Now
+                        </Button>
+                      </div>
+                      
+                      <div className="p-3 border border-gray-200 rounded-lg hover:border-rotaract-orange transition-colors">
+                        <h3 className="font-semibold text-black">Professional Development Seminar</h3>
+                        <p className="text-sm text-gray-600">June 10, 2025</p>
+                        <Button 
+                          size="sm" 
+                          className="mt-2 bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+                        >
+                          Register Now
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {activeTab === 'feedback' && (
+              <div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Submit Feedback</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleFeedbackSubmit} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="subject">Subject</Label>
+                        <Input
+                          id="subject"
+                          placeholder="Enter feedback subject"
+                          value={feedbackData.subject}
+                          onChange={(e) => setFeedbackData({...feedbackData, subject: e.target.value})}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="message">Message</Label>
+                        <Textarea
+                          id="message"
+                          placeholder="Enter your feedback..."
+                          rows={4}
+                          value={feedbackData.message}
+                          onChange={(e) => setFeedbackData({...feedbackData, message: e.target.value})}
+                          required
+                        />
+                      </div>
+                      
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+                      >
+                        Submit Feedback
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
