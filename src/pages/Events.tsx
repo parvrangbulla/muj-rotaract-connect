@@ -18,24 +18,20 @@ interface EventData {
   impact?: string;
   bannerUrl?: string;
   galleryUrls?: string[];
-  domain?: string;
 }
 
 const Events = () => {
   const navigate = useNavigate();
   const [storedEvents, setStoredEvents] = useState<EventData[]>([]);
-  const [storedFlagship, setStoredFlagship] = useState<EventData[]>([]);
   
   // Load stored events from localStorage
   useEffect(() => {
     const savedEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-    const savedFlagship = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
     setStoredEvents(savedEvents);
-    setStoredFlagship(savedFlagship);
   }, []);
   
-  // Default flagship events data
-  const defaultFlagshipEvents: EventData[] = [
+  // Sample data - replace with your actual data source
+  const flagshipEvents: EventData[] = [
     {
       id: 'bdc-2024',
       title: 'Blood Donation Camp (BDC)',
@@ -60,9 +56,6 @@ const Events = () => {
     }
   ];
 
-  // Combine default and stored flagship events
-  const allFlagshipEvents = [...defaultFlagshipEvents, ...storedFlagship];
-
   // Demo past events for design consistency
   const demoPastEvents: EventData[] = [
     {
@@ -72,7 +65,6 @@ const Events = () => {
       shortDescription: 'Welcome session for new members and introduction to Rotaract Club.',
       description: 'A comprehensive orientation session designed to welcome new members to the Rotaract Club family. The session included introduction to Rotaract values, club structure, upcoming events, and networking opportunities for all members.',
       category: 'CSD',
-      domain: 'CSD',
       images: []
     },
     {
@@ -82,7 +74,6 @@ const Events = () => {
       shortDescription: 'Environmental initiative to plant trees around campus and nearby areas.',
       description: 'An environmental sustainability initiative where club members participated in planting trees around the campus and nearby community areas. This event aimed to increase green cover and raise awareness about environmental conservation.',
       category: 'CMD',
-      domain: 'CMD',
       images: []
     },
     {
@@ -92,13 +83,12 @@ const Events = () => {
       shortDescription: 'Virtual exchange program with Rotaract clubs from other countries.',
       description: 'A virtual cultural exchange program connecting our club with Rotaract clubs from different countries. The event featured cultural presentations, discussions on global issues, and collaborative project planning.',
       category: 'ISD',
-      domain: 'ISD',
       images: []
     }
   ];
 
-  // Combine stored events with demo events (exclude GBMs)
-  const allPastEvents = [...storedEvents.filter(event => event.category !== 'GBM'), ...demoPastEvents];
+  // Combine stored events with demo events
+  const allPastEvents = [...storedEvents, ...demoPastEvents];
 
   const handleEventClick = (event: EventData) => {
     navigate(`/event/${event.id}`, { state: { event } });
@@ -116,9 +106,7 @@ const Events = () => {
   };
 
   const filterEventsByCategory = (events: EventData[], category: string) => {
-    return events.filter(event => 
-      event.category === category || event.domain === category
-    );
+    return events.filter(event => event.category === category);
   };
 
   const formatDate = (dateString: string) => {
@@ -147,7 +135,7 @@ const Events = () => {
           <h2 className="section-title">Our Flagship Events</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-12">
-            {allFlagshipEvents.map((event) => (
+            {flagshipEvents.map((event) => (
               <Card 
                 key={event.id}
                 className="overflow-hidden border-0 shadow-lg cursor-pointer hover:shadow-xl transition-shadow"
@@ -155,10 +143,10 @@ const Events = () => {
               >
                 <div className="h-64 overflow-hidden">
                   <img 
-                    src={event.bannerUrl || (event.id === 'bdc-2024' 
+                    src={event.id === 'bdc-2024' 
                       ? "https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" 
                       : "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop"
-                    )} 
+                    } 
                     alt={event.title} 
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
                   />
@@ -203,13 +191,49 @@ const Events = () => {
         <div className="container mx-auto px-4">
           <h2 className="section-title">Past Events</h2>
           
-          <Tabs defaultValue="csd" className="mt-12">
-            <TabsList className="grid w-full md:w-[500px] mx-auto grid-cols-4">
+          <Tabs defaultValue="all" className="mt-12">
+            <TabsList className="grid w-full md:w-[600px] mx-auto grid-cols-5">
+              <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="csd">CSD</TabsTrigger>
               <TabsTrigger value="cmd">CMD</TabsTrigger>
               <TabsTrigger value="isd">ISD</TabsTrigger>
               <TabsTrigger value="pdd">PDD</TabsTrigger>
             </TabsList>
+            
+            <TabsContent value="all" className="mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {allPastEvents.map((event) => (
+                  <Card 
+                    key={event.id}
+                    className="cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => handleEventClick(event)}
+                  >
+                    <div className="h-48 overflow-hidden">
+                      <img 
+                        src={event.bannerUrl || `https://images.unsplash.com/photo-${
+                          event.id.includes('orientation') ? '1540575467063-178a50c2df87' :
+                          event.id.includes('tree') ? '1488521787991-ed7bbaae773c' :
+                          event.id.includes('cultural') ? '1559223607-a43f990c67bd' :
+                          '1528605248644-14dd04022da1'
+                        }?q=80&w=3540&auto=format&fit=crop`}
+                        alt={event.title} 
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                      />
+                    </div>
+                    <CardContent className="pt-4">
+                      {event.category && (
+                        <Badge className={`${getCategoryColor(event.category)} mb-2`}>
+                          {event.category}
+                        </Badge>
+                      )}
+                      <h3 className="font-semibold text-lg">{event.title}</h3>
+                      <p className="text-sm text-gray-500">{formatDate(event.date)}</p>
+                      <p className="mt-2 text-sm">{event.shortDescription}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
 
             {['csd', 'cmd', 'isd', 'pdd'].map((category) => (
               <TabsContent key={category} value={category} className="mt-8">
@@ -233,9 +257,11 @@ const Events = () => {
                         />
                       </div>
                       <CardContent className="pt-4">
-                        <Badge className={`${getCategoryColor(event.category || event.domain || '')} mb-2`}>
-                          {event.category || event.domain}
-                        </Badge>
+                        {event.category && (
+                          <Badge className={`${getCategoryColor(event.category)} mb-2`}>
+                            {event.category}
+                          </Badge>
+                        )}
                         <h3 className="font-semibold text-lg">{event.title}</h3>
                         <p className="text-sm text-gray-500">{formatDate(event.date)}</p>
                         <p className="mt-2 text-sm">{event.shortDescription}</p>
