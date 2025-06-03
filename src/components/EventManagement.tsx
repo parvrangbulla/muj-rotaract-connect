@@ -73,7 +73,7 @@ const EventManagement = () => {
       ];
       setFlagshipEvents([...defaultFlagship, ...storedFlagship]);
 
-      // Load past events - filter out GBMs
+      // Load past events
       const storedPast = JSON.parse(localStorage.getItem('pastEvents') || '[]');
       const defaultPast = [
         {
@@ -104,14 +104,7 @@ const EventManagement = () => {
         }
       ];
       
-      // Filter out GBM events from both stored and default
-      const filteredStoredPast = storedPast.filter((event: any) => 
-        event.category !== 'GBM' && 
-        !event.title?.toLowerCase().includes('gbm') && 
-        !event.title?.toLowerCase().includes('meeting')
-      );
-      
-      setPastEvents([...defaultPast, ...filteredStoredPast]);
+      setPastEvents([...defaultPast, ...storedPast]);
     };
 
     loadEvents();

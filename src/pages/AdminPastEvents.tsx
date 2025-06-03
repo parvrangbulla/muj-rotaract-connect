@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { ArrowLeft, Upload, X, Calendar, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,62 +9,68 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-interface PastEventFormData {
+interface EventImage {
+  id: string;
+  url: string;
+  name: string;
+  isCover?: boolean;
+}
+
+interface EventFormData {
   title: string;
-  description: string;
-  domain: string;
   date: string;
-  eventType: 'past' | 'flagship';
-  bannerPhoto: File | null;
-  galleryImages: File[];
-  venue?: string;
+  venue: string;
+  description: string;
+  shortDescription: string;
+  category: string;
+  domain?: string;
   impact?: string;
+  bannerUrl?: string;
+  galleryUrls: string[];
+  images: EventImage[];
 }
 
 const AdminPastEvents = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { editMode, eventData, eventType } = location.state || {};
-  
-  const [formData, setFormData] = useState<PastEventFormData>({
-    title: '',
-    description: '',
-    domain: '',
-    date: '',
-    eventType: 'past',
-    bannerPhoto: null,
-    galleryImages: [],
-    venue: '',
-    impact: ''
-  });
-  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
-  const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const editData = location.state;
 
-  // Pre-fill form data if editing
+  const [formData, setFormData] = useState<EventFormData>({
+    title: '',
+    date: '',
+    venue: '',
+    description: '',
+    shortDescription: '',
+    category: '',
+    domain: '',
+    impact: '',
+    bannerUrl: '',
+    galleryUrls: [],
+    images: []
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+
+  // Populate form if in edit mode
   useEffect(() => {
-    if (editMode && eventData) {
+    if (editData?.editMode && editData?.eventData) {
+      const event = editData.eventData;
       setFormData({
-        title: eventData.title || '',
-        description: eventData.description || '',
-        domain: eventData.domain || eventData.category || '',
-        date: eventData.date || '',
-        eventType: eventData.eventType || 'past',
-        bannerPhoto: null,
-        galleryImages: [],
-        venue: eventData.venue || '',
-        impact: eventData.impact || ''
+        title: event.title || '',
+        date: event.date || '',
+        venue: event.venue || '',
+        description: event.description || '',
+        shortDescription: event.shortDescription || '',
+        category: event.category || '',
+        domain: event.domain || '',
+        impact: event.impact || '',
+        bannerUrl: event.bannerUrl || '',
+        galleryUrls: event.galleryUrls || [],
+        images: event.images || []
       });
-      
-      if (eventData.bannerUrl) {
-        setBannerPreview(eventData.bannerUrl);
-      }
-      
-      if (eventData.galleryUrls && eventData.galleryUrls.length > 0) {
-        setGalleryPreviews(eventData.galleryUrls);
-      }
     }
-  }, [editMode, eventData]);
+  }, [editData]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -73,35 +79,46 @@ const AdminPastEvents = () => {
   const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData(prev => ({ ...prev, bannerPhoto: file }));
+      setBannerFile(file);
       const reader = new FileReader();
-      reader.onload = () => setBannerPreview(reader.result as string);
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          setFormData(prev => ({ ...prev, bannerUrl: e.target?.result as string }));
+        }
+      };
       reader.readAsDataURL(file);
     }
   };
 
   const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setFormData(prev => ({ 
-      ...prev, 
-      galleryImages: [...prev.galleryImages, ...files] 
-    }));
+    setGalleryFiles(prev => [...prev, ...files]);
     
     files.forEach(file => {
       const reader = new FileReader();
-      reader.onload = () => {
-        setGalleryPreviews(prev => [...prev, reader.result as string]);
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          setFormData(prev => ({
+            ...prev,
+            galleryUrls: [...prev.galleryUrls, e.target?.result as string]
+          }));
+        }
       };
       reader.readAsDataURL(file);
     });
   };
 
+  const removeBanner = () => {
+    setBannerFile(null);
+    setFormData(prev => ({ ...prev, bannerUrl: '' }));
+  };
+
   const removeGalleryImage = (index: number) => {
     setFormData(prev => ({
       ...prev,
-      galleryImages: prev.galleryImages.filter((_, i) => i !== index)
+      galleryUrls: prev.galleryUrls.filter((_, i) => i !== index)
     }));
-    setGalleryPreviews(prev => prev.filter((_, i) => i !== index));
+    setGalleryFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,97 +128,69 @@ const AdminPastEvents = () => {
     try {
       console.log('Submitting event:', formData);
       
-      if (editMode && eventData) {
-        // Update existing event
-        const updatedEvent = {
-          ...eventData,
-          title: formData.title,
-          description: formData.description,
-          domain: formData.domain,
-          date: formData.date,
-          eventType: formData.eventType,
-          category: formData.eventType === 'flagship' ? 'Flagship' : formData.domain,
-          bannerUrl: bannerPreview || eventData.bannerUrl || '',
-          galleryUrls: galleryPreviews.length > 0 ? galleryPreviews : eventData.galleryUrls || [],
-          shortDescription: formData.description.substring(0, 150) + '...',
-          venue: formData.venue,
-          impact: formData.impact
-        };
+      // Create event object
+      const eventData = {
+        id: editData?.editMode ? editData.eventData.id : Date.now().toString(),
+        ...formData,
+        eventType: formData.category === 'Flagship' ? 'flagship' : 'past',
+        createdAt: editData?.editMode ? editData.eventData.createdAt : new Date().toISOString()
+      };
 
-        // Update in correct storage based on event type
-        if (formData.eventType === 'flagship') {
-          const existingFlagship = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
-          const updatedFlagship = existingFlagship.map((event: any) => 
-            event.id === eventData.id ? updatedEvent : event
+      if (editData?.editMode) {
+        // Update existing event
+        if (editData.eventType === 'flagship') {
+          const flagshipEvents = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
+          const updatedEvents = flagshipEvents.map((event: any) => 
+            event.id === eventData.id ? eventData : event
           );
-          localStorage.setItem('flagshipEvents', JSON.stringify(updatedFlagship));
+          localStorage.setItem('flagshipEvents', JSON.stringify(updatedEvents));
         } else {
-          const existingEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-          const updatedEvents = existingEvents.map((event: any) => 
-            event.id === eventData.id ? updatedEvent : event
+          const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+          const updatedEvents = pastEvents.map((event: any) => 
+            event.id === eventData.id ? eventData : event
           );
           localStorage.setItem('pastEvents', JSON.stringify(updatedEvents));
         }
-
         alert('Event updated successfully!');
       } else {
         // Create new event
-        const newEvent = {
-          id: Date.now().toString(),
-          title: formData.title,
-          description: formData.description,
-          domain: formData.domain,
-          date: formData.date,
-          eventType: formData.eventType,
-          category: formData.eventType === 'flagship' ? 'Flagship' : formData.domain,
-          bannerUrl: bannerPreview || '',
-          galleryUrls: galleryPreviews,
-          shortDescription: formData.description.substring(0, 150) + '...',
-          images: [],
-          venue: formData.venue,
-          impact: formData.impact
-        };
-
-        // Store based on event type
-        if (formData.eventType === 'flagship') {
-          const existingFlagship = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
-          existingFlagship.push(newEvent);
-          localStorage.setItem('flagshipEvents', JSON.stringify(existingFlagship));
+        if (formData.category === 'Flagship') {
+          const flagshipEvents = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
+          flagshipEvents.push(eventData);
+          localStorage.setItem('flagshipEvents', JSON.stringify(flagshipEvents));
         } else {
-          const existingEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-          existingEvents.push(newEvent);
-          localStorage.setItem('pastEvents', JSON.stringify(existingEvents));
+          const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+          pastEvents.push(eventData);
+          localStorage.setItem('pastEvents', JSON.stringify(pastEvents));
         }
-
-        alert(`${formData.eventType === 'flagship' ? 'Flagship' : 'Past'} event created successfully!`);
+        alert('Event created successfully!');
       }
 
       // Trigger storage event to update other components
       window.dispatchEvent(new Event('storage'));
 
-      // Reset form if creating new event
-      if (!editMode) {
-        setFormData({
-          title: '',
-          description: '',
-          domain: '',
-          date: '',
-          eventType: 'past',
-          bannerPhoto: null,
-          galleryImages: [],
-          venue: '',
-          impact: ''
-        });
-        setBannerPreview(null);
-        setGalleryPreviews([]);
-      }
+      // Reset form
+      setFormData({
+        title: '',
+        date: '',
+        venue: '',
+        description: '',
+        shortDescription: '',
+        category: '',
+        domain: '',
+        impact: '',
+        bannerUrl: '',
+        galleryUrls: [],
+        images: []
+      });
+      setBannerFile(null);
+      setGalleryFiles([]);
 
-      // Navigate back to dashboard
       navigate(-1);
       
     } catch (error) {
-      console.error('Error with event:', error);
-      alert(`Error ${editMode ? 'updating' : 'creating'} event. Please try again.`);
+      console.error('Error saving event:', error);
+      alert('Error saving event. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -221,7 +210,7 @@ const AdminPastEvents = () => {
             Back to Dashboard
           </Button>
           <h1 className="text-3xl font-bold text-gray-800">
-            {editMode ? 'Edit Event' : 'Create Event'}
+            {editData?.editMode ? 'Edit Event' : 'Create Past Event'}
           </h1>
         </div>
 
@@ -232,21 +221,7 @@ const AdminPastEvents = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Event Type */}
-              <div className="space-y-2">
-                <Label htmlFor="eventType">Event Type</Label>
-                <Select value={formData.eventType} onValueChange={(value: 'past' | 'flagship') => handleInputChange('eventType', value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select event type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="past">Past Event</SelectItem>
-                    <SelectItem value="flagship">Flagship Event</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Event Title */}
+              {/* Title */}
               <div className="space-y-2">
                 <Label htmlFor="title">Event Title</Label>
                 <Input
@@ -258,163 +233,198 @@ const AdminPastEvents = () => {
                 />
               </div>
 
-              {/* Event Description */}
+              {/* Category */}
               <div className="space-y-2">
-                <Label htmlFor="description">Event Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  placeholder="Enter detailed event description"
-                  rows={6}
-                  required
-                />
+                <Label htmlFor="category">Event Category</Label>
+                <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select event category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CSD">Community Service Development (CSD)</SelectItem>
+                    <SelectItem value="CMD">Club/Member Development (CMD)</SelectItem>
+                    <SelectItem value="ISD">International Service Development (ISD)</SelectItem>
+                    <SelectItem value="PDD">Professional Development (PDD)</SelectItem>
+                    <SelectItem value="Flagship">Flagship Event</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              {/* Domain and Date Row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Only show domain dropdown for past events */}
-                {formData.eventType === 'past' && (
-                  <div className="space-y-2">
-                    <Label htmlFor="domain">Domain</Label>
-                    <Select value={formData.domain} onValueChange={(value) => handleInputChange('domain', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select domain" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="CMD">CMD</SelectItem>
-                        <SelectItem value="CSD">CSD</SelectItem>
-                        <SelectItem value="PDD">PDD</SelectItem>
-                        <SelectItem value="ISD">ISD</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+              {/* Domain - Only show for non-flagship events */}
+              {formData.category !== 'Flagship' && (
+                <div className="space-y-2">
+                  <Label htmlFor="domain">Domain (Optional)</Label>
+                  <Select value={formData.domain || ''} onValueChange={(value) => handleInputChange('domain', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select domain" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CSD">Community Service Development</SelectItem>
+                      <SelectItem value="CMD">Club/Member Development</SelectItem>
+                      <SelectItem value="ISD">International Service Development</SelectItem>
+                      <SelectItem value="PDD">Professional Development</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
+              {/* Date and Venue Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="date">Event Date</Label>
-                  <Input
-                    id="date"
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => handleInputChange('date', e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="date"
+                      type="date"
+                      value={formData.date}
+                      onChange={(e) => handleInputChange('date', e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Venue and Impact for Flagship Events */}
-              {formData.eventType === 'flagship' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="venue">Venue</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="venue">Venue</Label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
                       id="venue"
                       value={formData.venue}
                       onChange={(e) => handleInputChange('venue', e.target.value)}
-                      placeholder="Enter event venue"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="impact">Impact</Label>
-                    <Input
-                      id="impact"
-                      value={formData.impact}
-                      onChange={(e) => handleInputChange('impact', e.target.value)}
-                      placeholder="e.g., 300+ donations annually"
+                      placeholder="Event location/venue"
+                      className="pl-10"
+                      required
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Impact - Only for flagship events */}
+              {formData.category === 'Flagship' && (
+                <div className="space-y-2">
+                  <Label htmlFor="impact">Impact</Label>
+                  <Input
+                    id="impact"
+                    value={formData.impact || ''}
+                    onChange={(e) => handleInputChange('impact', e.target.value)}
+                    placeholder="e.g., 300+ donations, 1000+ beneficiaries"
+                  />
+                </div>
               )}
 
-              {/* Banner Photo */}
+              {/* Short Description */}
               <div className="space-y-2">
-                <Label htmlFor="banner">Banner Photo</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                  {bannerPreview ? (
+                <Label htmlFor="shortDescription">Short Description</Label>
+                <Textarea
+                  id="shortDescription"
+                  value={formData.shortDescription}
+                  onChange={(e) => handleInputChange('shortDescription', e.target.value)}
+                  placeholder="Brief description for event cards"
+                  rows={3}
+                  required
+                />
+              </div>
+
+              {/* Full Description */}
+              <div className="space-y-2">
+                <Label htmlFor="description">Full Description</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  placeholder="Detailed event description"
+                  rows={5}
+                  required
+                />
+              </div>
+
+              {/* Banner Image Upload */}
+              <div className="space-y-2">
+                <Label htmlFor="banner">Event Banner Image</Label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                  {formData.bannerUrl ? (
                     <div className="relative">
                       <img
-                        src={bannerPreview}
+                        src={formData.bannerUrl}
                         alt="Banner preview"
-                        className="w-full h-48 object-cover rounded"
+                        className="w-full h-64 object-cover rounded-lg"
                       />
                       <Button
                         type="button"
                         variant="destructive"
                         size="sm"
+                        onClick={removeBanner}
                         className="absolute top-2 right-2"
-                        onClick={() => {
-                          setBannerPreview(null);
-                          setFormData(prev => ({ ...prev, bannerPhoto: null }));
-                        }}
                       >
                         <X className="w-4 h-4" />
                       </Button>
                     </div>
                   ) : (
                     <div className="text-center">
-                      <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                      <p className="text-gray-600">Upload banner image</p>
-                      <input
-                        id="banner"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleBannerUpload}
-                        className="hidden"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById('banner')?.click()}
-                        className="mt-2"
-                      >
-                        Choose File
-                      </Button>
+                      <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="mt-4">
+                        <Input
+                          id="banner"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleBannerUpload}
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById('banner')?.click()}
+                        >
+                          Upload Banner Image
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Photo Gallery */}
+              {/* Gallery Images Upload */}
               <div className="space-y-2">
-                <Label htmlFor="gallery">Photo Gallery (Multiple Images)</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                <Label htmlFor="gallery">Gallery Images</Label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
                   <div className="text-center mb-4">
-                    <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                    <p className="text-gray-600">Upload multiple images for gallery</p>
-                    <input
-                      id="gallery"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleGalleryUpload}
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById('gallery')?.click()}
-                      className="mt-2"
-                    >
-                      Choose Files
-                    </Button>
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <div className="mt-4">
+                      <Input
+                        id="gallery"
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleGalleryUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('gallery')?.click()}
+                      >
+                        Upload Gallery Images
+                      </Button>
+                    </div>
                   </div>
                   
-                  {galleryPreviews.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {galleryPreviews.map((preview, index) => (
+                  {formData.galleryUrls.length > 0 && (
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                      {formData.galleryUrls.map((url, index) => (
                         <div key={index} className="relative">
                           <img
-                            src={preview}
+                            src={url}
                             alt={`Gallery ${index + 1}`}
-                            className="w-full h-24 object-cover rounded"
+                            className="w-full h-32 object-cover rounded-lg"
                           />
                           <Button
                             type="button"
                             variant="destructive"
                             size="sm"
-                            className="absolute -top-2 -right-2 h-6 w-6 p-0"
                             onClick={() => removeGalleryImage(index)}
+                            className="absolute top-1 right-1"
                           >
                             <X className="w-3 h-3" />
                           </Button>
@@ -432,8 +442,8 @@ const AdminPastEvents = () => {
                 disabled={isSubmitting}
               >
                 {isSubmitting 
-                  ? `${editMode ? 'Updating' : 'Creating'} Event...` 
-                  : `${editMode ? 'Update' : 'Create'} ${formData.eventType === 'flagship' ? 'Flagship' : 'Past'} Event`
+                  ? (editData?.editMode ? 'Updating Event...' : 'Creating Event...') 
+                  : (editData?.editMode ? 'Update Event' : 'Create Event')
                 }
               </Button>
             </form>

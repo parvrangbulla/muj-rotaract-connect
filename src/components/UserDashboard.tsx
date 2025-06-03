@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Calendar, MessageSquare, LogOut, Menu, Camera, Award, User, Users } from 'lucide-react';
+import { Calendar, MessageSquare, LogOut, Menu, Camera, Award, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
@@ -9,10 +9,9 @@ import FeedbackForm from './FeedbackForm';
 import EventManagement from './EventManagement';
 import Certificates from './Certificates';
 import Attendance from './Attendance';
-import GBMManagement from './GBMManagement';
 
 const UserDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'past-events' | 'feedback' | 'attendance' | 'gbm'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'past-events' | 'feedback' | 'attendance'>('calendar');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [userProfile, setUserProfile] = useState({
     fullName: '',
@@ -120,18 +119,6 @@ const UserDashboard = () => {
               {isSidebarOpen && 'Calendar'}
             </Button>
             <Button
-              variant={activeTab === 'gbm' ? 'default' : 'ghost'}
-              className={`w-full justify-start ${
-                activeTab === 'gbm' 
-                  ? 'bg-rotaract-orange text-white' 
-                  : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-              }`}
-              onClick={() => setActiveTab('gbm')}
-            >
-              <Users className="w-4 h-4 mr-2" />
-              {isSidebarOpen && 'GBM & Meetings'}
-            </Button>
-            <Button
               variant={activeTab === 'certificates' ? 'default' : 'ghost'}
               className={`w-full justify-start ${
                 activeTab === 'certificates' 
@@ -198,7 +185,6 @@ const UserDashboard = () => {
       {/* Main Content */}
       <div className="flex-1 p-6">
         {activeTab === 'calendar' && <WeeklyCalendar />}
-        {activeTab === 'gbm' && <GBMManagement />}
         {activeTab === 'certificates' && <Certificates />}
         {activeTab === 'past-events' && <EventManagement />}
         {activeTab === 'attendance' && <Attendance />}

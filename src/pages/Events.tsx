@@ -18,16 +18,20 @@ interface EventData {
   impact?: string;
   bannerUrl?: string;
   galleryUrls?: string[];
+  type?: string;
 }
 
 const Events = () => {
   const navigate = useNavigate();
   const [storedEvents, setStoredEvents] = useState<EventData[]>([]);
+  const [gbmMeetings, setGbmMeetings] = useState<EventData[]>([]);
   
-  // Load stored events from localStorage
+  // Load stored events and GBM meetings from localStorage
   useEffect(() => {
     const savedEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+    const savedGBMs = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
     setStoredEvents(savedEvents);
+    setGbmMeetings(savedGBMs);
   }, []);
   
   // Sample data - replace with your actual data source
@@ -56,7 +60,7 @@ const Events = () => {
     }
   ];
 
-  // Demo past events for design consistency - filter out GBMs
+  // Demo past events for design consistency
   const demoPastEvents: EventData[] = [
     {
       id: 'orientation-2024',
@@ -87,10 +91,8 @@ const Events = () => {
     }
   ];
 
-  // Combine stored events with demo events, filter out GBMs
-  const allPastEvents = [...storedEvents, ...demoPastEvents].filter(event => 
-    event.category !== 'GBM' && !event.title.toLowerCase().includes('gbm') && !event.title.toLowerCase().includes('meeting')
-  );
+  // Combine all events including GBM meetings
+  const allPastEvents = [...storedEvents, ...demoPastEvents, ...gbmMeetings];
 
   const handleEventClick = (event: EventData) => {
     navigate(`/event/${event.id}`, { state: { event } });
@@ -103,12 +105,13 @@ const Events = () => {
       case 'ISD': return 'bg-purple-600';
       case 'PDD': return 'bg-red-600';
       case 'Flagship': return 'bg-rotaract-orange';
+      case 'GBM': return 'bg-gray-600';
       default: return 'bg-gray-600';
     }
   };
 
   const filterEventsByCategory = (events: EventData[], category: string) => {
-    return events.filter(event => event.category === category);
+    return events.filter(event => event.category === category || event.type === category.toLowerCase());
   };
 
   const formatDate = (dateString: string) => {
