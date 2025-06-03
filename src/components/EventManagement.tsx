@@ -73,7 +73,7 @@ const EventManagement = () => {
       ];
       setFlagshipEvents([...defaultFlagship, ...storedFlagship]);
 
-      // Load past events
+      // Load past events - filter out GBMs
       const storedPast = JSON.parse(localStorage.getItem('pastEvents') || '[]');
       const defaultPast = [
         {
@@ -103,7 +103,15 @@ const EventManagement = () => {
           galleryUrls: []
         }
       ];
-      setPastEvents([...defaultPast, ...storedPast]);
+      
+      // Filter out GBM events from both stored and default
+      const filteredStoredPast = storedPast.filter((event: any) => 
+        event.category !== 'GBM' && 
+        !event.title?.toLowerCase().includes('gbm') && 
+        !event.title?.toLowerCase().includes('meeting')
+      );
+      
+      setPastEvents([...defaultPast, ...filteredStoredPast]);
     };
 
     loadEvents();
@@ -153,6 +161,9 @@ const EventManagement = () => {
       }
       
       alert('Event deleted successfully!');
+      
+      // Trigger storage event to update other components
+      window.dispatchEvent(new Event('storage'));
     }
   };
 
@@ -229,22 +240,13 @@ const EventManagement = () => {
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Event Management</h2>
           <p className="text-gray-600">Create, edit, and manage all events</p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={() => navigate('/admin/gbm')}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New GBM / Meeting
-          </Button>
-          <Button
-            onClick={() => navigate('/admin/past-events')}
-            className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create New Event
-          </Button>
-        </div>
+        <Button
+          onClick={() => navigate('/admin/past-events')}
+          className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Create New Event
+        </Button>
       </div>
 
       <Tabs defaultValue="past" className="space-y-6">

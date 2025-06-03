@@ -52,6 +52,7 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<UserDashboard />} />
                 <Route path="/admin/past-events" element={<AdminPastEvents />} />
+                <Route path="/admin/gbm" element={<AdminGBM />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="*" element={<UserDashboard />} />
               </Routes>

@@ -56,7 +56,7 @@ const Events = () => {
     }
   ];
 
-  // Demo past events for design consistency
+  // Demo past events for design consistency - filter out GBMs
   const demoPastEvents: EventData[] = [
     {
       id: 'orientation-2024',
@@ -87,8 +87,10 @@ const Events = () => {
     }
   ];
 
-  // Combine stored events with demo events
-  const allPastEvents = [...storedEvents, ...demoPastEvents];
+  // Combine stored events with demo events, filter out GBMs
+  const allPastEvents = [...storedEvents, ...demoPastEvents].filter(event => 
+    event.category !== 'GBM' && !event.title.toLowerCase().includes('gbm') && !event.title.toLowerCase().includes('meeting')
+  );
 
   const handleEventClick = (event: EventData) => {
     navigate(`/event/${event.id}`, { state: { event } });
@@ -191,83 +193,53 @@ const Events = () => {
         <div className="container mx-auto px-4">
           <h2 className="section-title">Past Events</h2>
           
-          <Tabs defaultValue="all" className="mt-12">
-            <TabsList className="grid w-full md:w-[600px] mx-auto grid-cols-5">
-              <TabsTrigger value="all">All</TabsTrigger>
+          <Tabs defaultValue="csd" className="mt-12">
+            <TabsList className="grid w-full md:w-[500px] mx-auto grid-cols-4">
               <TabsTrigger value="csd">CSD</TabsTrigger>
               <TabsTrigger value="cmd">CMD</TabsTrigger>
               <TabsTrigger value="isd">ISD</TabsTrigger>
               <TabsTrigger value="pdd">PDD</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="all" className="mt-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {allPastEvents.map((event) => (
-                  <Card 
-                    key={event.id}
-                    className="cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => handleEventClick(event)}
-                  >
-                    <div className="h-48 overflow-hidden">
-                      <img 
-                        src={event.bannerUrl || `https://images.unsplash.com/photo-${
-                          event.id.includes('orientation') ? '1540575467063-178a50c2df87' :
-                          event.id.includes('tree') ? '1488521787991-ed7bbaae773c' :
-                          event.id.includes('cultural') ? '1559223607-a43f990c67bd' :
-                          '1528605248644-14dd04022da1'
-                        }?q=80&w=3540&auto=format&fit=crop`}
-                        alt={event.title} 
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
-                      />
-                    </div>
-                    <CardContent className="pt-4">
-                      {event.category && (
-                        <Badge className={`${getCategoryColor(event.category)} mb-2`}>
-                          {event.category}
-                        </Badge>
-                      )}
-                      <h3 className="font-semibold text-lg">{event.title}</h3>
-                      <p className="text-sm text-gray-500">{formatDate(event.date)}</p>
-                      <p className="mt-2 text-sm">{event.shortDescription}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </TabsContent>
-
             {['csd', 'cmd', 'isd', 'pdd'].map((category) => (
               <TabsContent key={category} value={category} className="mt-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {filterEventsByCategory(allPastEvents, category.toUpperCase()).map((event) => (
-                    <Card 
-                      key={event.id}
-                      className="cursor-pointer hover:shadow-lg transition-shadow"
-                      onClick={() => handleEventClick(event)}
-                    >
-                      <div className="h-48 overflow-hidden">
-                        <img 
-                          src={event.bannerUrl || `https://images.unsplash.com/photo-${
-                            event.id.includes('orientation') ? '1540575467063-178a50c2df87' :
-                            event.id.includes('tree') ? '1488521787991-ed7bbaae773c' :
-                            event.id.includes('cultural') ? '1559223607-a43f990c67bd' :
-                            '1528605248644-14dd04022da1'
-                          }?q=80&w=3540&auto=format&fit=crop`}
-                          alt={event.title} 
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
-                        />
-                      </div>
-                      <CardContent className="pt-4">
-                        {event.category && (
-                          <Badge className={`${getCategoryColor(event.category)} mb-2`}>
-                            {event.category}
-                          </Badge>
-                        )}
-                        <h3 className="font-semibold text-lg">{event.title}</h3>
-                        <p className="text-sm text-gray-500">{formatDate(event.date)}</p>
-                        <p className="mt-2 text-sm">{event.shortDescription}</p>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  {filterEventsByCategory(allPastEvents, category.toUpperCase()).length > 0 ? (
+                    filterEventsByCategory(allPastEvents, category.toUpperCase()).map((event) => (
+                      <Card 
+                        key={event.id}
+                        className="cursor-pointer hover:shadow-lg transition-shadow"
+                        onClick={() => handleEventClick(event)}
+                      >
+                        <div className="h-48 overflow-hidden">
+                          <img 
+                            src={event.bannerUrl || `https://images.unsplash.com/photo-${
+                              event.id.includes('orientation') ? '1540575467063-178a50c2df87' :
+                              event.id.includes('tree') ? '1488521787991-ed7bbaae773c' :
+                              event.id.includes('cultural') ? '1559223607-a43f990c67bd' :
+                              '1528605248644-14dd04022da1'
+                            }?q=80&w=3540&auto=format&fit=crop`}
+                            alt={event.title} 
+                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
+                          />
+                        </div>
+                        <CardContent className="pt-4">
+                          {event.category && (
+                            <Badge className={`${getCategoryColor(event.category)} mb-2`}>
+                              {event.category}
+                            </Badge>
+                          )}
+                          <h3 className="font-semibold text-lg">{event.title}</h3>
+                          <p className="text-sm text-gray-500">{formatDate(event.date)}</p>
+                          <p className="mt-2 text-sm">{event.shortDescription}</p>
+                        </CardContent>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="col-span-3 text-center py-12">
+                      <p className="text-gray-500">No events found for {category.toUpperCase()}</p>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
             ))}

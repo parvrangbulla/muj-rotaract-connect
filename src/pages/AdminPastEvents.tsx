@@ -1,13 +1,13 @@
 
-import { useState } from 'react';
-import { ArrowLeft, Upload, X, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface PastEventFormData {
   title: string;
@@ -17,10 +17,15 @@ interface PastEventFormData {
   eventType: 'past' | 'flagship';
   bannerPhoto: File | null;
   galleryImages: File[];
+  venue?: string;
+  impact?: string;
 }
 
 const AdminPastEvents = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { editMode, eventData, eventType } = location.state || {};
+  
   const [formData, setFormData] = useState<PastEventFormData>({
     title: '',
     description: '',
@@ -28,11 +33,38 @@ const AdminPastEvents = () => {
     date: '',
     eventType: 'past',
     bannerPhoto: null,
-    galleryImages: []
+    galleryImages: [],
+    venue: '',
+    impact: ''
   });
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Pre-fill form data if editing
+  useEffect(() => {
+    if (editMode && eventData) {
+      setFormData({
+        title: eventData.title || '',
+        description: eventData.description || '',
+        domain: eventData.domain || eventData.category || '',
+        date: eventData.date || '',
+        eventType: eventData.eventType || 'past',
+        bannerPhoto: null,
+        galleryImages: [],
+        venue: eventData.venue || '',
+        impact: eventData.impact || ''
+      });
+      
+      if (eventData.bannerUrl) {
+        setBannerPreview(eventData.bannerUrl);
+      }
+      
+      if (eventData.galleryUrls && eventData.galleryUrls.length > 0) {
+        setGalleryPreviews(eventData.galleryUrls);
+      }
+    }
+  }, [editMode, eventData]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -79,50 +111,97 @@ const AdminPastEvents = () => {
     try {
       console.log('Submitting event:', formData);
       
-      // Create event object with mock URLs
-      const newEvent = {
-        id: Date.now().toString(),
-        title: formData.title,
-        description: formData.description,
-        domain: formData.domain,
-        date: formData.date,
-        eventType: formData.eventType,
-        category: formData.eventType === 'flagship' ? 'Flagship' : formData.domain,
-        bannerUrl: bannerPreview || '',
-        galleryUrls: galleryPreviews,
-        shortDescription: formData.description.substring(0, 150) + '...',
-        images: []
-      };
+      if (editMode && eventData) {
+        // Update existing event
+        const updatedEvent = {
+          ...eventData,
+          title: formData.title,
+          description: formData.description,
+          domain: formData.domain,
+          date: formData.date,
+          eventType: formData.eventType,
+          category: formData.eventType === 'flagship' ? 'Flagship' : formData.domain,
+          bannerUrl: bannerPreview || eventData.bannerUrl || '',
+          galleryUrls: galleryPreviews.length > 0 ? galleryPreviews : eventData.galleryUrls || [],
+          shortDescription: formData.description.substring(0, 150) + '...',
+          venue: formData.venue,
+          impact: formData.impact
+        };
 
-      // Store based on event type
-      if (formData.eventType === 'flagship') {
-        const existingFlagship = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
-        existingFlagship.push(newEvent);
-        localStorage.setItem('flagshipEvents', JSON.stringify(existingFlagship));
+        // Update in correct storage based on event type
+        if (formData.eventType === 'flagship') {
+          const existingFlagship = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
+          const updatedFlagship = existingFlagship.map((event: any) => 
+            event.id === eventData.id ? updatedEvent : event
+          );
+          localStorage.setItem('flagshipEvents', JSON.stringify(updatedFlagship));
+        } else {
+          const existingEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+          const updatedEvents = existingEvents.map((event: any) => 
+            event.id === eventData.id ? updatedEvent : event
+          );
+          localStorage.setItem('pastEvents', JSON.stringify(updatedEvents));
+        }
+
+        alert('Event updated successfully!');
       } else {
-        const existingEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-        existingEvents.push(newEvent);
-        localStorage.setItem('pastEvents', JSON.stringify(existingEvents));
+        // Create new event
+        const newEvent = {
+          id: Date.now().toString(),
+          title: formData.title,
+          description: formData.description,
+          domain: formData.domain,
+          date: formData.date,
+          eventType: formData.eventType,
+          category: formData.eventType === 'flagship' ? 'Flagship' : formData.domain,
+          bannerUrl: bannerPreview || '',
+          galleryUrls: galleryPreviews,
+          shortDescription: formData.description.substring(0, 150) + '...',
+          images: [],
+          venue: formData.venue,
+          impact: formData.impact
+        };
+
+        // Store based on event type
+        if (formData.eventType === 'flagship') {
+          const existingFlagship = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
+          existingFlagship.push(newEvent);
+          localStorage.setItem('flagshipEvents', JSON.stringify(existingFlagship));
+        } else {
+          const existingEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+          existingEvents.push(newEvent);
+          localStorage.setItem('pastEvents', JSON.stringify(existingEvents));
+        }
+
+        alert(`${formData.eventType === 'flagship' ? 'Flagship' : 'Past'} event created successfully!`);
       }
 
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        domain: '',
-        date: '',
-        eventType: 'past',
-        bannerPhoto: null,
-        galleryImages: []
-      });
-      setBannerPreview(null);
-      setGalleryPreviews([]);
+      // Trigger storage event to update other components
+      window.dispatchEvent(new Event('storage'));
 
-      alert(`${formData.eventType === 'flagship' ? 'Flagship' : 'Past'} event created successfully!`);
+      // Reset form if creating new event
+      if (!editMode) {
+        setFormData({
+          title: '',
+          description: '',
+          domain: '',
+          date: '',
+          eventType: 'past',
+          bannerPhoto: null,
+          galleryImages: [],
+          venue: '',
+          impact: ''
+        });
+        setBannerPreview(null);
+        setGalleryPreviews([]);
+      }
+
+      // Navigate back to dashboard
+      navigate(-1);
       
     } catch (error) {
-      console.error('Error creating event:', error);
-      alert('Error creating event. Please try again.');
+      console.error('Error with event:', error);
+      alert(`Error ${editMode ? 'updating' : 'creating'} event. Please try again.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -141,7 +220,9 @@ const AdminPastEvents = () => {
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </Button>
-          <h1 className="text-3xl font-bold text-gray-800">Create Event</h1>
+          <h1 className="text-3xl font-bold text-gray-800">
+            {editMode ? 'Edit Event' : 'Create Event'}
+          </h1>
         </div>
 
         {/* Form */}
@@ -192,20 +273,23 @@ const AdminPastEvents = () => {
 
               {/* Domain and Date Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="domain">Domain</Label>
-                  <Select value={formData.domain} onValueChange={(value) => handleInputChange('domain', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select domain" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="CMD">CMD</SelectItem>
-                      <SelectItem value="CSD">CSD</SelectItem>
-                      <SelectItem value="PDD">PDD</SelectItem>
-                      <SelectItem value="ISD">ISD</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* Only show domain dropdown for past events */}
+                {formData.eventType === 'past' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="domain">Domain</Label>
+                    <Select value={formData.domain} onValueChange={(value) => handleInputChange('domain', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select domain" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="CMD">CMD</SelectItem>
+                        <SelectItem value="CSD">CSD</SelectItem>
+                        <SelectItem value="PDD">PDD</SelectItem>
+                        <SelectItem value="ISD">ISD</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="date">Event Date</Label>
@@ -218,6 +302,30 @@ const AdminPastEvents = () => {
                   />
                 </div>
               </div>
+
+              {/* Venue and Impact for Flagship Events */}
+              {formData.eventType === 'flagship' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="venue">Venue</Label>
+                    <Input
+                      id="venue"
+                      value={formData.venue}
+                      onChange={(e) => handleInputChange('venue', e.target.value)}
+                      placeholder="Enter event venue"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="impact">Impact</Label>
+                    <Input
+                      id="impact"
+                      value={formData.impact}
+                      onChange={(e) => handleInputChange('impact', e.target.value)}
+                      placeholder="e.g., 300+ donations annually"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Banner Photo */}
               <div className="space-y-2">
@@ -323,7 +431,10 @@ const AdminPastEvents = () => {
                 className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating Event...' : `Create ${formData.eventType === 'flagship' ? 'Flagship' : 'Past'} Event`}
+                {isSubmitting 
+                  ? `${editMode ? 'Updating' : 'Creating'} Event...` 
+                  : `${editMode ? 'Update' : 'Create'} ${formData.eventType === 'flagship' ? 'Flagship' : 'Past'} Event`
+                }
               </Button>
             </form>
           </CardContent>
