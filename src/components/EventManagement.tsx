@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -40,7 +39,9 @@ const EventManagement = () => {
   useEffect(() => {
     const loadEvents = () => {
       // Load flagship events
-      const storedFlagship = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
+      const storedFlagshipRaw = localStorage.getItem('flagshipEvents');
+      const storedFlagship = storedFlagshipRaw ? JSON.parse(storedFlagshipRaw) : [];
+      
       const defaultFlagship = [
         {
           id: 'bdc-2024',
@@ -71,10 +72,15 @@ const EventManagement = () => {
           galleryUrls: []
         }
       ];
-      setFlagshipEvents([...defaultFlagship, ...storedFlagship]);
+      
+      // Ensure storedFlagship is an array before spreading
+      const flagshipArray = Array.isArray(storedFlagship) ? storedFlagship : [];
+      setFlagshipEvents([...defaultFlagship, ...flagshipArray]);
 
       // Load past events
-      const storedPast = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+      const storedPastRaw = localStorage.getItem('pastEvents');
+      const storedPast = storedPastRaw ? JSON.parse(storedPastRaw) : [];
+      
       const defaultPast = [
         {
           id: 'orientation-2024',
@@ -104,7 +110,9 @@ const EventManagement = () => {
         }
       ];
       
-      setPastEvents([...defaultPast, ...storedPast]);
+      // Ensure storedPast is an array before spreading
+      const pastArray = Array.isArray(storedPast) ? storedPast : [];
+      setPastEvents([...defaultPast, ...pastArray]);
     };
 
     loadEvents();
