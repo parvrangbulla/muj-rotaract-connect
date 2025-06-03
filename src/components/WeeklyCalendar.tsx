@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,58 +29,82 @@ const WeeklyCalendar = () => {
   }, []);
 
   const loadEvents = () => {
-    const storedEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
-    const storedGBMs = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
-    setEvents([...storedEvents, ...storedGBMs]);
+    try {
+      const storedEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
+      const storedGBMs = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
+      
+      // Ensure both are arrays before spreading
+      const eventsArray = Array.isArray(storedEvents) ? storedEvents : [];
+      const gbmsArray = Array.isArray(storedGBMs) ? storedGBMs : [];
+      
+      setEvents([...eventsArray, ...gbmsArray]);
+    } catch (error) {
+      console.error('Error loading events:', error);
+      setEvents([]);
+    }
   };
 
   const saveEvent = (eventData: any) => {
-    const isGBM = eventData.type === 'gbm';
-    const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
-    const existingEvents = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    
-    if (editingEvent) {
-      const updatedEvents = existingEvents.map((e: any) => 
-        e.id === editingEvent.id ? eventData : e
-      );
-      localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
-    } else {
-      existingEvents.push(eventData);
-      localStorage.setItem(storageKey, JSON.stringify(existingEvents));
+    try {
+      const isGBM = eventData.type === 'gbm';
+      const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
+      
+      // Get existing events from the appropriate storage key
+      const existingEvents = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      const eventsArray = Array.isArray(existingEvents) ? existingEvents : [];
+      
+      if (editingEvent) {
+        // Update existing event
+        const updatedEvents = eventsArray.map((e: any) => 
+          e.id === editingEvent.id ? eventData : e
+        );
+        localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
+      } else {
+        // Add new event
+        eventsArray.push(eventData);
+        localStorage.setItem(storageKey, JSON.stringify(eventsArray));
+      }
+      
+      // Also save to pastEvents for dashboard display
+      const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+      const pastEventsArray = Array.isArray(pastEvents) ? pastEvents : [];
+      
+      const pastEventData = {
+        id: eventData.id,
+        title: eventData.title,
+        date: eventData.date,
+        description: eventData.description,
+        category: isGBM ? 'GBM' : 'Event',
+        shortDescription: eventData.description.substring(0, 100),
+        venue: eventData.location,
+        images: [],
+        bannerUrl: '',
+        galleryUrls: [],
+        enableRegistration: eventData.enableRegistration,
+        enableAttendance: eventData.enableAttendance,
+        registeredUsers: eventData.registeredUsers || [],
+        attendance: eventData.attendance || {}
+      };
+      
+      if (editingEvent) {
+        const updatedPastEvents = pastEventsArray.map((e: any) => 
+          e.id === editingEvent.id ? pastEventData : e
+        );
+        localStorage.setItem('pastEvents', JSON.stringify(updatedPastEvents));
+      } else {
+        pastEventsArray.push(pastEventData);
+        localStorage.setItem('pastEvents', JSON.stringify(pastEventsArray));
+      }
+      
+      // Reload events to update the calendar view
+      loadEvents();
+      setEditingEvent(null);
+      window.dispatchEvent(new Event('storage'));
+      
+      console.log('Event saved successfully:', eventData);
+    } catch (error) {
+      console.error('Error saving event:', error);
     }
-    
-    // Also save to pastEvents for dashboard display
-    const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-    const pastEventData = {
-      id: eventData.id,
-      title: eventData.title,
-      date: eventData.date,
-      description: eventData.description,
-      category: isGBM ? 'GBM' : 'Event',
-      shortDescription: eventData.description.substring(0, 100),
-      venue: eventData.location,
-      images: [],
-      bannerUrl: '',
-      galleryUrls: [],
-      enableRegistration: eventData.enableRegistration,
-      enableAttendance: eventData.enableAttendance,
-      registeredUsers: eventData.registeredUsers || [],
-      attendance: eventData.attendance || {}
-    };
-    
-    if (editingEvent) {
-      const updatedPastEvents = pastEvents.map((e: any) => 
-        e.id === editingEvent.id ? pastEventData : e
-      );
-      localStorage.setItem('pastEvents', JSON.stringify(updatedPastEvents));
-    } else {
-      pastEvents.push(pastEventData);
-      localStorage.setItem('pastEvents', JSON.stringify(pastEvents));
-    }
-    
-    loadEvents();
-    setEditingEvent(null);
-    window.dispatchEvent(new Event('storage'));
   };
 
   const handleEventClick = (event: any) => {
@@ -240,7 +263,7 @@ const WeeklyCalendar = () => {
                 selected={jumpDate}
                 onSelect={jumpToDate}
                 initialFocus
-                className={cn("p-3 pointer-events-auto")}
+                className={cn("p-3")}
               />
             </PopoverContent>
           </Popover>
@@ -297,7 +320,10 @@ const WeeklyCalendar = () => {
                             ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' 
                             : 'bg-green-100 text-green-800 hover:bg-green-200'
                         }`}
-                        onClick={() => handleEventClick(event)}
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setShowDetailModal(true);
+                        }}
                       >
                         <div className="font-medium truncate">{event.title}</div>
                         <div className="text-xs opacity-75">{event.location}</div>
@@ -342,17 +368,112 @@ const WeeklyCalendar = () => {
           setShowDetailModal(false);
           setSelectedEvent(null);
         }}
-        onEdit={handleEditEvent}
-        onDelete={handleDeleteEvent}
-        onAttendanceUpdate={handleAttendanceUpdate}
-        onRegistration={handleRegistration}
+        onEdit={(event) => {
+          setEditingEvent(event);
+          setShowDetailModal(false);
+          if (event.type === 'gbm') {
+            setShowGBMModal(true);
+          } else {
+            setShowEventModal(true);
+          }
+        }}
+        onDelete={(eventId) => {
+          // Remove from both storage locations
+          ['calendarEvents', 'gbmMeetings', 'pastEvents'].forEach(key => {
+            const stored = JSON.parse(localStorage.getItem(key) || '[]');
+            const filtered = stored.filter((e: any) => e.id !== eventId);
+            localStorage.setItem(key, JSON.stringify(filtered));
+          });
+          
+          loadEvents();
+          window.dispatchEvent(new Event('storage'));
+          setShowDetailModal(false);
+          setSelectedEvent(null);
+        }}
+        onAttendanceUpdate={(eventId, userId, status) => {
+          const updatedEvents = events.map(event => {
+            if (event.id === eventId) {
+              const attendance = event.attendance || {};
+              return { ...event, attendance: { ...attendance, [userId]: status } };
+            }
+            return event;
+          });
+          
+          // Update storage
+          const event = events.find(e => e.id === eventId);
+          if (event) {
+            const storageKey = event.type === 'gbm' ? 'gbmMeetings' : 'calendarEvents';
+            const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            const updated = stored.map((e: any) => {
+              if (e.id === eventId) {
+                const attendance = e.attendance || {};
+                return { ...e, attendance: { ...attendance, [userId]: status } };
+              }
+              return e;
+            });
+            localStorage.setItem(storageKey, JSON.stringify(updated));
+          }
+          
+          setEvents(updatedEvents);
+        }}
+        onRegistration={(eventId, userData) => {
+          const updatedEvents = events.map(event => {
+            if (event.id === eventId) {
+              const registeredUsers = event.registeredUsers || [];
+              return { ...event, registeredUsers: [...registeredUsers, userData] };
+            }
+            return event;
+          });
+          
+          // Update storage
+          const event = events.find(e => e.id === eventId);
+          if (event) {
+            const storageKey = event.type === 'gbm' ? 'gbmMeetings' : 'calendarEvents';
+            const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            const updated = stored.map((e: any) => {
+              if (e.id === eventId) {
+                return { ...e, registeredUsers: [...(e.registeredUsers || []), userData] };
+              }
+              return e;
+            });
+            localStorage.setItem(storageKey, JSON.stringify(updated));
+          }
+          
+          setEvents(updatedEvents);
+          alert('Registration successful!');
+        }}
       />
 
       <EventRegistrationModal
         event={selectedEvent}
         isOpen={showRegistrationModal}
         onClose={() => setShowRegistrationModal(false)}
-        onRegister={handleRegistration}
+        onRegister={(eventId, userData) => {
+          const updatedEvents = events.map(event => {
+            if (event.id === eventId) {
+              const registeredUsers = event.registeredUsers || [];
+              return { ...event, registeredUsers: [...registeredUsers, userData] };
+            }
+            return event;
+          });
+          
+          // Update storage
+          const event = events.find(e => e.id === eventId);
+          if (event) {
+            const storageKey = event.type === 'gbm' ? 'gbmMeetings' : 'calendarEvents';
+            const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            const updated = stored.map((e: any) => {
+              if (e.id === eventId) {
+                return { ...e, registeredUsers: [...(e.registeredUsers || []), userData] };
+              }
+              return e;
+            });
+            localStorage.setItem(storageKey, JSON.stringify(updated));
+          }
+          
+          setEvents(updatedEvents);
+          alert('Registration successful!');
+        }}
       />
     </div>
   );
