@@ -1,70 +1,77 @@
 
 import { useState, useEffect } from 'react';
-import { Check, X, Users } from 'lucide-react';
+import { ChevronDown, ChevronRight, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-
-interface AttendanceRecord {
-  eventId: string;
-  eventTitle: string;
-  eventDate: string;
-  registeredMembers: string[];
-  attendance: { [memberName: string]: 'present' | 'absent' | 'pending' };
-}
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const Attendance = () => {
-  const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
+  const [eventsWithAttendance, setEventsWithAttendance] = useState<any[]>([]);
+  const [openEvents, setOpenEvents] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
-    // Load attendance data from localStorage
-    const loadAttendanceData = () => {
-      const storedAttendance = JSON.parse(localStorage.getItem('attendanceRecords') || '[]');
-      setAttendanceData(storedAttendance);
-    };
-
-    loadAttendanceData();
-
-    // Listen for storage changes
-    const handleStorageChange = () => loadAttendanceData();
+    loadEventsWithAttendance();
+    const handleStorageChange = () => loadEventsWithAttendance();
     window.addEventListener('storage', handleStorageChange);
-    
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const markAttendance = (eventId: string, memberName: string, status: 'present' | 'absent') => {
-    const updatedData = attendanceData.map(record => {
-      if (record.eventId === eventId) {
-        const updatedAttendance = { ...record.attendance };
-        const oldStatus = updatedAttendance[memberName];
-        updatedAttendance[memberName] = status;
-
-        // Update service hours
-        if (oldStatus !== status) {
-          updateServiceHours(memberName, status === 'present' ? 2 : (oldStatus === 'present' ? -2 : 0));
-        }
-
-        return { ...record, attendance: updatedAttendance };
-      }
-      return record;
-    });
-
-    setAttendanceData(updatedData);
-    localStorage.setItem('attendanceRecords', JSON.stringify(updatedData));
+  const loadEventsWithAttendance = () => {
+    const calendarEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
+    const gbmMeetings = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
+    const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+    
+    const allEvents = [...calendarEvents, ...gbmMeetings, ...pastEvents];
+    
+    // Filter events that have attendance enabled and registered users
+    const attendanceEvents = allEvents.filter(event => 
+      (event.enableAttendance || event.enableRegistration) && 
+      event.registeredUsers && 
+      event.registeredUsers.length > 0
+    );
+    
+    setEventsWithAttendance(attendanceEvents);
   };
 
-  const updateServiceHours = (memberName: string, hoursChange: number) => {
-    // Update service hours in profile data
-    const profileData = JSON.parse(localStorage.getItem('userProfile') || '{}');
-    const currentHours = profileData.serviceHours || 0;
-    profileData.serviceHours = Math.max(0, currentHours + hoursChange);
-    localStorage.setItem('userProfile', JSON.stringify(profileData));
+  const updateAttendance = (eventId: string, userId: string, status: 'present' | 'absent') => {
+    // Update in all possible storage locations
+    const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
     
-    // Trigger storage event for profile updates
+    storageKeys.forEach(key => {
+      const stored = JSON.parse(localStorage.getItem(key) || '[]');
+      const updated = stored.map((event: any) => {
+        if (event.id === eventId) {
+          const attendance = event.attendance || {};
+          return { ...event, attendance: { ...attendance, [userId]: status } };
+        }
+        return event;
+      });
+      localStorage.setItem(key, JSON.stringify(updated));
+    });
+
+    loadEventsWithAttendance();
     window.dispatchEvent(new Event('storage'));
   };
 
-  if (attendanceData.length === 0) {
+  const toggleEventOpen = (eventId: string) => {
+    setOpenEvents(prev => ({
+      ...prev,
+      [eventId]: !prev[eventId]
+    }));
+  };
+
+  const getAttendanceStats = (event: any) => {
+    const totalUsers = event.registeredUsers?.length || 0;
+    const attendance = event.attendance || {};
+    const present = Object.values(attendance).filter(status => status === 'present').length;
+    const absent = Object.values(attendance).filter(status => status === 'absent').length;
+    const pending = totalUsers - present - absent;
+    
+    return { totalUsers, present, absent, pending };
+  };
+
+  if (eventsWithAttendance.length === 0) {
     return (
       <div className="space-y-6">
         <div>
@@ -88,56 +95,105 @@ const Attendance = () => {
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold text-gray-800 mb-2">Attendance Management</h2>
-        <p className="text-gray-600">Mark attendance and manage service hours</p>
+        <p className="text-gray-600">Mark attendance for registered participants</p>
       </div>
 
-      {attendanceData.map((record) => (
-        <Card key={record.eventId}>
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-xl">{record.eventTitle}</CardTitle>
-                <p className="text-sm text-gray-500">{record.eventDate}</p>
-              </div>
-              <Badge variant="outline">
-                {record.registeredMembers.length} registered
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {record.registeredMembers.length === 0 ? (
-                <p className="text-gray-500 text-sm">No members registered for this event.</p>
-              ) : (
-                record.registeredMembers.map((member) => (
-                  <div key={member} className="flex items-center justify-between p-3 border rounded-lg">
-                    <span className="font-medium">{member}</span>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant={record.attendance[member] === 'present' ? 'default' : 'outline'}
-                        onClick={() => markAttendance(record.eventId, member, 'present')}
-                        className={record.attendance[member] === 'present' ? 'bg-green-600 hover:bg-green-700' : ''}
-                      >
-                        <Check className="w-4 h-4 mr-1" />
-                        Present
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={record.attendance[member] === 'absent' ? 'destructive' : 'outline'}
-                        onClick={() => markAttendance(record.eventId, member, 'absent')}
-                      >
-                        <X className="w-4 h-4 mr-1" />
-                        Absent
-                      </Button>
+      <div className="space-y-4">
+        {eventsWithAttendance.map((event) => {
+          const stats = getAttendanceStats(event);
+          const isOpen = openEvents[event.id];
+          
+          return (
+            <Card key={event.id}>
+              <Collapsible>
+                <CollapsibleTrigger asChild>
+                  <CardHeader 
+                    className="cursor-pointer hover:bg-gray-50 transition-colors"
+                    onClick={() => toggleEventOpen(event.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {isOpen ? (
+                          <ChevronDown className="w-5 h-5 text-gray-500" />
+                        ) : (
+                          <ChevronRight className="w-5 h-5 text-gray-500" />
+                        )}
+                        <div>
+                          <CardTitle className="text-lg">{event.title}</CardTitle>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {event.date} • {event.location}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="text-center">
+                          <div className="font-semibold text-green-600">{stats.present}</div>
+                          <div className="text-gray-500">Present</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-red-600">{stats.absent}</div>
+                          <div className="text-gray-500">Absent</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold text-gray-600">{stats.pending}</div>
+                          <div className="text-gray-500">Pending</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-semibold">{stats.totalUsers}</div>
+                          <div className="text-gray-500">Total</div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+                  </CardHeader>
+                </CollapsibleTrigger>
+                
+                <CollapsibleContent>
+                  <CardContent className="pt-0">
+                    <div className="space-y-3">
+                      {event.registeredUsers.map((user: any, index: number) => {
+                        const userId = user.registrationNumber || user.fullName;
+                        const currentStatus = event.attendance?.[userId] || 'pending';
+                        
+                        return (
+                          <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex-1">
+                              <div className="font-medium">{user.fullName}</div>
+                              <div className="text-sm text-gray-600">
+                                {user.phoneNumber} • {user.registrationNumber}
+                              </div>
+                            </div>
+                            
+                            <Select
+                              value={currentStatus}
+                              onValueChange={(value) => updateAttendance(event.id, userId, value as 'present' | 'absent')}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">
+                                  <span className="text-gray-600">Pending</span>
+                                </SelectItem>
+                                <SelectItem value="present">
+                                  <span className="text-green-600">Present</span>
+                                </SelectItem>
+                                <SelectItem value="absent">
+                                  <span className="text-red-600">Absent</span>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 };
