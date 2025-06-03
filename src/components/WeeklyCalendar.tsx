@@ -1,7 +1,12 @@
+
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import EventCreationModal from './EventCreationModal';
 import EnhancedEventDetailModal from './EnhancedEventDetailModal';
 import EventRegistrationModal from './EventRegistrationModal';
@@ -15,6 +20,7 @@ const WeeklyCalendar = () => {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [events, setEvents] = useState<any[]>([]);
+  const [jumpDate, setJumpDate] = useState<Date | undefined>(new Date());
 
   useEffect(() => {
     loadEvents();
@@ -70,7 +76,7 @@ const WeeklyCalendar = () => {
       localStorage.setItem('pastEvents', JSON.stringify(updatedPastEvents));
     } else {
       pastEvents.push(pastEventData);
-      localStorage.setItem('pastEvents', JSON.stringify(pastEventData));
+      localStorage.setItem('pastEvents', JSON.stringify(pastEvents));
     }
     
     loadEvents();
@@ -189,6 +195,13 @@ const WeeklyCalendar = () => {
     setCurrentWeek(newWeek);
   };
 
+  const jumpToDate = (date: Date | undefined) => {
+    if (date) {
+      setCurrentWeek(date);
+      setJumpDate(date);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -206,6 +219,31 @@ const WeeklyCalendar = () => {
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
+          
+          {/* Jump to Date */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "justify-start text-left font-normal",
+                  !jumpDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                Jump to Date
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={jumpDate}
+                onSelect={jumpToDate}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
         
         <div className="flex gap-2">
@@ -214,7 +252,7 @@ const WeeklyCalendar = () => {
             className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
-            New Event
+            Create Event
           </Button>
           <Button
             onClick={() => setShowGBMModal(true)}
@@ -263,6 +301,7 @@ const WeeklyCalendar = () => {
                       >
                         <div className="font-medium truncate">{event.title}</div>
                         <div className="text-xs opacity-75">{event.location}</div>
+                        <div className="text-xs opacity-75">{event.startTime} - {event.endTime}</div>
                       </div>
                     ))}
                   </div>
@@ -306,6 +345,7 @@ const WeeklyCalendar = () => {
         onEdit={handleEditEvent}
         onDelete={handleDeleteEvent}
         onAttendanceUpdate={handleAttendanceUpdate}
+        onRegistration={handleRegistration}
       />
 
       <EventRegistrationModal

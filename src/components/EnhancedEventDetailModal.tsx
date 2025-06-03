@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Edit, Trash2 } from 'lucide-react';
@@ -16,6 +17,7 @@ interface EventDetailModalProps {
   onEdit: (event: any) => void;
   onDelete: (eventId: string) => void;
   onAttendanceUpdate: (eventId: string, userId: string, status: 'present' | 'absent') => void;
+  onRegistration: (eventId: string, userData: any) => void;
 }
 
 const EnhancedEventDetailModal = ({ 
@@ -24,9 +26,16 @@ const EnhancedEventDetailModal = ({
   onClose, 
   onEdit, 
   onDelete, 
-  onAttendanceUpdate 
+  onAttendanceUpdate,
+  onRegistration
 }: EventDetailModalProps) => {
+  const [enableRegistration, setEnableRegistration] = useState(event?.enableRegistration || false);
   const [enableAttendance, setEnableAttendance] = useState(event?.enableAttendance || false);
+  const [registrationData, setRegistrationData] = useState({
+    fullName: '',
+    phoneNumber: '',
+    registrationNumber: ''
+  });
 
   if (!event) return null;
 
@@ -44,6 +53,44 @@ const EnhancedEventDetailModal = ({
     }
   };
 
+  const handleRegistrationToggle = (checked: boolean) => {
+    setEnableRegistration(checked);
+    // Update the event in storage
+    const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
+    const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    const updated = stored.map((e: any) => {
+      if (e.id === event.id) {
+        return { ...e, enableRegistration: checked };
+      }
+      return e;
+    });
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const handleAttendanceToggle = (checked: boolean) => {
+    setEnableAttendance(checked);
+    // Update the event in storage
+    const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
+    const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    const updated = stored.map((e: any) => {
+      if (e.id === event.id) {
+        return { ...e, enableAttendance: checked };
+      }
+      return e;
+    });
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const handleRegistrationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (registrationData.fullName && registrationData.phoneNumber && registrationData.registrationNumber) {
+      onRegistration(event.id, registrationData);
+      setRegistrationData({ fullName: '', phoneNumber: '', registrationNumber: '' });
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -58,7 +105,7 @@ const EnhancedEventDetailModal = ({
                 className="flex items-center gap-2"
               >
                 <Edit className="w-4 h-4" />
-                Edit Event
+                Edit
               </Button>
               <Button
                 variant="outline"
@@ -67,7 +114,7 @@ const EnhancedEventDetailModal = ({
                 className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-600"
               >
                 <Trash2 className="w-4 h-4" />
-                Delete Event
+                Delete
               </Button>
             </div>
           </div>
@@ -84,92 +131,152 @@ const EnhancedEventDetailModal = ({
         <div className="space-y-6">
           {/* Event Details */}
           <div>
-            <h3 className="text-lg font-semibold mb-2">Event Details</h3>
+            <h3 className="text-lg font-semibold mb-2">Details</h3>
             <div className="space-y-2 text-sm">
               <p><span className="font-medium">Location:</span> {event.location}</p>
               <p><span className="font-medium">Description:</span> {event.description}</p>
             </div>
           </div>
 
-          {/* Registration Section */}
-          {event.enableRegistration && (
+          {/* Registration Section - Only for Events */}
+          {!isGBM && (
             <div>
-              <h3 className="text-lg font-semibold mb-2">Event Registration</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Registration is enabled for this event.
-              </p>
-              {hasRegisteredUsers ? (
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Registration</h3>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="enableRegistration"
+                    checked={enableRegistration}
+                    onCheckedChange={handleRegistrationToggle}
+                  />
+                  <Label htmlFor="enableRegistration" className="text-sm">Enable Registration</Label>
+                </div>
+              </div>
+
+              {enableRegistration && (
+                <div className="space-y-4">
+                  {/* Registration Form */}
+                  <Card>
+                    <CardContent className="p-4">
+                      <h4 className="font-medium mb-3">Register for Event</h4>
+                      <form onSubmit={handleRegistrationSubmit} className="space-y-3">
+                        <div>
+                          <Label htmlFor="fullName" className="text-sm">Full Name</Label>
+                          <Input
+                            id="fullName"
+                            value={registrationData.fullName}
+                            onChange={(e) => setRegistrationData(prev => ({ ...prev, fullName: e.target.value }))}
+                            placeholder="Enter full name"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="phoneNumber" className="text-sm">Phone Number</Label>
+                          <Input
+                            id="phoneNumber"
+                            type="tel"
+                            value={registrationData.phoneNumber}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                              setRegistrationData(prev => ({ ...prev, phoneNumber: value }));
+                            }}
+                            placeholder="Enter 10-digit phone number"
+                            maxLength={10}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="registrationNumber" className="text-sm">Registration Number</Label>
+                          <Input
+                            id="registrationNumber"
+                            value={registrationData.registrationNumber}
+                            onChange={(e) => setRegistrationData(prev => ({ ...prev, registrationNumber: e.target.value }))}
+                            placeholder="Enter registration number"
+                            required
+                          />
+                        </div>
+                        <Button type="submit" className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90">
+                          Register
+                        </Button>
+                      </form>
+                    </CardContent>
+                  </Card>
+
+                  {/* Registered Participants */}
+                  {hasRegisteredUsers && (
+                    <Card>
+                      <CardContent className="p-4">
+                        <h4 className="font-medium mb-3">Registered Participants ({event.registeredUsers.length})</h4>
+                        <div className="space-y-2">
+                          {event.registeredUsers.map((user: any, index: number) => (
+                            <div key={index} className="p-2 border rounded-lg">
+                              <div className="text-sm">
+                                <p className="font-medium">{user.fullName}</p>
+                                <p className="text-gray-600">Phone: {user.phoneNumber}</p>
+                                <p className="text-gray-600">Reg. No: {user.registrationNumber}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Attendance Section - Only for GBMs */}
+          {isGBM && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Attendance</h3>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="enableAttendance"
+                    checked={enableAttendance}
+                    onCheckedChange={handleAttendanceToggle}
+                  />
+                  <Label htmlFor="enableAttendance" className="text-sm">Enable Attendance</Label>
+                </div>
+              </div>
+
+              {enableAttendance && hasRegisteredUsers ? (
                 <Card>
                   <CardContent className="p-4">
-                    <h4 className="font-medium mb-3">Registered Participants ({event.registeredUsers.length})</h4>
-                    <div className="space-y-2">
+                    <h4 className="font-medium mb-3">Mark Attendance</h4>
+                    <div className="space-y-3">
                       {event.registeredUsers.map((user: any, index: number) => (
-                        <div key={index} className="p-2 border rounded-lg">
-                          <div className="text-sm">
-                            <p className="font-medium">{user.fullName}</p>
-                            <p className="text-gray-600">Phone: {user.phoneNumber}</p>
-                            <p className="text-gray-600">Reg. No: {user.registrationNumber}</p>
+                        <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
+                          <div>
+                            <p className="font-medium text-sm">{user.fullName}</p>
+                            <p className="text-xs text-gray-600">{user.registrationNumber}</p>
                           </div>
+                          <Select
+                            value={event.attendance?.[user.registrationNumber] || 'pending'}
+                            onValueChange={(value) => handleAttendanceChange(user.registrationNumber, value as 'present' | 'absent')}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="present">Present</SelectItem>
+                              <SelectItem value="absent">Absent</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       ))}
                     </div>
                   </CardContent>
                 </Card>
+              ) : enableAttendance && !hasRegisteredUsers ? (
+                <p className="text-sm text-gray-500">No registered participants for attendance tracking.</p>
               ) : (
-                <p className="text-sm text-gray-500">No participants registered yet.</p>
+                <p className="text-sm text-gray-500">Enable attendance to track participant presence.</p>
               )}
             </div>
           )}
-
-          {/* Attendance Section */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Attendance</h3>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="enableAttendance"
-                  checked={enableAttendance}
-                  onCheckedChange={setEnableAttendance}
-                />
-                <Label htmlFor="enableAttendance" className="text-sm">Enable Attendance</Label>
-              </div>
-            </div>
-
-            {enableAttendance && hasRegisteredUsers ? (
-              <Card>
-                <CardContent className="p-4">
-                  <h4 className="font-medium mb-3">Mark Attendance</h4>
-                  <div className="space-y-3">
-                    {event.registeredUsers.map((user: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
-                        <div>
-                          <p className="font-medium text-sm">{user.fullName}</p>
-                          <p className="text-xs text-gray-600">{user.registrationNumber}</p>
-                        </div>
-                        <Select
-                          value={event.attendance?.[user.registrationNumber] || 'pending'}
-                          onValueChange={(value) => handleAttendanceChange(user.registrationNumber, value as 'present' | 'absent')}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="present">Present</SelectItem>
-                            <SelectItem value="absent">Absent</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : enableAttendance && !hasRegisteredUsers ? (
-              <p className="text-sm text-gray-500">No registered participants for attendance tracking.</p>
-            ) : (
-              <p className="text-sm text-gray-500">Enable attendance to track participant presence.</p>
-            )}
-          </div>
         </div>
       </DialogContent>
     </Dialog>

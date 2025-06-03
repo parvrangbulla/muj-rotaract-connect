@@ -5,8 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface EventCreationModalProps {
   isOpen: boolean;
@@ -24,11 +22,9 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
     endTime: editData?.endTime || '',
     location: editData?.location || '',
     description: editData?.description || '',
-    enableRegistration: editData?.enableRegistration || false,
-    enableAttendance: editData?.enableAttendance || false,
   });
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -40,7 +36,9 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
       type: isGBM ? 'gbm' : 'event',
       createdAt: editData?.createdAt || new Date().toISOString(),
       registeredUsers: editData?.registeredUsers || [],
-      attendance: editData?.attendance || {}
+      attendance: editData?.attendance || {},
+      enableRegistration: editData?.enableRegistration || false,
+      enableAttendance: editData?.enableAttendance || false
     };
     
     onEventCreate(eventData);
@@ -55,8 +53,6 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
         endTime: '',
         location: '',
         description: '',
-        enableRegistration: false,
-        enableAttendance: false,
       });
     }
   };
@@ -70,12 +66,12 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="title">Event Title</Label>
+            <Label htmlFor="title">{isGBM ? 'Meeting' : 'Event'} Title</Label>
             <Input
               id="title"
               value={formData.title}
               onChange={(e) => handleInputChange('title', e.target.value)}
-              placeholder="Enter event title"
+              placeholder={`Enter ${isGBM ? 'meeting' : 'event'} title`}
               required
             />
           </div>
@@ -131,60 +127,11 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
               id="description"
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Enter event description"
+              placeholder={`Enter ${isGBM ? 'meeting' : 'event'} description`}
               rows={3}
               required
             />
           </div>
-
-          {!isGBM && (
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="enableRegistration"
-                checked={formData.enableRegistration}
-                onCheckedChange={(checked) => handleInputChange('enableRegistration', checked)}
-              />
-              <Label htmlFor="enableRegistration">Enable Registration</Label>
-            </div>
-          )}
-
-          {formData.enableRegistration && !isGBM && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Registration Form Fields</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 mb-4">
-                  When event registration is enabled, users registering for the event must fill the following fields:
-                </p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-rotaract-orange rounded-full"></span>
-                    <span>Full Name (Text input)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-rotaract-orange rounded-full"></span>
-                    <span>Phone Number (Text input, number only, 10 digits)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-rotaract-orange rounded-full"></span>
-                    <span>Registration Number (Text input)</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {isGBM && (
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="enableAttendance"
-                checked={formData.enableAttendance}
-                onCheckedChange={(checked) => handleInputChange('enableAttendance', checked)}
-              />
-              <Label htmlFor="enableAttendance">Enable Attendance</Label>
-            </div>
-          )}
 
           <div className="flex gap-4">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
