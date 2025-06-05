@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,11 +32,9 @@ const WeeklyCalendar = () => {
       const storedEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
       const storedGBMs = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
       
-      // Ensure we have arrays and only load future events for calendar display
       const events = Array.isArray(storedEvents) ? storedEvents : [];
       const gbms = Array.isArray(storedGBMs) ? storedGBMs : [];
       
-      // Filter only future events for calendar display
       const now = new Date();
       const futureEvents = [...events, ...gbms].filter(event => {
         const eventDateTime = new Date(`${event.date}T${event.startTime}`);
@@ -56,7 +55,6 @@ const WeeklyCalendar = () => {
   };
 
   const saveEvent = (eventData: any) => {
-    // Prevent scheduling events in the past
     const isPastEvent = isEventInPast(eventData.date, eventData.startTime);
     
     if (isPastEvent && !editingEvent) {
@@ -76,7 +74,6 @@ const WeeklyCalendar = () => {
       enableAttendance: editingEvent?.enableAttendance || false
     };
 
-    // Only save to calendar storage (not past events)
     const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
     const existingEvents = JSON.parse(localStorage.getItem(storageKey) || '[]');
     
@@ -101,7 +98,6 @@ const WeeklyCalendar = () => {
   };
 
   const handleEditEvent = (event: any) => {
-    // Don't allow editing past events
     if (isEventInPast(event.date, event.startTime)) {
       alert('Cannot edit past events.');
       return;
@@ -124,7 +120,6 @@ const WeeklyCalendar = () => {
     }
 
     if (window.confirm('Are you sure you want to delete this event?')) {
-      // Remove from calendar storage only
       ['calendarEvents', 'gbmMeetings'].forEach(key => {
         const stored = JSON.parse(localStorage.getItem(key) || '[]');
         const filtered = stored.filter((e: any) => e.id !== eventId);
@@ -161,6 +156,28 @@ const WeeklyCalendar = () => {
     return events.filter(event => event.date === dateStr);
   };
 
+  const getEventDuration = (startTime: string, endTime: string) => {
+    const start = new Date(`2000-01-01T${startTime}`);
+    const end = new Date(`2000-01-01T${endTime}`);
+    const diffInMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
+    return Math.max(60, diffInMinutes); // Minimum 1 hour
+  };
+
+  const getEventPosition = (startTime: string, endTime: string) => {
+    const startHour = parseInt(startTime.split(':')[0]);
+    const startMinute = parseInt(startTime.split(':')[1]);
+    const endHour = parseInt(endTime.split(':')[0]);
+    const endMinute = parseInt(endTime.split(':')[1]);
+    
+    const startOffset = (startHour - 9) * 60 + startMinute;
+    const duration = (endHour - startHour) * 60 + (endMinute - startMinute);
+    
+    return {
+      top: (startOffset / 60) * 60, // 60px per hour
+      height: Math.max(30, (duration / 60) * 60) // Minimum 30px height
+    };
+  };
+
   const navigateWeek = (direction: 'prev' | 'next') => {
     const newWeek = new Date(currentWeek);
     newWeek.setDate(newWeek.getDate() + (direction === 'next' ? 7 : -7));
@@ -192,7 +209,6 @@ const WeeklyCalendar = () => {
             </Button>
           </div>
           
-          {/* Jump to Date */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -236,55 +252,88 @@ const WeeklyCalendar = () => {
         </div>
       </div>
 
-      {/* Calendar Grid */}
-      <Card>
+      {/* Calendar Grid - Teams Style */}
+      <Card className="overflow-hidden">
         <CardContent className="p-0">
-          <div className="grid grid-cols-8 border-b">
-            <div className="p-4 border-r bg-gray-50 font-medium">Time</div>
+          {/* Header Row */}
+          <div className="grid grid-cols-8 border-b bg-gray-50">
+            <div className="p-3 border-r font-medium text-sm">Time</div>
             {weekDays.map((day, index) => (
-              <div key={index} className="p-4 text-center border-r last:border-r-0 bg-gray-50">
-                <div className="font-medium">{day.toLocaleDateString('en-US', { weekday: 'short' })}</div>
-                <div className="text-sm text-gray-500">{day.getDate()}</div>
+              <div key={index} className="p-3 text-center border-r last:border-r-0">
+                <div className="font-medium text-sm">{day.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                <div className="text-lg font-semibold text-gray-700">{day.getDate()}</div>
               </div>
             ))}
           </div>
           
-          {timeSlots.map((time, timeIndex) => (
-            <div key={timeIndex} className="grid grid-cols-8 border-b last:border-b-0 min-h-[60px]">
-              <div className="p-4 border-r bg-gray-50 text-sm font-medium">{time}</div>
-              {weekDays.map((day, dayIndex) => {
-                const dayEvents = getEventsForDay(day);
-                const timeEvents = dayEvents.filter(event => {
-                  const eventStart = event.startTime?.substring(0, 5);
-                  return eventStart === time;
-                });
-
-                return (
-                  <div key={dayIndex} className="p-2 border-r last:border-r-0 min-h-[60px]">
-                    {timeEvents.map((event) => (
-                      <div
-                        key={event.id}
-                        className={`p-2 rounded text-xs cursor-pointer mb-1 relative transition-colors ${
-                          event.type === 'gbm' 
-                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200 border border-blue-300' 
-                            : 'bg-green-100 text-green-800 hover:bg-green-200 border border-green-300'
-                        }`}
-                        onClick={() => handleEventClick(event)}
-                      >
-                        <div className="font-medium truncate">{event.title}</div>
-                        <div className="text-xs opacity-75 truncate">{event.location}</div>
-                        <div className="text-xs opacity-75">{event.startTime} - {event.endTime}</div>
-                        {event.enableRegistration && (
-                          <div className="absolute top-1 right-1 w-2 h-2 bg-rotaract-orange rounded-full" 
-                               title="Registration Enabled"></div>
-                        )}
-                      </div>
-                    ))}
+          {/* Time Grid */}
+          <div className="relative">
+            {timeSlots.map((time, timeIndex) => (
+              <div key={timeIndex} className="grid grid-cols-8 border-b last:border-b-0" style={{ height: '60px' }}>
+                <div className="p-3 border-r bg-gray-50 text-xs font-medium text-gray-600 flex items-start">
+                  {time}
+                </div>
+                {weekDays.map((day, dayIndex) => (
+                  <div key={dayIndex} className="border-r last:border-r-0 relative" style={{ height: '60px' }}>
+                    {/* Time slot background */}
                   </div>
-                );
-              })}
-            </div>
-          ))}
+                ))}
+              </div>
+            ))}
+            
+            {/* Event Overlays */}
+            {weekDays.map((day, dayIndex) => {
+              const dayEvents = getEventsForDay(day);
+              
+              return (
+                <div key={dayIndex} className="absolute inset-0">
+                  <div className="grid grid-cols-8 h-full">
+                    {/* Skip time column */}
+                    <div></div>
+                    {weekDays.map((_, colIndex) => {
+                      if (colIndex !== dayIndex) return <div key={colIndex}></div>;
+                      
+                      return (
+                        <div key={colIndex} className="relative border-r last:border-r-0">
+                          {dayEvents.map((event) => {
+                            const position = getEventPosition(event.startTime, event.endTime);
+                            
+                            return (
+                              <div
+                                key={event.id}
+                                className={`absolute left-1 right-1 rounded-md cursor-pointer shadow-sm border-l-4 z-10 ${
+                                  event.type === 'gbm' 
+                                    ? 'bg-blue-100 border-blue-500 text-blue-800 hover:bg-blue-200' 
+                                    : 'bg-green-100 border-green-500 text-green-800 hover:bg-green-200'
+                                }`}
+                                style={{
+                                  top: `${position.top}px`,
+                                  height: `${position.height}px`
+                                }}
+                                onClick={() => handleEventClick(event)}
+                              >
+                                <div className="p-2 h-full flex flex-col justify-between">
+                                  <div>
+                                    <div className="font-medium text-xs truncate">{event.title}</div>
+                                    <div className="text-xs opacity-75 truncate">{event.location}</div>
+                                  </div>
+                                  <div className="text-xs opacity-75">{event.startTime} - {event.endTime}</div>
+                                  {event.enableRegistration && (
+                                    <div className="absolute top-1 right-1 w-2 h-2 bg-rotaract-orange rounded-full" 
+                                         title="Registration Enabled"></div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
 
