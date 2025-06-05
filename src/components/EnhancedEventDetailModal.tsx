@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Edit, Trash2, Save, Plus } from 'lucide-react';
+import { Edit, Trash2, Save } from 'lucide-react';
 
 interface EventDetailModalProps {
   event: any;
@@ -30,10 +31,6 @@ const EnhancedEventDetailModal = ({
   const [registrationData, setRegistrationData] = useState({
     fullName: '',
     phoneNumber: '',
-    registrationNumber: ''
-  });
-  const [newAttendee, setNewAttendee] = useState({
-    fullName: '',
     registrationNumber: ''
   });
   const [meetingMinutes, setMeetingMinutes] = useState(event?.meetingMinutes || '');
@@ -148,43 +145,6 @@ const EnhancedEventDetailModal = ({
     }
   };
 
-  const handleAddAttendee = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newAttendee.fullName && newAttendee.registrationNumber) {
-      const existingUser = event.registeredUsers?.find((user: any) => 
-        user.registrationNumber === newAttendee.registrationNumber
-      );
-      
-      if (existingUser) {
-        alert('User already exists!');
-        return;
-      }
-
-      const attendeeData = { 
-        ...newAttendee, 
-        phoneNumber: '', 
-        registeredAt: new Date().toISOString() 
-      };
-      
-      const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
-      storageKeys.forEach(key => {
-        const stored = JSON.parse(localStorage.getItem(key) || '[]');
-        const updated = stored.map((e: any) => {
-          if (e.id === event.id) {
-            const registeredUsers = e.registeredUsers || [];
-            return { ...e, registeredUsers: [...registeredUsers, attendeeData] };
-          }
-          return e;
-        });
-        localStorage.setItem(key, JSON.stringify(updated));
-      });
-
-      setNewAttendee({ fullName: '', registrationNumber: '' });
-      window.dispatchEvent(new Event('storage'));
-      alert('Attendee added successfully!');
-    }
-  };
-
   const handleAttendanceChange = (userId: string, status: 'present' | 'absent') => {
     const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
     storageKeys.forEach(key => {
@@ -228,19 +188,7 @@ const EnhancedEventDetailModal = ({
     return { present, absent, total };
   };
 
-  const getMarkedAttendance = () => {
-    if (!hasRegisteredUsers) return [];
-    
-    const attendance = event.attendance || {};
-    return event.registeredUsers.map((user: any) => {
-      const userId = user.registrationNumber || user.fullName;
-      const status = attendance[userId] || 'not marked';
-      return { ...user, status };
-    }).filter((user: any) => user.status !== 'not marked');
-  };
-
   const stats = getAttendanceStats();
-  const markedAttendance = getMarkedAttendance();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -378,42 +326,7 @@ const EnhancedEventDetailModal = ({
 
               {enableAttendance && (
                 <div className="space-y-4">
-                  {/* Add Attendee */}
-                  <Card>
-                    <CardContent className="p-4">
-                      <h4 className="font-medium mb-3">Add Attendee</h4>
-                      <form onSubmit={handleAddAttendee} className="space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <Label htmlFor="attendeeName" className="text-sm">Full Name</Label>
-                            <Input
-                              id="attendeeName"
-                              value={newAttendee.fullName}
-                              onChange={(e) => setNewAttendee(prev => ({ ...prev, fullName: e.target.value }))}
-                              placeholder="Enter full name"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="attendeeRegNo" className="text-sm">Registration Number</Label>
-                            <Input
-                              id="attendeeRegNo"
-                              value={newAttendee.registrationNumber}
-                              onChange={(e) => setNewAttendee(prev => ({ ...prev, registrationNumber: e.target.value }))}
-                              placeholder="Enter registration number"
-                              required
-                            />
-                          </div>
-                        </div>
-                        <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Attendee
-                        </Button>
-                      </form>
-                    </CardContent>
-                  </Card>
-
-                  {/* Mark Attendance */}
+                  {/* Quick Attendance Marking */}
                   <Card>
                     <CardContent className="p-4">
                       <h4 className="font-medium mb-3">Mark Attendance</h4>
@@ -452,7 +365,7 @@ const EnhancedEventDetailModal = ({
                           })}
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-500">No attendees added yet. Please add attendees to mark attendance.</p>
+                        <p className="text-sm text-gray-500">No registered participants for attendance tracking.</p>
                       )}
                     </CardContent>
                   </Card>
@@ -479,30 +392,6 @@ const EnhancedEventDetailModal = ({
                       />
                     </CardContent>
                   </Card>
-
-                  {/* Marked Attendance List */}
-                  {markedAttendance.length > 0 && (
-                    <Card>
-                      <CardContent className="p-4">
-                        <h4 className="font-medium mb-3">Marked Attendance</h4>
-                        <div className="space-y-2">
-                          {markedAttendance.map((user: any, index: number) => (
-                            <div key={index} className="flex items-center justify-between p-2 border rounded">
-                              <div>
-                                <p className="font-medium text-sm">{user.fullName}</p>
-                                <p className="text-xs text-gray-600">{user.registrationNumber}</p>
-                              </div>
-                              <Badge 
-                                className={user.status === 'present' ? 'bg-green-600' : 'bg-red-600'}
-                              >
-                                {user.status === 'present' ? 'Present' : 'Absent'}
-                              </Badge>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
 
                   {/* Attendance Summary */}
                   {hasRegisteredUsers && (
