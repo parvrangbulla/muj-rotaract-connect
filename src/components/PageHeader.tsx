@@ -18,7 +18,7 @@ const PageHeader = ({
   }}>
       <div className="container text-center text-white z-10 py-0 px-0 mx-0 my-0">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 px-0 py-0 mx-0 my-0">{title}</h1>
-        {subtitle && <p className="text-lg max-w-3xl md:text-xl font-normal text-center px-0 my-0 py-0 mx-[240px]">{subtitle}</p>}
+        {subtitle && <p className="text-lg max-w-3xl md:text-xl font-normal text-center px-0 my-0 py-0 mx-0">{subtitle}</p>}
         {children}
       </div>
     </div>;
