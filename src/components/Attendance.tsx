@@ -1,14 +1,16 @@
 
 import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, Users } from 'lucide-react';
+import { ChevronDown, ChevronRight, Users, Download, Search } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const Attendance = () => {
   const [eventsWithAttendance, setEventsWithAttendance] = useState<any[]>([]);
   const [openEvents, setOpenEvents] = useState<{ [key: string]: boolean }>({});
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     loadEventsWithAttendance();
@@ -24,7 +26,7 @@ const Attendance = () => {
     
     const allEvents = [...calendarEvents, ...gbmMeetings, ...pastEvents];
     
-    // Filter events that have attendance enabled and registered users
+    // Filter events that have attendance or registration enabled
     const attendanceEvents = allEvents.filter(event => 
       (event.enableAttendance || event.enableRegistration) && 
       event.registeredUsers && 
@@ -54,6 +56,58 @@ const Attendance = () => {
     window.dispatchEvent(new Event('storage'));
   };
 
+  const addManualParticipant = (eventId: string) => {
+    const name = prompt('Enter participant name:');
+    const regNumber = prompt('Enter registration number:');
+    const phone = prompt('Enter phone number:');
+    
+    if (name && regNumber && phone) {
+      const newParticipant = {
+        fullName: name,
+        registrationNumber: regNumber,
+        phoneNumber: phone,
+        registeredAt: new Date().toISOString(),
+        manuallyAdded: true
+      };
+
+      const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
+      storageKeys.forEach(key => {
+        const stored = JSON.parse(localStorage.getItem(key) || '[]');
+        const updated = stored.map((event: any) => {
+          if (event.id === eventId) {
+            const registeredUsers = event.registeredUsers || [];
+            return { ...event, registeredUsers: [...registeredUsers, newParticipant] };
+          }
+          return event;
+        });
+        localStorage.setItem(key, JSON.stringify(updated));
+      });
+
+      loadEventsWithAttendance();
+      window.dispatchEvent(new Event('storage'));
+    }
+  };
+
+  const exportToCSV = (event: any) => {
+    const csvContent = [
+      ['Name', 'Registration Number', 'Phone', 'Status'],
+      ...event.registeredUsers.map((user: any) => [
+        user.fullName,
+        user.registrationNumber,
+        user.phoneNumber,
+        event.attendance?.[user.registrationNumber] || 'pending'
+      ])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${event.title}_attendance.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   const toggleEventOpen = (eventId: string) => {
     setOpenEvents(prev => ({
       ...prev,
@@ -70,6 +124,14 @@ const Attendance = () => {
     
     return { totalUsers, present, absent, pending };
   };
+
+  const filteredEvents = eventsWithAttendance.filter(event =>
+    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.registeredUsers?.some((user: any) =>
+      user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
 
   if (eventsWithAttendance.length === 0) {
     return (
@@ -98,8 +160,21 @@ const Attendance = () => {
         <p className="text-gray-600">Mark attendance for registered participants</p>
       </div>
 
+      {/* Search Bar */}
+      <div className="flex items-center space-x-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Input
+            placeholder="Search by event name, participant name, or registration number..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
       <div className="space-y-4">
-        {eventsWithAttendance.map((event) => {
+        {filteredEvents.map((event) => {
           const stats = getAttendanceStats(event);
           const isOpen = openEvents[event.id];
           
@@ -151,6 +226,27 @@ const Attendance = () => {
                 <CollapsibleContent>
                   <CardContent className="pt-0">
                     <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-medium">Participants</h4>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => addManualParticipant(event.id)}
+                          >
+                            Add Participant
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => exportToCSV(event)}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Export CSV
+                          </Button>
+                        </div>
+                      </div>
+                      
                       {event.registeredUsers.map((user: any, index: number) => {
                         const userId = user.registrationNumber || user.fullName;
                         const currentStatus = event.attendance?.[userId] || 'pending';
@@ -161,6 +257,11 @@ const Attendance = () => {
                               <div className="font-medium">{user.fullName}</div>
                               <div className="text-sm text-gray-600">
                                 {user.phoneNumber} • {user.registrationNumber}
+                                {user.manuallyAdded && (
+                                  <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    Manually Added
+                                  </span>
+                                )}
                               </div>
                             </div>
                             

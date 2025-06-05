@@ -16,8 +16,6 @@ interface EventDetailModalProps {
   onClose: () => void;
   onEdit: (event: any) => void;
   onDelete: (eventId: string) => void;
-  onAttendanceUpdate: (eventId: string, userId: string, status: 'present' | 'absent') => void;
-  onRegistration: (eventId: string, userData: any) => void;
 }
 
 const EnhancedEventDetailModal = ({ 
@@ -25,9 +23,7 @@ const EnhancedEventDetailModal = ({
   isOpen, 
   onClose, 
   onEdit, 
-  onDelete, 
-  onAttendanceUpdate,
-  onRegistration
+  onDelete
 }: EventDetailModalProps) => {
   const [enableRegistration, setEnableRegistration] = useState(event?.enableRegistration || false);
   const [enableAttendance, setEnableAttendance] = useState(event?.enableAttendance || false);
@@ -42,18 +38,20 @@ const EnhancedEventDetailModal = ({
   const isGBM = event.type === 'gbm';
   const hasRegisteredUsers = event.registeredUsers && event.registeredUsers.length > 0;
 
-  const handleAttendanceChange = (userId: string, status: 'present' | 'absent') => {
-    onAttendanceUpdate(event.id, userId, status);
+  const isEventInPast = (eventDate: string, eventTime: string) => {
+    const now = new Date();
+    const eventDateTime = new Date(`${eventDate}T${eventTime}`);
+    return eventDateTime < now;
   };
 
-  const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this event?')) {
-      onDelete(event.id);
-      onClose();
-    }
-  };
+  const isPastEvent = isEventInPast(event.date, event.startTime);
 
   const handleRegistrationToggle = (checked: boolean) => {
+    if (isPastEvent) {
+      alert('Cannot modify past events.');
+      return;
+    }
+
     setEnableRegistration(checked);
     // Update the event in storage
     const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
@@ -65,10 +63,26 @@ const EnhancedEventDetailModal = ({
       return e;
     });
     localStorage.setItem(storageKey, JSON.stringify(updated));
+    
+    // Also update in pastEvents
+    const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+    const updatedPastEvents = pastEvents.map((e: any) => {
+      if (e.id === event.id) {
+        return { ...e, enableRegistration: checked };
+      }
+      return e;
+    });
+    localStorage.setItem('pastEvents', JSON.stringify(updatedPastEvents));
+    
     window.dispatchEvent(new Event('storage'));
   };
 
   const handleAttendanceToggle = (checked: boolean) => {
+    if (isPastEvent) {
+      alert('Cannot modify past events.');
+      return;
+    }
+
     setEnableAttendance(checked);
     // Update the event in storage
     const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
@@ -80,15 +94,69 @@ const EnhancedEventDetailModal = ({
       return e;
     });
     localStorage.setItem(storageKey, JSON.stringify(updated));
+    
+    // Also update in pastEvents
+    const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+    const updatedPastEvents = pastEvents.map((e: any) => {
+      if (e.id === event.id) {
+        return { ...e, enableAttendance: checked };
+      }
+      return e;
+    });
+    localStorage.setItem('pastEvents', JSON.stringify(updatedPastEvents));
+    
     window.dispatchEvent(new Event('storage'));
   };
 
   const handleRegistrationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (registrationData.fullName && registrationData.phoneNumber && registrationData.registrationNumber) {
-      onRegistration(event.id, registrationData);
+      // Check if user already registered
+      const existingUser = event.registeredUsers?.find((user: any) => 
+        user.registrationNumber === registrationData.registrationNumber
+      );
+      
+      if (existingUser) {
+        alert('User already registered for this event!');
+        return;
+      }
+
+      const newUser = { ...registrationData, registeredAt: new Date().toISOString() };
+      
+      // Update the event in all storage locations
+      const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
+      storageKeys.forEach(key => {
+        const stored = JSON.parse(localStorage.getItem(key) || '[]');
+        const updated = stored.map((e: any) => {
+          if (e.id === event.id) {
+            const registeredUsers = e.registeredUsers || [];
+            return { ...e, registeredUsers: [...registeredUsers, newUser] };
+          }
+          return e;
+        });
+        localStorage.setItem(key, JSON.stringify(updated));
+      });
+
       setRegistrationData({ fullName: '', phoneNumber: '', registrationNumber: '' });
+      window.dispatchEvent(new Event('storage'));
+      alert('Registration successful!');
     }
+  };
+
+  const handleAttendanceChange = (userId: string, status: 'present' | 'absent') => {
+    const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
+    storageKeys.forEach(key => {
+      const stored = JSON.parse(localStorage.getItem(key) || '[]');
+      const updated = stored.map((e: any) => {
+        if (e.id === event.id) {
+          const attendance = e.attendance || {};
+          return { ...e, attendance: { ...attendance, [userId]: status } };
+        }
+        return e;
+      });
+      localStorage.setItem(key, JSON.stringify(updated));
+    });
+    window.dispatchEvent(new Event('storage'));
   };
 
   return (
@@ -98,30 +166,35 @@ const EnhancedEventDetailModal = ({
           <div className="flex items-center justify-between">
             <DialogTitle className="text-2xl font-bold">{event.title}</DialogTitle>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(event)}
-                className="flex items-center gap-2"
-              >
-                <Edit className="w-4 h-4" />
-                Edit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDelete}
-                className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-600"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete
-              </Button>
+              {!isPastEvent && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onEdit(event)}
+                    className="flex items-center gap-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onDelete(event.id)}
+                    className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-600"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </Button>
+                </>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2 mt-2">
             <Badge className={isGBM ? "bg-blue-600" : "bg-rotaract-orange"}>
               {isGBM ? "GBM / Meeting" : "Event"}
             </Badge>
+            {isPastEvent && <Badge variant="secondary">Past Event</Badge>}
             <span className="text-sm text-gray-500">
               {event.date} • {event.startTime} - {event.endTime}
             </span>
@@ -148,6 +221,7 @@ const EnhancedEventDetailModal = ({
                     id="enableRegistration"
                     checked={enableRegistration}
                     onCheckedChange={handleRegistrationToggle}
+                    disabled={isPastEvent}
                   />
                   <Label htmlFor="enableRegistration" className="text-sm">Enable Registration</Label>
                 </div>
@@ -156,58 +230,60 @@ const EnhancedEventDetailModal = ({
               {enableRegistration && (
                 <div className="space-y-4">
                   {/* Registration Form */}
-                  <Card>
-                    <CardContent className="p-4">
-                      <h4 className="font-medium mb-3">Register for Event</h4>
-                      <form onSubmit={handleRegistrationSubmit} className="space-y-3">
-                        <div>
-                          <Label htmlFor="fullName" className="text-sm">Full Name</Label>
-                          <Input
-                            id="fullName"
-                            value={registrationData.fullName}
-                            onChange={(e) => setRegistrationData(prev => ({ ...prev, fullName: e.target.value }))}
-                            placeholder="Enter full name"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="phoneNumber" className="text-sm">Phone Number</Label>
-                          <Input
-                            id="phoneNumber"
-                            type="tel"
-                            value={registrationData.phoneNumber}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-                              setRegistrationData(prev => ({ ...prev, phoneNumber: value }));
-                            }}
-                            placeholder="Enter 10-digit phone number"
-                            maxLength={10}
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="registrationNumber" className="text-sm">Registration Number</Label>
-                          <Input
-                            id="registrationNumber"
-                            value={registrationData.registrationNumber}
-                            onChange={(e) => setRegistrationData(prev => ({ ...prev, registrationNumber: e.target.value }))}
-                            placeholder="Enter registration number"
-                            required
-                          />
-                        </div>
-                        <Button type="submit" className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90">
-                          Register
-                        </Button>
-                      </form>
-                    </CardContent>
-                  </Card>
+                  {!isPastEvent && (
+                    <Card>
+                      <CardContent className="p-4">
+                        <h4 className="font-medium mb-3">Register for Event</h4>
+                        <form onSubmit={handleRegistrationSubmit} className="space-y-3">
+                          <div>
+                            <Label htmlFor="fullName" className="text-sm">Full Name</Label>
+                            <Input
+                              id="fullName"
+                              value={registrationData.fullName}
+                              onChange={(e) => setRegistrationData(prev => ({ ...prev, fullName: e.target.value }))}
+                              placeholder="Enter full name"
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="phoneNumber" className="text-sm">Phone Number</Label>
+                            <Input
+                              id="phoneNumber"
+                              type="tel"
+                              value={registrationData.phoneNumber}
+                              onChange={(e) => {
+                                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                setRegistrationData(prev => ({ ...prev, phoneNumber: value }));
+                              }}
+                              placeholder="Enter 10-digit phone number"
+                              maxLength={10}
+                              required
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="registrationNumber" className="text-sm">Registration Number</Label>
+                            <Input
+                              id="registrationNumber"
+                              value={registrationData.registrationNumber}
+                              onChange={(e) => setRegistrationData(prev => ({ ...prev, registrationNumber: e.target.value }))}
+                              placeholder="Enter registration number"
+                              required
+                            />
+                          </div>
+                          <Button type="submit" className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90">
+                            Register
+                          </Button>
+                        </form>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Registered Participants */}
                   {hasRegisteredUsers && (
                     <Card>
                       <CardContent className="p-4">
                         <h4 className="font-medium mb-3">Registered Participants ({event.registeredUsers.length})</h4>
-                        <div className="space-y-2">
+                        <div className="space-y-2 max-h-40 overflow-y-auto">
                           {event.registeredUsers.map((user: any, index: number) => (
                             <div key={index} className="p-2 border rounded-lg">
                               <div className="text-sm">
@@ -236,6 +312,7 @@ const EnhancedEventDetailModal = ({
                     id="enableAttendance"
                     checked={enableAttendance}
                     onCheckedChange={handleAttendanceToggle}
+                    disabled={isPastEvent}
                   />
                   <Label htmlFor="enableAttendance" className="text-sm">Enable Attendance</Label>
                 </div>
@@ -245,7 +322,7 @@ const EnhancedEventDetailModal = ({
                 <Card>
                   <CardContent className="p-4">
                     <h4 className="font-medium mb-3">Mark Attendance</h4>
-                    <div className="space-y-3">
+                    <div className="space-y-3 max-h-40 overflow-y-auto">
                       {event.registeredUsers.map((user: any, index: number) => (
                         <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
                           <div>
