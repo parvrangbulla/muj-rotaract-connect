@@ -31,11 +31,18 @@ const WeeklyCalendar = () => {
       const storedEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
       const storedGBMs = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
       
-      // Ensure we have arrays
+      // Ensure we have arrays and only load future events for calendar display
       const events = Array.isArray(storedEvents) ? storedEvents : [];
       const gbms = Array.isArray(storedGBMs) ? storedGBMs : [];
       
-      setEvents([...events, ...gbms]);
+      // Filter only future events for calendar display
+      const now = new Date();
+      const futureEvents = [...events, ...gbms].filter(event => {
+        const eventDateTime = new Date(`${event.date}T${event.startTime}`);
+        return eventDateTime >= now;
+      });
+      
+      setEvents(futureEvents);
     } catch (error) {
       console.error('Error loading events:', error);
       setEvents([]);
@@ -49,11 +56,11 @@ const WeeklyCalendar = () => {
   };
 
   const saveEvent = (eventData: any) => {
-    // Check if event is in the past
+    // Prevent scheduling events in the past
     const isPastEvent = isEventInPast(eventData.date, eventData.startTime);
     
     if (isPastEvent && !editingEvent) {
-      alert('Cannot create events in the past. Please select a future date and time.');
+      alert('Cannot schedule events in the past. Please select a future date and time.');
       return;
     }
 
@@ -69,79 +76,18 @@ const WeeklyCalendar = () => {
       enableAttendance: editingEvent?.enableAttendance || false
     };
 
-    // Determine storage location based on timing
-    if (isPastEvent) {
-      // Add to past events
-      const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-      const pastEventData = {
-        id: eventWithDefaults.id,
-        title: eventWithDefaults.title,
-        date: eventWithDefaults.date,
-        description: eventWithDefaults.description,
-        category: isGBM ? 'GBM' : 'Event',
-        shortDescription: eventWithDefaults.description.substring(0, 100),
-        venue: eventWithDefaults.location,
-        images: [],
-        bannerUrl: '',
-        galleryUrls: [],
-        enableRegistration: eventWithDefaults.enableRegistration,
-        enableAttendance: eventWithDefaults.enableAttendance,
-        registeredUsers: eventWithDefaults.registeredUsers,
-        attendance: eventWithDefaults.attendance
-      };
-      
-      if (editingEvent) {
-        const updatedPastEvents = pastEvents.map((e: any) => 
-          e.id === editingEvent.id ? pastEventData : e
-        );
-        localStorage.setItem('pastEvents', JSON.stringify(updatedPastEvents));
-      } else {
-        pastEvents.push(pastEventData);
-        localStorage.setItem('pastEvents', JSON.stringify(pastEvents));
-      }
+    // Only save to calendar storage (not past events)
+    const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
+    const existingEvents = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    
+    if (editingEvent) {
+      const updatedEvents = existingEvents.map((e: any) => 
+        e.id === editingEvent.id ? eventWithDefaults : e
+      );
+      localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
     } else {
-      // Add to current events (calendar)
-      const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
-      const existingEvents = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      
-      if (editingEvent) {
-        const updatedEvents = existingEvents.map((e: any) => 
-          e.id === editingEvent.id ? eventWithDefaults : e
-        );
-        localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
-      } else {
-        existingEvents.push(eventWithDefaults);
-        localStorage.setItem(storageKey, JSON.stringify(existingEvents));
-      }
-
-      // Also add to past events for dashboard display
-      const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-      const pastEventData = {
-        id: eventWithDefaults.id,
-        title: eventWithDefaults.title,
-        date: eventWithDefaults.date,
-        description: eventWithDefaults.description,
-        category: isGBM ? 'GBM' : 'Event',
-        shortDescription: eventWithDefaults.description.substring(0, 100),
-        venue: eventWithDefaults.location,
-        images: [],
-        bannerUrl: '',
-        galleryUrls: [],
-        enableRegistration: eventWithDefaults.enableRegistration,
-        enableAttendance: eventWithDefaults.enableAttendance,
-        registeredUsers: eventWithDefaults.registeredUsers,
-        attendance: eventWithDefaults.attendance
-      };
-      
-      if (editingEvent) {
-        const updatedPastEvents = pastEvents.map((e: any) => 
-          e.id === editingEvent.id ? pastEventData : e
-        );
-        localStorage.setItem('pastEvents', JSON.stringify(updatedPastEvents));
-      } else {
-        pastEvents.push(pastEventData);
-        localStorage.setItem('pastEvents', JSON.stringify(pastEvents));
-      }
+      existingEvents.push(eventWithDefaults);
+      localStorage.setItem(storageKey, JSON.stringify(existingEvents));
     }
     
     loadEvents();
@@ -178,14 +124,15 @@ const WeeklyCalendar = () => {
     }
 
     if (window.confirm('Are you sure you want to delete this event?')) {
-      // Remove from all storage locations
-      ['calendarEvents', 'gbmMeetings', 'pastEvents'].forEach(key => {
+      // Remove from calendar storage only
+      ['calendarEvents', 'gbmMeetings'].forEach(key => {
         const stored = JSON.parse(localStorage.getItem(key) || '[]');
         const filtered = stored.filter((e: any) => e.id !== eventId);
         localStorage.setItem(key, JSON.stringify(filtered));
       });
       
       loadEvents();
+      setShowDetailModal(false);
       window.dispatchEvent(new Event('storage'));
     }
   };
@@ -317,15 +264,15 @@ const WeeklyCalendar = () => {
                     {timeEvents.map((event) => (
                       <div
                         key={event.id}
-                        className={`p-2 rounded text-xs cursor-pointer mb-1 relative ${
+                        className={`p-2 rounded text-xs cursor-pointer mb-1 relative transition-colors ${
                           event.type === 'gbm' 
-                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' 
-                            : 'bg-green-100 text-green-800 hover:bg-green-200'
+                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200 border border-blue-300' 
+                            : 'bg-green-100 text-green-800 hover:bg-green-200 border border-green-300'
                         }`}
                         onClick={() => handleEventClick(event)}
                       >
                         <div className="font-medium truncate">{event.title}</div>
-                        <div className="text-xs opacity-75">{event.location}</div>
+                        <div className="text-xs opacity-75 truncate">{event.location}</div>
                         <div className="text-xs opacity-75">{event.startTime} - {event.endTime}</div>
                         {event.enableRegistration && (
                           <div className="absolute top-1 right-1 w-2 h-2 bg-rotaract-orange rounded-full" 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight, Users, Download, Search } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,25 +19,23 @@ const Attendance = () => {
   }, []);
 
   const loadEventsWithAttendance = () => {
+    // Only load from calendar events and GBM meetings (not past events)
     const calendarEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
     const gbmMeetings = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
-    const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
     
-    const allEvents = [...calendarEvents, ...gbmMeetings, ...pastEvents];
+    const allEvents = [...calendarEvents, ...gbmMeetings];
     
-    // Filter events that have attendance or registration enabled
+    // Show all scheduled events in attendance (both future and past)
     const attendanceEvents = allEvents.filter(event => 
-      (event.enableAttendance || event.enableRegistration) && 
-      event.registeredUsers && 
-      event.registeredUsers.length > 0
+      event.registeredUsers && event.registeredUsers.length > 0
     );
     
     setEventsWithAttendance(attendanceEvents);
   };
 
   const updateAttendance = (eventId: string, userId: string, status: 'present' | 'absent') => {
-    // Update in all possible storage locations
-    const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
+    // Update in calendar storage locations only
+    const storageKeys = ['calendarEvents', 'gbmMeetings'];
     
     storageKeys.forEach(key => {
       const stored = JSON.parse(localStorage.getItem(key) || '[]');
@@ -70,7 +67,7 @@ const Attendance = () => {
         manuallyAdded: true
       };
 
-      const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
+      const storageKeys = ['calendarEvents', 'gbmMeetings'];
       storageKeys.forEach(key => {
         const stored = JSON.parse(localStorage.getItem(key) || '[]');
         const updated = stored.map((event: any) => {
@@ -138,14 +135,14 @@ const Attendance = () => {
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Attendance Management</h2>
-          <p className="text-gray-600">Track attendance for events with registration enabled</p>
+          <p className="text-gray-600">Track attendance for scheduled events with registrations</p>
         </div>
         <Card>
           <CardContent className="pt-6">
             <div className="text-center text-gray-500">
               <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p>No events with attendance tracking found.</p>
-              <p className="text-sm mt-2">Events with registration enabled will appear here.</p>
+              <p>No scheduled events with registrations found.</p>
+              <p className="text-sm mt-2">Events created in the calendar with registrations will appear here.</p>
             </div>
           </CardContent>
         </Card>
@@ -157,7 +154,7 @@ const Attendance = () => {
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold text-gray-800 mb-2">Attendance Management</h2>
-        <p className="text-gray-600">Mark attendance for registered participants</p>
+        <p className="text-gray-600">Mark attendance for registered participants in scheduled events</p>
       </div>
 
       {/* Search Bar */}
@@ -194,9 +191,17 @@ const Attendance = () => {
                           <ChevronRight className="w-5 h-5 text-gray-500" />
                         )}
                         <div>
-                          <CardTitle className="text-lg">{event.title}</CardTitle>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            {event.title}
+                            {event.type === 'gbm' && (
+                              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">GBM</span>
+                            )}
+                            {event.enableRegistration && (
+                              <span className="text-xs bg-rotaract-orange/20 text-rotaract-orange px-2 py-1 rounded">Registration Enabled</span>
+                            )}
+                          </CardTitle>
                           <p className="text-sm text-gray-500 mt-1">
-                            {event.date} • {event.location}
+                            {event.date} • {event.startTime} - {event.endTime} • {event.location}
                           </p>
                         </div>
                       </div>
