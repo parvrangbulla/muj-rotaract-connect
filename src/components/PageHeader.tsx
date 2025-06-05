@@ -16,7 +16,7 @@ const PageHeader = ({
     backgroundSize: 'cover',
     backgroundPosition: 'center'
   }}>
-      <div className="container text-center text-white z-10 mx-0 py-[5px] my-0 px-0">
+      <div className="container text-center text-white z-10 py-0 px-[3px] mx-[8px] my-[240px]">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 my-[94px] px-0 py-0 mx-0">{title}</h1>
         {subtitle && <p className="text-lg max-w-3xl md:text-xl font-normal text-center px-0 my-0 py-0 mx-[240px]">{subtitle}</p>}
         {children}
