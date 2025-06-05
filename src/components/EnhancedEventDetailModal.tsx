@@ -6,9 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Save } from 'lucide-react';
 
 interface EventDetailModalProps {
   event: any;
@@ -32,6 +33,7 @@ const EnhancedEventDetailModal = ({
     phoneNumber: '',
     registrationNumber: ''
   });
+  const [meetingMinutes, setMeetingMinutes] = useState(event?.meetingMinutes || '');
 
   if (!event) return null;
 
@@ -159,9 +161,38 @@ const EnhancedEventDetailModal = ({
     window.dispatchEvent(new Event('storage'));
   };
 
+  const handleSaveMinutes = () => {
+    const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
+    storageKeys.forEach(key => {
+      const stored = JSON.parse(localStorage.getItem(key) || '[]');
+      const updated = stored.map((e: any) => {
+        if (e.id === event.id) {
+          return { ...e, meetingMinutes };
+        }
+        return e;
+      });
+      localStorage.setItem(key, JSON.stringify(updated));
+    });
+    window.dispatchEvent(new Event('storage'));
+    alert('Meeting minutes saved successfully!');
+  };
+
+  const getAttendanceStats = () => {
+    if (!hasRegisteredUsers) return { present: 0, absent: 0, total: 0 };
+    
+    const attendance = event.attendance || {};
+    const present = Object.values(attendance).filter(status => status === 'present').length;
+    const absent = Object.values(attendance).filter(status => status === 'absent').length;
+    const total = event.registeredUsers.length;
+    
+    return { present, absent, total };
+  };
+
+  const stats = getAttendanceStats();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-2xl font-bold">{event.title}</DialogTitle>
@@ -227,77 +258,52 @@ const EnhancedEventDetailModal = ({
                 </div>
               </div>
 
-              {enableRegistration && (
-                <div className="space-y-4">
-                  {/* Registration Form */}
-                  {!isPastEvent && (
-                    <Card>
-                      <CardContent className="p-4">
-                        <h4 className="font-medium mb-3">Register for Event</h4>
-                        <form onSubmit={handleRegistrationSubmit} className="space-y-3">
-                          <div>
-                            <Label htmlFor="fullName" className="text-sm">Full Name</Label>
-                            <Input
-                              id="fullName"
-                              value={registrationData.fullName}
-                              onChange={(e) => setRegistrationData(prev => ({ ...prev, fullName: e.target.value }))}
-                              placeholder="Enter full name"
-                              required
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="phoneNumber" className="text-sm">Phone Number</Label>
-                            <Input
-                              id="phoneNumber"
-                              type="tel"
-                              value={registrationData.phoneNumber}
-                              onChange={(e) => {
-                                const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-                                setRegistrationData(prev => ({ ...prev, phoneNumber: value }));
-                              }}
-                              placeholder="Enter 10-digit phone number"
-                              maxLength={10}
-                              required
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="registrationNumber" className="text-sm">Registration Number</Label>
-                            <Input
-                              id="registrationNumber"
-                              value={registrationData.registrationNumber}
-                              onChange={(e) => setRegistrationData(prev => ({ ...prev, registrationNumber: e.target.value }))}
-                              placeholder="Enter registration number"
-                              required
-                            />
-                          </div>
-                          <Button type="submit" className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90">
-                            Register
-                          </Button>
-                        </form>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Registered Participants */}
-                  {hasRegisteredUsers && (
-                    <Card>
-                      <CardContent className="p-4">
-                        <h4 className="font-medium mb-3">Registered Participants ({event.registeredUsers.length})</h4>
-                        <div className="space-y-2 max-h-40 overflow-y-auto">
-                          {event.registeredUsers.map((user: any, index: number) => (
-                            <div key={index} className="p-2 border rounded-lg">
-                              <div className="text-sm">
-                                <p className="font-medium">{user.fullName}</p>
-                                <p className="text-gray-600">Phone: {user.phoneNumber}</p>
-                                <p className="text-gray-600">Reg. No: {user.registrationNumber}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-                </div>
+              {enableRegistration && !isPastEvent && (
+                <Card>
+                  <CardContent className="p-4">
+                    <h4 className="font-medium mb-3">Register for Event</h4>
+                    <form onSubmit={handleRegistrationSubmit} className="space-y-3">
+                      <div>
+                        <Label htmlFor="fullName" className="text-sm">Full Name</Label>
+                        <Input
+                          id="fullName"
+                          value={registrationData.fullName}
+                          onChange={(e) => setRegistrationData(prev => ({ ...prev, fullName: e.target.value }))}
+                          placeholder="Enter full name"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phoneNumber" className="text-sm">Phone Number</Label>
+                        <Input
+                          id="phoneNumber"
+                          type="tel"
+                          value={registrationData.phoneNumber}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                            setRegistrationData(prev => ({ ...prev, phoneNumber: value }));
+                          }}
+                          placeholder="Enter 10-digit phone number"
+                          maxLength={10}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="registrationNumber" className="text-sm">Registration Number</Label>
+                        <Input
+                          id="registrationNumber"
+                          value={registrationData.registrationNumber}
+                          onChange={(e) => setRegistrationData(prev => ({ ...prev, registrationNumber: e.target.value }))}
+                          placeholder="Enter registration number"
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90">
+                        Register
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
               )}
             </div>
           )}
@@ -318,39 +324,98 @@ const EnhancedEventDetailModal = ({
                 </div>
               </div>
 
-              {enableAttendance && hasRegisteredUsers ? (
-                <Card>
-                  <CardContent className="p-4">
-                    <h4 className="font-medium mb-3">Mark Attendance</h4>
-                    <div className="space-y-3 max-h-40 overflow-y-auto">
-                      {event.registeredUsers.map((user: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
-                          <div>
-                            <p className="font-medium text-sm">{user.fullName}</p>
-                            <p className="text-xs text-gray-600">{user.registrationNumber}</p>
-                          </div>
-                          <Select
-                            value={event.attendance?.[user.registrationNumber] || 'pending'}
-                            onValueChange={(value) => handleAttendanceChange(user.registrationNumber, value as 'present' | 'absent')}
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="present">Present</SelectItem>
-                              <SelectItem value="absent">Absent</SelectItem>
-                            </SelectContent>
-                          </Select>
+              {enableAttendance && (
+                <div className="space-y-4">
+                  {/* Quick Attendance Marking */}
+                  <Card>
+                    <CardContent className="p-4">
+                      <h4 className="font-medium mb-3">Mark Attendance</h4>
+                      {hasRegisteredUsers ? (
+                        <div className="space-y-3">
+                          {event.registeredUsers.map((user: any, index: number) => {
+                            const userId = user.registrationNumber || user.fullName;
+                            const currentStatus = event.attendance?.[userId] || 'pending';
+                            
+                            return (
+                              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                                <div>
+                                  <p className="font-medium text-sm">{user.fullName}</p>
+                                  <p className="text-xs text-gray-600">{user.registrationNumber}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant={currentStatus === 'present' ? 'default' : 'outline'}
+                                    className={currentStatus === 'present' ? 'bg-green-600 hover:bg-green-700' : 'hover:bg-green-50'}
+                                    onClick={() => handleAttendanceChange(userId, 'present')}
+                                  >
+                                    Present
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant={currentStatus === 'absent' ? 'default' : 'outline'}
+                                    className={currentStatus === 'absent' ? 'bg-red-600 hover:bg-red-700' : 'hover:bg-red-50'}
+                                    onClick={() => handleAttendanceChange(userId, 'absent')}
+                                  >
+                                    Absent
+                                  </Button>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : enableAttendance && !hasRegisteredUsers ? (
-                <p className="text-sm text-gray-500">No registered participants for attendance tracking.</p>
-              ) : (
-                <p className="text-sm text-gray-500">Enable attendance to track participant presence.</p>
+                      ) : (
+                        <p className="text-sm text-gray-500">No registered participants for attendance tracking.</p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Meeting Minutes */}
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-medium">Minutes of Meeting</h4>
+                        <Button
+                          size="sm"
+                          onClick={handleSaveMinutes}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <Save className="w-4 h-4 mr-2" />
+                          Save Minutes
+                        </Button>
+                      </div>
+                      <Textarea
+                        value={meetingMinutes}
+                        onChange={(e) => setMeetingMinutes(e.target.value)}
+                        placeholder="Enter meeting minutes, agenda items, decisions made, action items, etc..."
+                        className="min-h-[120px]"
+                      />
+                    </CardContent>
+                  </Card>
+
+                  {/* Attendance Summary */}
+                  {hasRegisteredUsers && (
+                    <Card>
+                      <CardContent className="p-4">
+                        <h4 className="font-medium mb-3">Attendance Summary</h4>
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          <div className="p-3 bg-green-50 rounded-lg">
+                            <div className="text-2xl font-bold text-green-600">{stats.present}</div>
+                            <div className="text-sm text-green-700">Present</div>
+                          </div>
+                          <div className="p-3 bg-red-50 rounded-lg">
+                            <div className="text-2xl font-bold text-red-600">{stats.absent}</div>
+                            <div className="text-sm text-red-700">Absent</div>
+                          </div>
+                          <div className="p-3 bg-gray-50 rounded-lg">
+                            <div className="text-2xl font-bold text-gray-600">{stats.total}</div>
+                            <div className="text-sm text-gray-700">Total</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               )}
             </div>
           )}
