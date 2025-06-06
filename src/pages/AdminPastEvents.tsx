@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Upload, X, Calendar, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -23,6 +22,7 @@ interface EventFormData {
   description: string;
   shortDescription: string;
   category: string;
+  domain: string;
   impact?: string;
   bannerUrl?: string;
   galleryUrls: string[];
@@ -41,6 +41,7 @@ const AdminPastEvents = () => {
     description: '',
     shortDescription: '',
     category: '',
+    domain: '',
     impact: '',
     bannerUrl: '',
     galleryUrls: [],
@@ -61,6 +62,7 @@ const AdminPastEvents = () => {
         description: event.description || '',
         shortDescription: event.shortDescription || '',
         category: event.category || '',
+        domain: event.domain || '',
         impact: event.impact || '',
         bannerUrl: event.bannerUrl || '',
         galleryUrls: event.galleryUrls || [],
@@ -174,6 +176,7 @@ const AdminPastEvents = () => {
         description: '',
         shortDescription: '',
         category: '',
+        domain: '',
         impact: '',
         bannerUrl: '',
         galleryUrls: [],
@@ -242,6 +245,24 @@ const AdminPastEvents = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Domain - Only show for Past Events */}
+              {formData.category === 'Past Event' && (
+                <div className="space-y-2">
+                  <Label htmlFor="domain">Domain</Label>
+                  <Select value={formData.domain} onValueChange={(value) => handleInputChange('domain', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select domain" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CSD">CSD (Community Service Director)</SelectItem>
+                      <SelectItem value="CMD">CMD (Club Membership Director)</SelectItem>
+                      <SelectItem value="ISD">ISD (International Service Director)</SelectItem>
+                      <SelectItem value="PDD">PDD (Professional Development Director)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {/* Date and Venue Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

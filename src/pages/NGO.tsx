@@ -1,17 +1,26 @@
+
 import { Card, CardContent } from '@/components/ui/card';
+import { Globe, Mail, Phone } from 'lucide-react';
+
 const NGO = () => {
   const ngos = [{
     id: 1,
     name: "Aahan Foundation",
     description: "Working towards providing education and healthcare to underprivileged children. We collaborate with them on various educational initiatives and health camps.",
     collaboration: "Educational workshops, health awareness programs, and skill development sessions for children.",
-    images: ["https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=80&w=3000&auto=format&fit=crop", "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=3000&auto=format&fit=crop"]
+    images: ["https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=80&w=3000&auto=format&fit=crop", "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=3000&auto=format&fit=crop"],
+    website: "https://ahanfoundation.in",
+    email: "ahanfoundation.in@gmail.com",
+    phone: "+91-97825-17428"
   }, {
     id: 2,
     name: "Paathshala",
     description: "Dedicated to providing quality education to children from marginalized communities through innovative teaching methods and community engagement.",
     collaboration: "Teaching support, book donation drives, and mentorship programs for students.",
-    images: ["https://images.unsplash.com/photo-1497486751825-1233686d5d80?q=80&w=3000&auto=format&fit=crop", "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=3000&auto=format&fit=crop"]
+    images: ["https://images.unsplash.com/photo-1497486751825-1233686d5d80?q=80&w=3000&auto=format&fit=crop", "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=3000&auto=format&fit=crop"],
+    website: "https://www.paathshalatrust.org/",
+    email: "info@paathshalatrust.org",
+    phone: "97822 09683"
   }, {
     id: 3,
     name: "Hope Foundation",
@@ -19,6 +28,7 @@ const NGO = () => {
     collaboration: "Community clean-up drives, women's skill development workshops, and healthcare awareness campaigns.",
     images: ["https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=3000&auto=format&fit=crop", "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?q=80&w=3000&auto=format&fit=crop"]
   }];
+
   return <div className="min-h-screen bg-stone-50 py-16">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
@@ -42,6 +52,50 @@ const NGO = () => {
                       <h3 className="text-lg font-semibold text-black mb-2">Our Collaboration:</h3>
                       <p className="text-gray-600">{ngo.collaboration}</p>
                     </div>
+
+                    {/* Contact Information */}
+                    {(ngo.website || ngo.email || ngo.phone) && (
+                      <div className="mb-6">
+                        <h3 className="text-lg font-semibold text-black mb-3">Contact Information:</h3>
+                        <div className="space-y-2">
+                          {ngo.website && (
+                            <div className="flex items-center gap-2">
+                              <Globe className="w-4 h-4 text-rotaract-orange" />
+                              <a 
+                                href={ngo.website} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                              >
+                                {ngo.website}
+                              </a>
+                            </div>
+                          )}
+                          {ngo.email && (
+                            <div className="flex items-center gap-2">
+                              <Mail className="w-4 h-4 text-rotaract-orange" />
+                              <a 
+                                href={`mailto:${ngo.email}`}
+                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                              >
+                                {ngo.email}
+                              </a>
+                            </div>
+                          )}
+                          {ngo.phone && (
+                            <div className="flex items-center gap-2">
+                              <Phone className="w-4 h-4 text-rotaract-orange" />
+                              <a 
+                                href={`tel:${ngo.phone}`}
+                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                              >
+                                {ngo.phone}
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="bg-rotaract-orange/10 p-4 rounded-lg">
                       <p className="text-sm text-gray-700">
@@ -74,11 +128,11 @@ const NGO = () => {
               <a href="mailto:rotaract.muj@gmail.com" className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white px-6 py-3 rounded-lg font-medium transition-colors">
                 Contact Us
               </a>
-              
             </div>
           </div>
         </div>
       </div>
     </div>;
 };
+
 export default NGO;

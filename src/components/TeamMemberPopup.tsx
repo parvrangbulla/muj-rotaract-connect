@@ -1,5 +1,5 @@
 
-import { X, Instagram, Mail } from 'lucide-react';
+import { X, Instagram, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface TeamMember {
@@ -8,7 +8,7 @@ interface TeamMember {
   position: string;
   image: string;
   instagram: string;
-  email?: string;
+  phone?: string;
   bio?: string;
 }
 
@@ -70,12 +70,12 @@ const TeamMemberPopup = ({ member, onClose }: TeamMemberPopupProps) => {
             >
               <Instagram size={20} />
             </a>
-            {member.email && (
+            {member.phone && (
               <a 
-                href={`mailto:${member.email}`}
+                href={`tel:${member.phone}`}
                 className="bg-rotaract-orange text-white p-3 rounded-full hover:bg-rotaract-orange/90 transition-all duration-300 hover:scale-110 transform flex items-center justify-center"
               >
-                <Mail size={20} />
+                <Phone size={20} />
               </a>
             )}
           </div>
