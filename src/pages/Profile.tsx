@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { Edit, Upload, X, Award, ArrowLeft, User } from 'lucide-react';
 interface ProfileData {
   fullName: string;
   registrationNumber: string;
-  dateOfBirth: string;
+  rotaryId: string;
   phoneNumber: string;
   profilePicture: string | null;
   serviceHours: number;
@@ -23,7 +24,7 @@ const Profile = () => {
   const [profileData, setProfileData] = useState({
     fullName: '',
     registrationNumber: '',
-    dateOfBirth: '',
+    rotaryId: '',
     phoneNumber: '',
     profilePicture: null as string | null,
     serviceHours: 0
@@ -40,7 +41,7 @@ const Profile = () => {
         setProfileData({
           fullName: profile.fullName || username,
           registrationNumber: profile.registrationNumber || '',
-          dateOfBirth: profile.dateOfBirth || '',
+          rotaryId: profile.rotaryId || profile.dateOfBirth || '', // Migrate old dateOfBirth to rotaryId
           phoneNumber: profile.phoneNumber || '',
           profilePicture: profile.profilePicture || null,
           serviceHours: profile.serviceHours || 0
@@ -92,7 +93,7 @@ const Profile = () => {
       const dataToSave = {
         fullName: profileData.fullName,
         registrationNumber: profileData.registrationNumber,
-        dateOfBirth: profileData.dateOfBirth,
+        rotaryId: profileData.rotaryId,
         phoneNumber: profileData.phoneNumber,
         profilePicture: profileData.profilePicture,
         serviceHours: profileData.serviceHours // Keep existing service hours
@@ -235,15 +236,15 @@ const Profile = () => {
                   />
                 </div>
 
-                {/* Date of Birth */}
+                {/* Rotary ID */}
                 <div className="space-y-2">
-                  <Label htmlFor="date-of-birth">Date of Birth</Label>
+                  <Label htmlFor="rotary-id">Rotary ID</Label>
                   <Input
-                    id="date-of-birth"
-                    type="date"
-                    value={profileData.dateOfBirth}
-                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                    id="rotary-id"
+                    value={profileData.rotaryId}
+                    onChange={(e) => handleInputChange('rotaryId', e.target.value)}
                     disabled={!isEditing}
+                    placeholder="Enter your Rotary ID"
                   />
                 </div>
 

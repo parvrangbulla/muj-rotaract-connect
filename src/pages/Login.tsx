@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Users } from 'lucide-react';
 import AnimatedBackground from '@/components/AnimatedBackground';
 
 const Login = () => {
@@ -25,6 +25,14 @@ const Login = () => {
       window.dispatchEvent(new Event('storage'));
       navigate('/');
     }
+  };
+
+  const handleGuestAccess = () => {
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('username', 'Guest');
+    localStorage.setItem('isGuest', 'true');
+    window.dispatchEvent(new Event('storage'));
+    navigate('/');
   };
 
   return (
@@ -95,6 +103,17 @@ const Login = () => {
                 Sign In
               </Button>
             </form>
+
+            <div className="mt-4">
+              <Button
+                onClick={handleGuestAccess}
+                variant="outline"
+                className="w-full border-gray-600 text-white hover:bg-white/10"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Continue as Guest
+              </Button>
+            </div>
 
             <div className="mt-6 text-center">
               <p className="text-gray-400 text-sm">

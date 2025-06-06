@@ -9,10 +9,12 @@ import FeedbackForm from './FeedbackForm';
 import EventManagement from './EventManagement';
 import Certificates from './Certificates';
 import Attendance from './Attendance';
+import GuestCalendar from './GuestCalendar';
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'past-events' | 'feedback' | 'attendance'>('calendar');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
   const [userProfile, setUserProfile] = useState({
     fullName: '',
     profilePicture: null as string | null
@@ -22,7 +24,10 @@ const UserDashboard = () => {
   useEffect(() => {
     const handleStorageChange = () => {
       const username = localStorage.getItem('username') || 'User';
+      const guestMode = localStorage.getItem('isGuest') === 'true';
       const savedProfile = localStorage.getItem('userProfile');
+      
+      setIsGuest(guestMode);
       
       if (savedProfile) {
         const profile = JSON.parse(savedProfile);
@@ -49,6 +54,7 @@ const UserDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('username');
+    localStorage.removeItem('isGuest');
     window.dispatchEvent(new Event('storage'));
     navigate('/');
   };
@@ -80,7 +86,7 @@ const UserDashboard = () => {
           </div>
           
           {/* User Profile Section */}
-          {isSidebarOpen && (
+          {isSidebarOpen && !isGuest && (
             <div 
               className="mt-4 p-3 bg-stone-50 rounded-lg cursor-pointer hover:bg-stone-100 transition-colors"
               onClick={() => navigate('/profile')}
@@ -97,6 +103,25 @@ const UserDashboard = () => {
                     {userProfile.fullName}
                   </p>
                   <p className="text-xs text-gray-500">View Profile</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Guest Mode Indicator */}
+          {isSidebarOpen && isGuest && (
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <div className="flex items-center gap-3">
+                <Avatar className="w-10 h-10">
+                  <AvatarFallback>
+                    <User className="w-5 h-5" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900">
+                    Guest User
+                  </p>
+                  <p className="text-xs text-blue-600">Read-only access</p>
                 </div>
               </div>
             </div>
@@ -118,54 +143,60 @@ const UserDashboard = () => {
               <Calendar className="w-4 h-4 mr-2" />
               {isSidebarOpen && 'Calendar'}
             </Button>
-            <Button
-              variant={activeTab === 'certificates' ? 'default' : 'ghost'}
-              className={`w-full justify-start ${
-                activeTab === 'certificates' 
-                  ? 'bg-rotaract-orange text-white' 
-                  : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-              }`}
-              onClick={() => setActiveTab('certificates')}
-            >
-              <Award className="w-4 h-4 mr-2" />
-              {isSidebarOpen && 'Certificates'}
-            </Button>
-            <Button
-              variant={activeTab === 'past-events' ? 'default' : 'ghost'}
-              className={`w-full justify-start ${
-                activeTab === 'past-events' 
-                  ? 'bg-rotaract-orange text-white' 
-                  : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-              }`}
-              onClick={() => setActiveTab('past-events')}
-            >
-              <Camera className="w-4 h-4 mr-2" />
-              {isSidebarOpen && 'Past Events'}
-            </Button>
-            <Button
-              variant={activeTab === 'attendance' ? 'default' : 'ghost'}
-              className={`w-full justify-start ${
-                activeTab === 'attendance' 
-                  ? 'bg-rotaract-orange text-white' 
-                  : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-              }`}
-              onClick={() => setActiveTab('attendance')}
-            >
-              <User className="w-4 h-4 mr-2" />
-              {isSidebarOpen && 'Attendance'}
-            </Button>
-            <Button
-              variant={activeTab === 'feedback' ? 'default' : 'ghost'}
-              className={`w-full justify-start ${
-                activeTab === 'feedback' 
-                  ? 'bg-rotaract-orange text-white' 
-                  : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-              }`}
-              onClick={() => setActiveTab('feedback')}
-            >
-              <MessageSquare className="w-4 h-4 mr-2" />
-              {isSidebarOpen && 'Feedback'}
-            </Button>
+            
+            {/* Hide other tabs for guests */}
+            {!isGuest && (
+              <>
+                <Button
+                  variant={activeTab === 'certificates' ? 'default' : 'ghost'}
+                  className={`w-full justify-start ${
+                    activeTab === 'certificates' 
+                      ? 'bg-rotaract-orange text-white' 
+                      : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
+                  }`}
+                  onClick={() => setActiveTab('certificates')}
+                >
+                  <Award className="w-4 h-4 mr-2" />
+                  {isSidebarOpen && 'Certificates'}
+                </Button>
+                <Button
+                  variant={activeTab === 'past-events' ? 'default' : 'ghost'}
+                  className={`w-full justify-start ${
+                    activeTab === 'past-events' 
+                      ? 'bg-rotaract-orange text-white' 
+                      : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
+                  }`}
+                  onClick={() => setActiveTab('past-events')}
+                >
+                  <Camera className="w-4 h-4 mr-2" />
+                  {isSidebarOpen && 'Past Events'}
+                </Button>
+                <Button
+                  variant={activeTab === 'attendance' ? 'default' : 'ghost'}
+                  className={`w-full justify-start ${
+                    activeTab === 'attendance' 
+                      ? 'bg-rotaract-orange text-white' 
+                      : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
+                  }`}
+                  onClick={() => setActiveTab('attendance')}
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  {isSidebarOpen && 'Attendance'}
+                </Button>
+                <Button
+                  variant={activeTab === 'feedback' ? 'default' : 'ghost'}
+                  className={`w-full justify-start ${
+                    activeTab === 'feedback' 
+                      ? 'bg-rotaract-orange text-white' 
+                      : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
+                  }`}
+                  onClick={() => setActiveTab('feedback')}
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  {isSidebarOpen && 'Feedback'}
+                </Button>
+              </>
+            )}
           </div>
         </nav>
 
@@ -184,11 +215,11 @@ const UserDashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 p-6">
-        {activeTab === 'calendar' && <WeeklyCalendar />}
-        {activeTab === 'certificates' && <Certificates />}
-        {activeTab === 'past-events' && <EventManagement />}
-        {activeTab === 'attendance' && <Attendance />}
-        {activeTab === 'feedback' && <FeedbackForm />}
+        {activeTab === 'calendar' && (isGuest ? <GuestCalendar /> : <WeeklyCalendar />)}
+        {!isGuest && activeTab === 'certificates' && <Certificates />}
+        {!isGuest && activeTab === 'past-events' && <EventManagement />}
+        {!isGuest && activeTab === 'attendance' && <Attendance />}
+        {!isGuest && activeTab === 'feedback' && <FeedbackForm />}
       </div>
     </div>
   );

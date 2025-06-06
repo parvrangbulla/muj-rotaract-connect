@@ -23,7 +23,6 @@ interface EventFormData {
   description: string;
   shortDescription: string;
   category: string;
-  domain?: string;
   impact?: string;
   bannerUrl?: string;
   galleryUrls: string[];
@@ -42,7 +41,6 @@ const AdminPastEvents = () => {
     description: '',
     shortDescription: '',
     category: '',
-    domain: '',
     impact: '',
     bannerUrl: '',
     galleryUrls: [],
@@ -63,7 +61,6 @@ const AdminPastEvents = () => {
         description: event.description || '',
         shortDescription: event.shortDescription || '',
         category: event.category || '',
-        domain: event.domain || '',
         impact: event.impact || '',
         bannerUrl: event.bannerUrl || '',
         galleryUrls: event.galleryUrls || [],
@@ -177,7 +174,6 @@ const AdminPastEvents = () => {
         description: '',
         shortDescription: '',
         category: '',
-        domain: '',
         impact: '',
         bannerUrl: '',
         galleryUrls: [],
@@ -241,32 +237,11 @@ const AdminPastEvents = () => {
                     <SelectValue placeholder="Select event category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="CSD">Community Service Development (CSD)</SelectItem>
-                    <SelectItem value="CMD">Club/Member Development (CMD)</SelectItem>
-                    <SelectItem value="ISD">International Service Development (ISD)</SelectItem>
-                    <SelectItem value="PDD">Professional Development (PDD)</SelectItem>
                     <SelectItem value="Flagship">Flagship Event</SelectItem>
+                    <SelectItem value="Past Event">Past Event</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* Domain - Only show for non-flagship events */}
-              {formData.category !== 'Flagship' && (
-                <div className="space-y-2">
-                  <Label htmlFor="domain">Domain (Optional)</Label>
-                  <Select value={formData.domain || ''} onValueChange={(value) => handleInputChange('domain', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select domain" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="CSD">Community Service Development</SelectItem>
-                      <SelectItem value="CMD">Club/Member Development</SelectItem>
-                      <SelectItem value="ISD">International Service Development</SelectItem>
-                      <SelectItem value="PDD">Professional Development</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
 
               {/* Date and Venue Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
