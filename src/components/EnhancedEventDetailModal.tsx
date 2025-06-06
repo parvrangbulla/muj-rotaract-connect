@@ -8,8 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Edit, Trash2, Save, Plus } from 'lucide-react';
+import { Edit, Trash2, Save } from 'lucide-react';
 
 interface EventDetailModalProps {
   event: any;
@@ -28,6 +27,7 @@ const EnhancedEventDetailModal = ({
 }: EventDetailModalProps) => {
   const [enableRegistration, setEnableRegistration] = useState(event?.enableRegistration || false);
   const [enableAttendance, setEnableAttendance] = useState(event?.enableAttendance || false);
+  const [enableCertificate, setEnableCertificate] = useState(event?.enableCertificate || false);
   const [registrationData, setRegistrationData] = useState({
     fullName: '',
     phoneNumber: '',
@@ -38,11 +38,11 @@ const EnhancedEventDetailModal = ({
     registrationNumber: ''
   });
   const [meetingMinutes, setMeetingMinutes] = useState(event?.meetingMinutes || '');
+  const [hasMarkedAttendance, setHasMarkedAttendance] = useState(false);
 
   if (!event) return null;
 
   const isGBM = event.type === 'gbm';
-  const hasRegisteredUsers = event.registeredUsers && event.registeredUsers.length > 0;
 
   const isEventInPast = (eventDate: string, eventTime: string) => {
     const now = new Date();
@@ -114,6 +114,37 @@ const EnhancedEventDetailModal = ({
     window.dispatchEvent(new Event('storage'));
   };
 
+  const handleCertificateToggle = (checked: boolean) => {
+    if (isPastEvent) {
+      alert('Cannot modify past events.');
+      return;
+    }
+
+    setEnableCertificate(checked);
+    // Update the event in storage
+    const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
+    const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    const updated = stored.map((e: any) => {
+      if (e.id === event.id) {
+        return { ...e, enableCertificate: checked };
+      }
+      return e;
+    });
+    localStorage.setItem(storageKey, JSON.stringify(updated));
+    
+    // Also update in pastEvents
+    const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+    const updatedPastEvents = pastEvents.map((e: any) => {
+      if (e.id === event.id) {
+        return { ...e, enableCertificate: checked };
+      }
+      return e;
+    });
+    localStorage.setItem('pastEvents', JSON.stringify(updatedPastEvents));
+    
+    window.dispatchEvent(new Event('storage'));
+  };
+
   const handleRegistrationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (registrationData.fullName && registrationData.phoneNumber && registrationData.registrationNumber) {
@@ -149,44 +180,20 @@ const EnhancedEventDetailModal = ({
     }
   };
 
-  const handleAddAttendee = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newAttendee.fullName && newAttendee.registrationNumber) {
-      const existingUser = event.registeredUsers?.find((user: any) => 
-        user.registrationNumber === newAttendee.registrationNumber
-      );
-      
-      if (existingUser) {
-        alert('User already exists!');
-        return;
-      }
-
-      const attendeeData = { 
-        ...newAttendee, 
-        phoneNumber: '', 
-        registeredAt: new Date().toISOString() 
-      };
-      
-      const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
-      storageKeys.forEach(key => {
-        const stored = JSON.parse(localStorage.getItem(key) || '[]');
-        const updated = stored.map((e: any) => {
-          if (e.id === event.id) {
-            const registeredUsers = e.registeredUsers || [];
-            return { ...e, registeredUsers: [...registeredUsers, attendeeData] };
-          }
-          return e;
-        });
-        localStorage.setItem(key, JSON.stringify(updated));
-      });
-
-      setNewAttendee({ fullName: '', registrationNumber: '' });
-      window.dispatchEvent(new Event('storage'));
-      alert('Attendee added successfully!');
+  const handleAttendanceAction = (status: 'present' | 'absent') => {
+    if (!newAttendee.fullName || !newAttendee.registrationNumber) {
+      alert('Please enter both name and registration number.');
+      return;
     }
-  };
 
-  const handleAttendanceChange = (userId: string, status: 'present' | 'absent') => {
+    if (hasMarkedAttendance) {
+      alert('You have already marked attendance for this session.');
+      return;
+    }
+
+    const userId = newAttendee.registrationNumber;
+    
+    // Update attendance
     const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
     storageKeys.forEach(key => {
       const stored = JSON.parse(localStorage.getItem(key) || '[]');
@@ -199,7 +206,36 @@ const EnhancedEventDetailModal = ({
       });
       localStorage.setItem(key, JSON.stringify(updated));
     });
+
+    // Add user to registeredUsers if not exists
+    const existingUser = event.registeredUsers?.find((user: any) => 
+      user.registrationNumber === newAttendee.registrationNumber
+    );
+    
+    if (!existingUser) {
+      const attendeeData = { 
+        ...newAttendee, 
+        phoneNumber: '', 
+        registeredAt: new Date().toISOString() 
+      };
+      
+      storageKeys.forEach(key => {
+        const stored = JSON.parse(localStorage.getItem(key) || '[]');
+        const updated = stored.map((e: any) => {
+          if (e.id === event.id) {
+            const registeredUsers = e.registeredUsers || [];
+            return { ...e, registeredUsers: [...registeredUsers, attendeeData] };
+          }
+          return e;
+        });
+        localStorage.setItem(key, JSON.stringify(updated));
+      });
+    }
+    
+    setNewAttendee({ fullName: '', registrationNumber: '' });
+    setHasMarkedAttendance(true);
     window.dispatchEvent(new Event('storage'));
+    alert(`Attendance marked as ${status}!`);
   };
 
   const handleSaveMinutes = () => {
@@ -333,13 +369,27 @@ const EnhancedEventDetailModal = ({
                   </CardContent>
                 </Card>
               )}
+
+              {/* Certificate Toggle for Events */}
+              <div className="flex items-center justify-between mt-4">
+                <h3 className="text-lg font-semibold">Certificate</h3>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="enableCertificate"
+                    checked={enableCertificate}
+                    onCheckedChange={handleCertificateToggle}
+                    disabled={isPastEvent}
+                  />
+                  <Label htmlFor="enableCertificate" className="text-sm">Enable Certificate Download</Label>
+                </div>
+              </div>
             </div>
           )}
 
           {/* GBM Sections */}
           {isGBM && (
             <div className="space-y-6">
-              {/* Meeting Minutes - Moved before attendance toggle */}
+              {/* Meeting Minutes */}
               <Card>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -378,120 +428,56 @@ const EnhancedEventDetailModal = ({
                 </div>
 
                 {enableAttendance && (
-                  <div className="space-y-4">
-                    {/* Direct Attendance Marking - No Add Attendee section */}
-                    <Card>
-                      <CardContent className="p-4">
-                        <h4 className="font-medium mb-3">Mark Attendance</h4>
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-2 gap-3 mb-3">
-                            <div>
-                              <Label htmlFor="newName" className="text-sm">Full Name</Label>
-                              <Input
-                                id="newName"
-                                value={newAttendee.fullName}
-                                onChange={(e) => setNewAttendee(prev => ({ ...prev, fullName: e.target.value }))}
-                                placeholder="Enter your name"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="newRegNo" className="text-sm">Registration Number</Label>
-                              <Input
-                                id="newRegNo"
-                                value={newAttendee.registrationNumber}
-                                onChange={(e) => setNewAttendee(prev => ({ ...prev, registrationNumber: e.target.value }))}
-                                placeholder="Enter your registration number"
-                              />
-                            </div>
+                  <Card>
+                    <CardContent className="p-4">
+                      <h4 className="font-medium mb-3">Mark Attendance</h4>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Label htmlFor="newName" className="text-sm">Full Name</Label>
+                            <Input
+                              id="newName"
+                              value={newAttendee.fullName}
+                              onChange={(e) => setNewAttendee(prev => ({ ...prev, fullName: e.target.value }))}
+                              placeholder="Enter your name"
+                              disabled={hasMarkedAttendance}
+                            />
                           </div>
+                          <div>
+                            <Label htmlFor="newRegNo" className="text-sm">Registration Number</Label>
+                            <Input
+                              id="newRegNo"
+                              value={newAttendee.registrationNumber}
+                              onChange={(e) => setNewAttendee(prev => ({ ...prev, registrationNumber: e.target.value }))}
+                              placeholder="Enter your registration number"
+                              disabled={hasMarkedAttendance}
+                            />
+                          </div>
+                        </div>
+                        {!hasMarkedAttendance && (
                           <div className="flex gap-2">
                             <Button
-                              onClick={() => {
-                                if (newAttendee.fullName && newAttendee.registrationNumber) {
-                                  const userId = newAttendee.registrationNumber;
-                                  handleAttendanceChange(userId, 'present');
-                                  
-                                  // Add user to registeredUsers if not exists
-                                  const existingUser = event.registeredUsers?.find((user: any) => 
-                                    user.registrationNumber === newAttendee.registrationNumber
-                                  );
-                                  
-                                  if (!existingUser) {
-                                    const attendeeData = { 
-                                      ...newAttendee, 
-                                      phoneNumber: '', 
-                                      registeredAt: new Date().toISOString() 
-                                    };
-                                    
-                                    const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
-                                    storageKeys.forEach(key => {
-                                      const stored = JSON.parse(localStorage.getItem(key) || '[]');
-                                      const updated = stored.map((e: any) => {
-                                        if (e.id === event.id) {
-                                          const registeredUsers = e.registeredUsers || [];
-                                          return { ...e, registeredUsers: [...registeredUsers, attendeeData] };
-                                        }
-                                        return e;
-                                      });
-                                      localStorage.setItem(key, JSON.stringify(updated));
-                                    });
-                                  }
-                                  
-                                  setNewAttendee({ fullName: '', registrationNumber: '' });
-                                  window.dispatchEvent(new Event('storage'));
-                                }
-                              }}
+                              onClick={() => handleAttendanceAction('present')}
                               className="bg-green-600 hover:bg-green-700"
                               disabled={!newAttendee.fullName || !newAttendee.registrationNumber}
                             >
                               Present
                             </Button>
                             <Button
-                              onClick={() => {
-                                if (newAttendee.fullName && newAttendee.registrationNumber) {
-                                  const userId = newAttendee.registrationNumber;
-                                  handleAttendanceChange(userId, 'absent');
-                                  
-                                  // Add user to registeredUsers if not exists
-                                  const existingUser = event.registeredUsers?.find((user: any) => 
-                                    user.registrationNumber === newAttendee.registrationNumber
-                                  );
-                                  
-                                  if (!existingUser) {
-                                    const attendeeData = { 
-                                      ...newAttendee, 
-                                      phoneNumber: '', 
-                                      registeredAt: new Date().toISOString() 
-                                    };
-                                    
-                                    const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
-                                    storageKeys.forEach(key => {
-                                      const stored = JSON.parse(localStorage.getItem(key) || '[]');
-                                      const updated = stored.map((e: any) => {
-                                        if (e.id === event.id) {
-                                          const registeredUsers = e.registeredUsers || [];
-                                          return { ...e, registeredUsers: [...registeredUsers, attendeeData] };
-                                        }
-                                        return e;
-                                      });
-                                      localStorage.setItem(key, JSON.stringify(updated));
-                                    });
-                                  }
-                                  
-                                  setNewAttendee({ fullName: '', registrationNumber: '' });
-                                  window.dispatchEvent(new Event('storage'));
-                                }
-                              }}
+                              onClick={() => handleAttendanceAction('absent')}
                               className="bg-red-600 hover:bg-red-700"
                               disabled={!newAttendee.fullName || !newAttendee.registrationNumber}
                             >
                               Absent
                             </Button>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
+                        )}
+                        {hasMarkedAttendance && (
+                          <p className="text-sm text-gray-600">Attendance has been marked for this session.</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             </div>

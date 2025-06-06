@@ -1,48 +1,64 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, Award } from 'lucide-react';
 
 interface CertificateEvent {
-  id: number;
+  id: string;
   title: string;
   date: string;
   type: 'flagship' | 'event' | 'gbm';
-  attendanceStatus: 'present' | 'absent';
+  attendanceStatus?: 'present' | 'absent';
   certificateAvailable: boolean;
+  enableCertificate?: boolean;
 }
 
 const Certificates = () => {
-  const [certificates] = useState<CertificateEvent[]>([
-    {
-      id: 1,
-      title: "BDC - Blood Donation Camp",
-      date: "October 7, 2024",
-      type: 'flagship',
-      attendanceStatus: 'present',
-      certificateAvailable: true
-    },
-    {
-      id: 2,
-      title: "Mural Painting Workshop",
-      date: "June 2, 2025",
-      type: 'event',
-      attendanceStatus: 'present',
-      certificateAvailable: true
-    },
-    {
-      id: 3,
-      title: "GBM - General Body Meeting",
-      date: "May 31, 2025",
-      type: 'gbm',
-      attendanceStatus: 'absent',
-      certificateAvailable: false
-    }
-  ]);
+  const [certificates, setCertificates] = useState<CertificateEvent[]>([]);
 
-  const handleDownloadCertificate = (eventId: number, eventTitle: string) => {
+  useEffect(() => {
+    loadCertificates();
+    const handleStorageChange = () => loadCertificates();
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const loadCertificates = () => {
+    // Load events from all storage locations
+    const calendarEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
+    const gbmMeetings = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
+    const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+    
+    const allEvents = [...calendarEvents, ...gbmMeetings, ...pastEvents];
+    
+    // Filter events that have registrations and check attendance
+    const eventsWithCertificates = allEvents
+      .filter(event => event.registeredUsers && event.registeredUsers.length > 0)
+      .map(event => {
+        const attendance = event.attendance || {};
+        
+        // For now, simulate a user checking their own attendance
+        // In a real app, this would be based on the logged-in user
+        const userAttendance = Object.values(attendance);
+        const hasPresent = userAttendance.includes('present');
+        
+        return {
+          id: event.id,
+          title: event.title,
+          date: event.date,
+          type: event.type === 'gbm' ? 'gbm' : 'event',
+          attendanceStatus: hasPresent ? 'present' : 'absent',
+          certificateAvailable: hasPresent && (event.enableCertificate !== false),
+          enableCertificate: event.enableCertificate
+        };
+      });
+
+    setCertificates(eventsWithCertificates);
+  };
+
+  const handleDownloadCertificate = (eventId: string, eventTitle: string) => {
     // In a real application, this would generate and download a PDF certificate
     console.log(`Downloading certificate for event ${eventId}: ${eventTitle}`);
     
@@ -56,6 +72,7 @@ const Certificates = () => {
   };
 
   const presentEvents = certificates.filter(cert => cert.attendanceStatus === 'present');
+  const availableCertificates = presentEvents.filter(cert => cert.certificateAvailable);
 
   return (
     <div className="space-y-6">
@@ -97,6 +114,11 @@ const Certificates = () => {
                     <Badge className="bg-green-100 text-green-800">
                       ✅ Present
                     </Badge>
+                    {cert.enableCertificate === false && (
+                      <Badge variant="secondary">
+                        Certificate Disabled
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </CardHeader>
@@ -116,7 +138,7 @@ const Certificates = () => {
                     </Button>
                   ) : (
                     <Button disabled size="sm" variant="outline">
-                      Certificate Unavailable
+                      {cert.enableCertificate === false ? 'Certificate Disabled' : 'Certificate Unavailable'}
                     </Button>
                   )}
                 </div>
@@ -140,7 +162,7 @@ const Certificates = () => {
             </div>
             <div>
               <div className="text-2xl font-bold text-green-600">
-                {presentEvents.filter(cert => cert.certificateAvailable).length}
+                {availableCertificates.length}
               </div>
               <div className="text-sm text-gray-600">Certificates Available</div>
             </div>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
 
 const Attendance = () => {
   const [eventsWithAttendance, setEventsWithAttendance] = useState<any[]>([]);
@@ -283,26 +284,37 @@ const Attendance = () => {
                               </div>
                             </div>
                             
-                            <Select
-                              value={currentStatus}
-                              onValueChange={(value) => updateAttendance(event.id, userId, value as 'present' | 'absent')}
-                              disabled={isAttendanceMarked}
-                            >
-                              <SelectTrigger className={`w-32 ${isAttendanceMarked ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="pending">
-                                  <span className="text-gray-600">Pending</span>
-                                </SelectItem>
-                                <SelectItem value="present">
-                                  <span className="text-green-600">Present</span>
-                                </SelectItem>
-                                <SelectItem value="absent">
-                                  <span className="text-red-600">Absent</span>
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
+                            {isAttendanceMarked ? (
+                              <Badge 
+                                className={`${
+                                  currentStatus === 'present' 
+                                    ? 'bg-green-600 text-white' 
+                                    : 'bg-red-600 text-white'
+                                }`}
+                              >
+                                {currentStatus === 'present' ? 'Present' : 'Absent'}
+                              </Badge>
+                            ) : (
+                              <Select
+                                value={currentStatus}
+                                onValueChange={(value) => updateAttendance(event.id, userId, value as 'present' | 'absent')}
+                              >
+                                <SelectTrigger className="w-32">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">
+                                    <span className="text-gray-600">Pending</span>
+                                  </SelectItem>
+                                  <SelectItem value="present">
+                                    <span className="text-green-600">Present</span>
+                                  </SelectItem>
+                                  <SelectItem value="absent">
+                                    <span className="text-red-600">Absent</span>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
                           </div>
                         );
                       })}
