@@ -44,12 +44,20 @@ const Certificates = () => {
         const userAttendance = Object.values(attendance);
         const hasPresent = userAttendance.includes('present');
         
+        // Properly type the event type
+        let eventType: 'flagship' | 'event' | 'gbm' = 'event';
+        if (event.type === 'gbm') {
+          eventType = 'gbm';
+        } else if (event.type === 'flagship') {
+          eventType = 'flagship';
+        }
+        
         return {
           id: event.id,
           title: event.title,
           date: event.date,
-          type: event.type === 'gbm' ? 'gbm' : 'event',
-          attendanceStatus: hasPresent ? 'present' : 'absent',
+          type: eventType,
+          attendanceStatus: hasPresent ? 'present' as const : 'absent' as const,
           certificateAvailable: hasPresent && (event.enableCertificate !== false),
           enableCertificate: event.enableCertificate
         };
