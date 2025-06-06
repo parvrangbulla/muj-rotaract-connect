@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight, Users, Download, Search } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,6 +35,14 @@ const Attendance = () => {
   };
 
   const updateAttendance = (eventId: string, userId: string, status: 'present' | 'absent') => {
+    // Find the event to check if it's a GBM and if attendance is already marked
+    const event = eventsWithAttendance.find(e => e.id === eventId);
+    if (event && event.type === 'gbm' && event.attendance && event.attendance[userId]) {
+      // For GBMs, if attendance is already marked, don't allow changes
+      alert('Attendance for GBM/Meeting participants cannot be modified once marked.');
+      return;
+    }
+
     // Update in calendar storage locations only
     const storageKeys = ['calendarEvents', 'gbmMeetings'];
     
@@ -174,6 +183,7 @@ const Attendance = () => {
         {filteredEvents.map((event) => {
           const stats = getAttendanceStats(event);
           const isOpen = openEvents[event.id];
+          const isGBM = event.type === 'gbm';
           
           return (
             <Card key={event.id}>
@@ -234,13 +244,15 @@ const Attendance = () => {
                       <div className="flex justify-between items-center">
                         <h4 className="font-medium">Participants</h4>
                         <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addManualParticipant(event.id)}
-                          >
-                            Add Participant
-                          </Button>
+                          {!isGBM && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => addManualParticipant(event.id)}
+                            >
+                              Add Participant
+                            </Button>
+                          )}
                           <Button
                             variant="outline"
                             size="sm"
@@ -255,6 +267,7 @@ const Attendance = () => {
                       {event.registeredUsers.map((user: any, index: number) => {
                         const userId = user.registrationNumber || user.fullName;
                         const currentStatus = event.attendance?.[userId] || 'pending';
+                        const isAttendanceMarked = isGBM && event.attendance && event.attendance[userId];
                         
                         return (
                           <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
@@ -273,8 +286,9 @@ const Attendance = () => {
                             <Select
                               value={currentStatus}
                               onValueChange={(value) => updateAttendance(event.id, userId, value as 'present' | 'absent')}
+                              disabled={isAttendanceMarked}
                             >
-                              <SelectTrigger className="w-32">
+                              <SelectTrigger className={`w-32 ${isAttendanceMarked ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
