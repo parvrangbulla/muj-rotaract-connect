@@ -28,14 +28,18 @@ const Certificates = () => {
   const loadCertificates = () => {
     // Load events from all storage locations
     const calendarEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
-    const gbmMeetings = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
     const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
     
-    const allEvents = [...calendarEvents, ...gbmMeetings, ...pastEvents];
+    // We're excluding GBM meetings since we don't want to show certificates for them
+    const allEvents = [...calendarEvents, ...pastEvents];
     
-    // Filter events that have registrations and check attendance
+    // Filter events that have registrations, check attendance, and exclude GBMs
     const eventsWithCertificates = allEvents
-      .filter(event => event.registeredUsers && event.registeredUsers.length > 0)
+      .filter(event => 
+        event.registeredUsers && 
+        event.registeredUsers.length > 0 && 
+        event.type !== 'gbm'
+      )
       .map(event => {
         const attendance = event.attendance || {};
         
@@ -46,9 +50,7 @@ const Certificates = () => {
         
         // Properly type the event type
         let eventType: 'flagship' | 'event' | 'gbm' = 'event';
-        if (event.type === 'gbm') {
-          eventType = 'gbm';
-        } else if (event.type === 'flagship') {
+        if (event.type === 'flagship') {
           eventType = 'flagship';
         }
         
@@ -77,6 +79,31 @@ const Certificates = () => {
     link.click();
     
     alert(`Certificate for "${eventTitle}" would be downloaded as PDF`);
+  };
+
+  const toggleCertificateAvailability = (eventId: string, currentStatus: boolean | undefined) => {
+    // First, update in localStorage
+    const calendarEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
+    const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
+    
+    const updateEvents = (events: any[]) => {
+      return events.map(event => {
+        if (event.id === eventId) {
+          return {
+            ...event,
+            enableCertificate: !currentStatus
+          };
+        }
+        return event;
+      });
+    };
+    
+    localStorage.setItem('calendarEvents', JSON.stringify(updateEvents(calendarEvents)));
+    localStorage.setItem('pastEvents', JSON.stringify(updateEvents(pastEvents)));
+    
+    // Update the UI
+    loadCertificates();
+    window.dispatchEvent(new Event('storage'));
   };
 
   const presentEvents = certificates.filter(cert => cert.attendanceStatus === 'present');
@@ -112,21 +139,14 @@ const Certificates = () => {
                   <div className="flex items-center gap-2">
                     <Badge 
                       className={`${
-                        cert.type === 'flagship' ? 'bg-rotaract-orange' :
-                        cert.type === 'gbm' ? 'bg-blue-600' : 'bg-green-600'
+                        cert.type === 'flagship' ? 'bg-rotaract-orange' : 'bg-green-600'
                       } text-white`}
                     >
-                      {cert.type === 'flagship' ? 'Flagship' : 
-                       cert.type === 'gbm' ? 'GBM' : 'Event'}
+                      {cert.type === 'flagship' ? 'Flagship' : 'Event'}
                     </Badge>
                     <Badge className="bg-green-100 text-green-800">
                       ✅ Present
                     </Badge>
-                    {cert.enableCertificate === false && (
-                      <Badge variant="secondary">
-                        Certificate Disabled
-                      </Badge>
-                    )}
                   </div>
                 </div>
               </CardHeader>
@@ -135,20 +155,33 @@ const Certificates = () => {
                   <div className="text-sm text-gray-600">
                     Certificate of Participation
                   </div>
-                  {cert.certificateAvailable ? (
+                  <div className="flex items-center gap-2">
+                    {/* Admin toggle for enabling/disabling certificates */}
                     <Button
-                      onClick={() => handleDownloadCertificate(cert.id, cert.title)}
-                      className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+                      onClick={() => toggleCertificateAvailability(cert.id, cert.enableCertificate)}
                       size="sm"
+                      variant={cert.enableCertificate === false ? "outline" : "default"}
+                      className={cert.enableCertificate === false ? "" : "bg-blue-600 hover:bg-blue-700"}
                     >
-                      <Download className="w-4 h-4 mr-2" />
-                      Download Certificate
+                      {cert.enableCertificate === false ? "Enable Certificate" : "Disable Certificate"}
                     </Button>
-                  ) : (
-                    <Button disabled size="sm" variant="outline">
-                      {cert.enableCertificate === false ? 'Certificate Disabled' : 'Certificate Unavailable'}
-                    </Button>
-                  )}
+                    
+                    {/* Download button */}
+                    {cert.certificateAvailable ? (
+                      <Button
+                        onClick={() => handleDownloadCertificate(cert.id, cert.title)}
+                        className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+                        size="sm"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download Certificate
+                      </Button>
+                    ) : (
+                      <Button disabled size="sm" variant="outline">
+                        Certificate Unavailable
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
