@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface EventCreationModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
     endTime: editData?.endTime || '',
     location: editData?.location || '',
     description: editData?.description || '',
+    meetingType: editData?.meetingType || 'meeting', // 'meeting' or 'gbm'
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -33,12 +35,14 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
     const eventData = {
       ...formData,
       id: editData?.id || Date.now().toString(),
-      type: isGBM ? 'gbm' : 'event',
+      type: isGBM ? (formData.meetingType === 'gbm' ? 'gbm' : 'meeting') : 'event',
       createdAt: editData?.createdAt || new Date().toISOString(),
       registeredUsers: editData?.registeredUsers || [],
       attendance: editData?.attendance || {},
       enableRegistration: editData?.enableRegistration || false,
-      enableAttendance: editData?.enableAttendance || false
+      enableAttendance: editData?.enableAttendance || false,
+      meetingMinutes: editData?.meetingMinutes || '',
+      showOnGuestCalendar: isGBM && formData.meetingType === 'gbm'
     };
     
     onEventCreate(eventData);
@@ -53,6 +57,7 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
         endTime: '',
         location: '',
         description: '',
+        meetingType: 'meeting',
       });
     }
   };
@@ -75,6 +80,25 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
               required
             />
           </div>
+
+          {/* Meeting Type Dropdown - Only for GBM/Meeting creation */}
+          {isGBM && (
+            <div className="space-y-2">
+              <Label htmlFor="meetingType">Meeting Type</Label>
+              <Select
+                value={formData.meetingType}
+                onValueChange={(value) => handleInputChange('meetingType', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select meeting type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="meeting">Meeting</SelectItem>
+                  <SelectItem value="gbm">GBM</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="date">Date</Label>

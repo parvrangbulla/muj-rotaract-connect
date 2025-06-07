@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -39,7 +38,7 @@ const EnhancedEventDetailModal = ({
   });
   const [meetingMinutes, setMeetingMinutes] = useState('');
   const [hasMarkedAttendance, setHasMarkedAttendance] = useState(false);
-  const [hasRegistered, setHasRegistered] = useState(false);
+  const [userRegistrationStatus, setUserRegistrationStatus] = useState<'not_registered' | 'registered' | 'checking'>('not_registered');
 
   // Initialize state values when event changes
   useEffect(() => {
@@ -47,23 +46,26 @@ const EnhancedEventDetailModal = ({
       setEnableRegistration(event.enableRegistration || false);
       setEnableAttendance(event.enableAttendance || false);
       setMeetingMinutes(event.meetingMinutes || '');
-      
-      // Check if user has already registered based on registration number
-      if (registrationData.registrationNumber) {
-        const isUserRegistered = event.registeredUsers?.some((user: any) => 
-          user.registrationNumber === registrationData.registrationNumber
-        );
-        setHasRegistered(isUserRegistered);
-      } else {
-        setHasRegistered(false);
-      }
+      setUserRegistrationStatus('not_registered');
     }
-  }, [event, registrationData.registrationNumber]);
+  }, [event]);
+
+  // Check registration status when registration number changes
+  useEffect(() => {
+    if (event && registrationData.registrationNumber.trim()) {
+      const isUserRegistered = event.registeredUsers?.some((user: any) => 
+        user.registrationNumber === registrationData.registrationNumber.trim()
+      );
+      setUserRegistrationStatus(isUserRegistered ? 'registered' : 'not_registered');
+    } else {
+      setUserRegistrationStatus('not_registered');
+    }
+  }, [registrationData.registrationNumber, event?.registeredUsers]);
 
   // Early return after all hooks are declared
   if (!event) return null;
 
-  const isGBM = event.type === 'gbm';
+  const isGBM = event.type === 'gbm' || event.type === 'meeting';
 
   const isEventInPast = (eventDate: string, eventTime: string) => {
     const now = new Date();
@@ -72,13 +74,6 @@ const EnhancedEventDetailModal = ({
   };
 
   const isPastEvent = isEventInPast(event.date, event.startTime);
-
-  // Check if user has already registered
-  const isUserRegistered = (regNumber: string) => {
-    return event.registeredUsers?.some((user: any) => 
-      user.registrationNumber === regNumber
-    );
-  };
 
   const handleRegistrationToggle = (checked: boolean) => {
     if (isPastEvent) {
@@ -146,7 +141,7 @@ const EnhancedEventDetailModal = ({
     e.preventDefault();
     if (registrationData.fullName && registrationData.phoneNumber && registrationData.registrationNumber) {
       // Check if user already registered
-      if (isUserRegistered(registrationData.registrationNumber)) {
+      if (userRegistrationStatus === 'registered') {
         alert('You have already registered for this event!');
         return;
       }
@@ -168,7 +163,7 @@ const EnhancedEventDetailModal = ({
       });
 
       setRegistrationData({ fullName: '', phoneNumber: '', registrationNumber: '' });
-      setHasRegistered(true);
+      setUserRegistrationStatus('registered');
       window.dispatchEvent(new Event('storage'));
       alert('Registration successful!');
     }
@@ -281,7 +276,7 @@ const EnhancedEventDetailModal = ({
           </div>
           <div className="flex items-center gap-2 mt-2">
             <Badge className={isGBM ? "bg-blue-600" : "bg-rotaract-orange"}>
-              {isGBM ? "GBM / Meeting" : "Event"}
+              {event.type === 'gbm' ? "GBM" : event.type === 'meeting' ? "Meeting" : "Event"}
             </Badge>
             {isPastEvent && <Badge variant="secondary">Past Event</Badge>}
             <span className="text-sm text-gray-500">
@@ -320,9 +315,11 @@ const EnhancedEventDetailModal = ({
                 <Card>
                   <CardContent className="p-4">
                     <h4 className="font-medium mb-3">Register for Event</h4>
-                    {hasRegistered ? (
-                      <div className="text-center py-4">
-                        <p className="text-green-600 font-medium">✓ You have already registered for this event!</p>
+                    {userRegistrationStatus === 'registered' ? (
+                      <div className="text-center py-6 bg-green-50 rounded-lg border border-green-200">
+                        <div className="text-green-600 text-lg mb-2">✓</div>
+                        <p className="text-green-700 font-medium">You have already registered for this event!</p>
+                        <p className="text-green-600 text-sm mt-1">Registration Number: {registrationData.registrationNumber}</p>
                       </div>
                     ) : (
                       <form onSubmit={handleRegistrationSubmit} className="space-y-3">
@@ -360,8 +357,15 @@ const EnhancedEventDetailModal = ({
                             placeholder="Enter registration number"
                             required
                           />
+                          {userRegistrationStatus === 'registered' && registrationData.registrationNumber && (
+                            <p className="text-red-500 text-xs mt-1">This registration number is already registered for this event.</p>
+                          )}
                         </div>
-                        <Button type="submit" className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90">
+                        <Button 
+                          type="submit" 
+                          className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90"
+                          disabled={userRegistrationStatus === 'registered'}
+                        >
                           Register
                         </Button>
                       </form>
@@ -372,7 +376,7 @@ const EnhancedEventDetailModal = ({
             </div>
           )}
 
-          {/* GBM Sections */}
+          {/* GBM/Meeting Sections */}
           {isGBM && (
             <div className="space-y-6">
               {/* Meeting Minutes */}
