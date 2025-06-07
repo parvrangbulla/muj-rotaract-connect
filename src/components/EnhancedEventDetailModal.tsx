@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -49,7 +48,13 @@ const EnhancedEventDetailModal = ({
       setEnableRegistration(event.enableRegistration || false);
       setEnableAttendance(event.enableAttendance || false);
       setMeetingMinutes(event.meetingMinutes || '');
-      setUserRegistrationStatus('not_registered');
+      
+      // Check if user is already registered
+      if (event.registeredUsers && event.registeredUsers.length > 0) {
+        setUserRegistrationStatus('not_registered');
+      } else {
+        setUserRegistrationStatus('not_registered');
+      }
     }
   }, [event]);
 
