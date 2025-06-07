@@ -30,16 +30,13 @@ const GuestCalendar = () => {
       const calendarEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
       const gbmMeetings = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
       
-      // Filter events for guest calendar
-      const guestCalendarEvents = calendarEvents.filter((event: any) => 
-        event.eventCategory === 'gbm' // Only show GBM category events from regular events
-      );
-      
+      // Show all events but handle interaction differently
+      const allCalendarEvents = calendarEvents; // Show all calendar events
       const guestGBMEvents = gbmMeetings.filter((gbm: any) => 
         gbm.type === 'gbm' || gbm.showOnGuestCalendar
       );
       
-      const allEvents = [...guestCalendarEvents, ...guestGBMEvents];
+      const allEvents = [...allCalendarEvents, ...guestGBMEvents];
       setEvents(allEvents);
     };
 
@@ -94,25 +91,27 @@ const GuestCalendar = () => {
     alert('Please log in to delete events.');
   };
 
-  const getEventTypeColor = (type: string) => {
-    switch (type) {
-      case 'gbm':
-        return 'bg-purple-100 text-purple-800';
-      case 'meeting':
-        return 'bg-indigo-100 text-indigo-800';
-      default:
-        return 'bg-green-100 text-green-800';
+  const getEventTypeColor = (type: string, eventCategory?: string) => {
+    if (type === 'gbm') {
+      return 'bg-purple-100 text-purple-800';
+    } else if (type === 'meeting') {
+      return 'bg-indigo-100 text-indigo-800';
+    } else if (eventCategory === 'working-team') {
+      return 'bg-orange-100 text-orange-800';
+    } else {
+      return 'bg-green-100 text-green-800';
     }
   };
 
-  const getEventTypeLabel = (type: string) => {
-    switch (type) {
-      case 'gbm':
-        return 'GBM';
-      case 'meeting':
-        return 'Meeting';
-      default:
-        return 'Event';
+  const getEventTypeLabel = (type: string, eventCategory?: string) => {
+    if (type === 'gbm') {
+      return 'GBM';
+    } else if (type === 'meeting') {
+      return 'Meeting';
+    } else if (eventCategory === 'working-team') {
+      return 'Working Team';
+    } else {
+      return 'Event';
     }
   };
 
@@ -180,8 +179,8 @@ const GuestCalendar = () => {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-semibold text-lg">{event.title}</h3>
-                      <Badge className={getEventTypeColor(event.type)}>
-                        {getEventTypeLabel(event.type)}
+                      <Badge className={getEventTypeColor(event.type, event.eventCategory)}>
+                        {getEventTypeLabel(event.type, event.eventCategory)}
                       </Badge>
                     </div>
                     
@@ -234,8 +233,8 @@ const GuestCalendar = () => {
                       {new Date(event.date).toLocaleDateString()} at {event.startTime}
                     </p>
                   </div>
-                  <Badge className={getEventTypeColor(event.type)}>
-                    {getEventTypeLabel(event.type)}
+                  <Badge className={getEventTypeColor(event.type, event.eventCategory)}>
+                    {getEventTypeLabel(event.type, event.eventCategory)}
                   </Badge>
                 </div>
               ))}

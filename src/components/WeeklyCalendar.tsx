@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -34,13 +35,10 @@ const WeeklyCalendar = () => {
       const events = Array.isArray(storedEvents) ? storedEvents : [];
       const gbms = Array.isArray(storedGBMs) ? storedGBMs : [];
       
-      const now = new Date();
-      const futureEvents = [...events, ...gbms].filter(event => {
-        const eventDateTime = new Date(`${event.date}T${event.startTime}`);
-        return eventDateTime >= now;
-      });
+      // Show all events, including past ones
+      const allEvents = [...events, ...gbms];
       
-      setEvents(futureEvents);
+      setEvents(allEvents);
     } catch (error) {
       console.error('Error loading events:', error);
       setEvents([]);
@@ -72,7 +70,7 @@ const WeeklyCalendar = () => {
       enableRegistration: editingEvent?.enableRegistration || false,
       enableAttendance: editingEvent?.enableAttendance || false,
       meetingMinutes: editingEvent?.meetingMinutes || '',
-      showOnGuestCalendar: eventData.type === 'gbm' // Only GBMs show on guest calendar
+      showOnGuestCalendar: eventData.type === 'gbm' || eventData.eventCategory === 'gbm'
     };
 
     const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
@@ -106,7 +104,7 @@ const WeeklyCalendar = () => {
     
     setEditingEvent(event);
     setShowDetailModal(false);
-    if (event.type === 'gbm') {
+    if (event.type === 'gbm' || event.type === 'meeting') {
       setShowGBMModal(true);
     } else {
       setShowEventModal(true);
@@ -192,6 +190,21 @@ const WeeklyCalendar = () => {
     }
   };
 
+  const getEventColor = (event: any) => {
+    const isPast = isEventInPast(event.date, event.startTime);
+    const opacity = isPast ? 'opacity-60' : '';
+    
+    if (event.type === 'gbm') {
+      return `bg-purple-100 border-purple-500 text-purple-800 hover:bg-purple-200 ${opacity}`;
+    } else if (event.type === 'meeting') {
+      return `bg-indigo-100 border-indigo-500 text-indigo-800 hover:bg-indigo-200 ${opacity}`;
+    } else if (event.eventCategory === 'working-team') {
+      return `bg-orange-100 border-orange-500 text-orange-800 hover:bg-orange-200 ${opacity}`;
+    } else {
+      return `bg-green-100 border-green-500 text-green-800 hover:bg-green-200 ${opacity}`;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -231,6 +244,39 @@ const WeeklyCalendar = () => {
                 initialFocus
                 className={cn("p-3 pointer-events-auto")}
               />
+            </PopoverContent>
+          </Popover>
+
+          {/* Color Legend */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Info className="w-4 h-4 mr-2" />
+                Legend
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-4" align="start">
+              <div className="space-y-2">
+                <h4 className="font-medium text-sm mb-3">Event Colors</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-purple-100 border-l-4 border-purple-500 rounded-sm"></div>
+                    <span className="text-sm">GBM</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-indigo-100 border-l-4 border-indigo-500 rounded-sm"></div>
+                    <span className="text-sm">Meeting</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-orange-100 border-l-4 border-orange-500 rounded-sm"></div>
+                    <span className="text-sm">Working Team Event</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-green-100 border-l-4 border-green-500 rounded-sm"></div>
+                    <span className="text-sm">GBM Event</span>
+                  </div>
+                </div>
+              </div>
             </PopoverContent>
           </Popover>
         </div>
@@ -299,20 +345,10 @@ const WeeklyCalendar = () => {
                           {dayEvents.map((event) => {
                             const position = getEventPosition(event.startTime, event.endTime);
                             
-                            const getEventColor = () => {
-                              if (event.type === 'gbm') {
-                                return 'bg-purple-100 border-purple-500 text-purple-800 hover:bg-purple-200';
-                              } else if (event.type === 'meeting') {
-                                return 'bg-indigo-100 border-indigo-500 text-indigo-800 hover:bg-indigo-200';
-                              } else {
-                                return 'bg-green-100 border-green-500 text-green-800 hover:bg-green-200';
-                              }
-                            };
-                            
                             return (
                               <div
                                 key={event.id}
-                                className={`absolute left-1 right-1 rounded-md cursor-pointer shadow-sm border-l-4 z-10 ${getEventColor()}`}
+                                className={`absolute left-1 right-1 rounded-md cursor-pointer shadow-sm border-l-4 z-10 ${getEventColor(event)}`}
                                 style={{
                                   top: `${position.top}px`,
                                   height: `${position.height}px`

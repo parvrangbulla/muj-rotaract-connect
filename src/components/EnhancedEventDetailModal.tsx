@@ -16,7 +16,7 @@ interface EventDetailModalProps {
   onClose: () => void;
   onEdit: (event: any) => void;
   onDelete: (eventId: string) => void;
-  isGuestMode?: boolean; // Add prop to detect guest mode
+  isGuestMode?: boolean;
 }
 
 type RegistrationStatus = 'not_registered' | 'registered' | 'checking';
@@ -398,12 +398,12 @@ const EnhancedEventDetailModal = ({
           {/* GBM/Meeting Sections */}
           {isGBM && (
             <div className="space-y-6">
-              {/* Meeting Minutes - Only show for logged in users */}
-              {!isGuestMode && (
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium">Minutes of Meeting</h4>
+              {/* Meeting Minutes */}
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-medium">Minutes of Meeting</h4>
+                    {!isGuestMode && (
                       <Button
                         size="sm"
                         onClick={handleSaveMinutes}
@@ -412,16 +412,20 @@ const EnhancedEventDetailModal = ({
                         <Save className="w-4 h-4 mr-2" />
                         Save Minutes
                       </Button>
-                    </div>
-                    <Textarea
-                      value={meetingMinutes}
-                      onChange={(e) => setMeetingMinutes(e.target.value)}
-                      placeholder="Enter meeting minutes, agenda items, decisions made, action items, etc..."
-                      className="min-h-[120px]"
-                    />
-                  </CardContent>
-                </Card>
-              )}
+                    )}
+                  </div>
+                  <Textarea
+                    value={meetingMinutes}
+                    onChange={(e) => setMeetingMinutes(e.target.value)}
+                    placeholder="Enter meeting minutes, agenda items, decisions made, action items, etc..."
+                    className="min-h-[120px]"
+                    readOnly={isGuestMode}
+                  />
+                  {isGuestMode && (
+                    <p className="text-xs text-gray-500 mt-2">Meeting minutes are read-only for guests</p>
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Attendance Section */}
               <div>
