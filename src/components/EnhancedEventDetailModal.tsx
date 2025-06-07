@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -24,8 +25,9 @@ const EnhancedEventDetailModal = ({
   onEdit, 
   onDelete
 }: EventDetailModalProps) => {
-  const [enableRegistration, setEnableRegistration] = useState(event?.enableRegistration || false);
-  const [enableAttendance, setEnableAttendance] = useState(event?.enableAttendance || false);
+  // All hooks must be declared before any early returns
+  const [enableRegistration, setEnableRegistration] = useState(false);
+  const [enableAttendance, setEnableAttendance] = useState(false);
   const [registrationData, setRegistrationData] = useState({
     fullName: '',
     phoneNumber: '',
@@ -35,10 +37,30 @@ const EnhancedEventDetailModal = ({
     fullName: '',
     registrationNumber: ''
   });
-  const [meetingMinutes, setMeetingMinutes] = useState(event?.meetingMinutes || '');
+  const [meetingMinutes, setMeetingMinutes] = useState('');
   const [hasMarkedAttendance, setHasMarkedAttendance] = useState(false);
   const [hasRegistered, setHasRegistered] = useState(false);
 
+  // Initialize state values when event changes
+  useEffect(() => {
+    if (event) {
+      setEnableRegistration(event.enableRegistration || false);
+      setEnableAttendance(event.enableAttendance || false);
+      setMeetingMinutes(event.meetingMinutes || '');
+      
+      // Check if user has already registered based on registration number
+      if (registrationData.registrationNumber) {
+        const isUserRegistered = event.registeredUsers?.some((user: any) => 
+          user.registrationNumber === registrationData.registrationNumber
+        );
+        setHasRegistered(isUserRegistered);
+      } else {
+        setHasRegistered(false);
+      }
+    }
+  }, [event, registrationData.registrationNumber]);
+
+  // Early return after all hooks are declared
   if (!event) return null;
 
   const isGBM = event.type === 'gbm';
@@ -57,15 +79,6 @@ const EnhancedEventDetailModal = ({
       user.registrationNumber === regNumber
     );
   };
-
-  // Check if current user has registered when registration number is entered
-  useEffect(() => {
-    if (registrationData.registrationNumber) {
-      setHasRegistered(isUserRegistered(registrationData.registrationNumber));
-    } else {
-      setHasRegistered(false);
-    }
-  }, [registrationData.registrationNumber, event.registeredUsers]);
 
   const handleRegistrationToggle = (checked: boolean) => {
     if (isPastEvent) {
@@ -154,6 +167,7 @@ const EnhancedEventDetailModal = ({
         localStorage.setItem(key, JSON.stringify(updated));
       });
 
+      setRegistrationData({ fullName: '', phoneNumber: '', registrationNumber: '' });
       setHasRegistered(true);
       window.dispatchEvent(new Event('storage'));
       alert('Registration successful!');
