@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -49,12 +50,9 @@ const EnhancedEventDetailModal = ({
       setEnableAttendance(event.enableAttendance || false);
       setMeetingMinutes(event.meetingMinutes || '');
       
-      // Check if user is already registered
-      if (event.registeredUsers && event.registeredUsers.length > 0) {
-        setUserRegistrationStatus('not_registered');
-      } else {
-        setUserRegistrationStatus('not_registered');
-      }
+      // Reset registration status when event changes
+      setUserRegistrationStatus('not_registered');
+      setRegistrationData({ fullName: '', phoneNumber: '', registrationNumber: '' });
     }
   }, [event]);
 
@@ -170,7 +168,7 @@ const EnhancedEventDetailModal = ({
         localStorage.setItem(key, JSON.stringify(updated));
       });
 
-      setRegistrationData({ fullName: '', phoneNumber: '', registrationNumber: '' });
+      // Don't clear the form, just update status
       setUserRegistrationStatus('registered');
       window.dispatchEvent(new Event('storage'));
       alert('Registration successful!');
@@ -283,7 +281,11 @@ const EnhancedEventDetailModal = ({
             </div>
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <Badge className={isGBM ? "bg-blue-600" : "bg-rotaract-orange"}>
+            <Badge className={
+              event.type === 'gbm' ? "bg-purple-600" : 
+              event.type === 'meeting' ? "bg-indigo-600" : 
+              "bg-rotaract-orange"
+            }>
               {event.type === 'gbm' ? "GBM" : event.type === 'meeting' ? "Meeting" : "Event"}
             </Badge>
             {isPastEvent && <Badge variant="secondary">Past Event</Badge>}

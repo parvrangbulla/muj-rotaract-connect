@@ -4,6 +4,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react';
+import EnhancedEventDetailModal from './EnhancedEventDetailModal';
 
 interface CalendarEvent {
   id: string;
@@ -13,17 +14,28 @@ interface CalendarEvent {
   endTime: string;
   location: string;
   description: string;
-  type: 'event' | 'gbm';
+  type: 'event' | 'gbm' | 'meeting';
+  showOnGuestCalendar?: boolean;
 }
 
 const GuestCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
     const loadEvents = () => {
       const calendarEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
-      setEvents(calendarEvents);
+      const gbmMeetings = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
+      
+      // Combine events and filter for guest calendar
+      const allEvents = [
+        ...calendarEvents,
+        ...gbmMeetings.filter((gbm: any) => gbm.type === 'gbm' || gbm.showOnGuestCalendar)
+      ];
+      
+      setEvents(allEvents);
     };
 
     loadEvents();
@@ -55,6 +67,43 @@ const GuestCalendar = () => {
         eventDate.getFullYear() === date.getFullYear()
       );
     });
+  };
+
+  const handleEventClick = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setShowDetailModal(true);
+  };
+
+  const handleEditEvent = () => {
+    // Guest users cannot edit events
+    alert('Please log in to edit events.');
+  };
+
+  const handleDeleteEvent = () => {
+    // Guest users cannot delete events
+    alert('Please log in to delete events.');
+  };
+
+  const getEventTypeColor = (type: string) => {
+    switch (type) {
+      case 'gbm':
+        return 'bg-purple-100 text-purple-800';
+      case 'meeting':
+        return 'bg-indigo-100 text-indigo-800';
+      default:
+        return 'bg-green-100 text-green-800';
+    }
+  };
+
+  const getEventTypeLabel = (type: string) => {
+    switch (type) {
+      case 'gbm':
+        return 'GBM';
+      case 'meeting':
+        return 'Meeting';
+      default:
+        return 'Event';
+    }
   };
 
   return (
@@ -112,17 +161,15 @@ const GuestCalendar = () => {
             ) : (
               <div className="space-y-4">
                 {selectedDateEvents.map((event) => (
-                  <div key={event.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div 
+                    key={event.id} 
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() => handleEventClick(event)}
+                  >
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="font-semibold text-lg">{event.title}</h3>
-                      <Badge 
-                        className={
-                          event.type === 'gbm' 
-                            ? 'bg-blue-100 text-blue-800' 
-                            : 'bg-green-100 text-green-800'
-                        }
-                      >
-                        {event.type === 'gbm' ? 'GBM/Meeting' : 'Event'}
+                      <Badge className={getEventTypeColor(event.type)}>
+                        {getEventTypeLabel(event.type)}
                       </Badge>
                     </div>
                     
@@ -158,21 +205,19 @@ const GuestCalendar = () => {
               .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
               .slice(0, 5)
               .map((event) => (
-                <div key={event.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div 
+                  key={event.id} 
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => handleEventClick(event)}
+                >
                   <div>
                     <h4 className="font-medium">{event.title}</h4>
                     <p className="text-sm text-gray-600">
                       {new Date(event.date).toLocaleDateString()} at {event.startTime}
                     </p>
                   </div>
-                  <Badge 
-                    className={
-                      event.type === 'gbm' 
-                        ? 'bg-blue-100 text-blue-800' 
-                        : 'bg-green-100 text-green-800'
-                    }
-                  >
-                    {event.type === 'gbm' ? 'GBM' : 'Event'}
+                  <Badge className={getEventTypeColor(event.type)}>
+                    {getEventTypeLabel(event.type)}
                   </Badge>
                 </div>
               ))}
@@ -182,6 +227,18 @@ const GuestCalendar = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Event Detail Modal */}
+      <EnhancedEventDetailModal
+        event={selectedEvent}
+        isOpen={showDetailModal}
+        onClose={() => {
+          setShowDetailModal(false);
+          setSelectedEvent(null);
+        }}
+        onEdit={handleEditEvent}
+        onDelete={handleDeleteEvent}
+      />
     </div>
   );
 };

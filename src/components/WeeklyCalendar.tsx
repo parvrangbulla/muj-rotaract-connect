@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -62,16 +61,18 @@ const WeeklyCalendar = () => {
       return;
     }
 
-    const isGBM = eventData.type === 'gbm';
+    const isGBM = eventData.type === 'gbm' || eventData.type === 'meeting';
     const eventWithDefaults = {
       ...eventData,
       id: editingEvent?.id || Date.now().toString(),
-      type: isGBM ? 'gbm' : 'event',
+      type: eventData.type, // Keep the exact type (gbm, meeting, or event)
       createdAt: editingEvent?.createdAt || new Date().toISOString(),
       registeredUsers: editingEvent?.registeredUsers || [],
       attendance: editingEvent?.attendance || {},
       enableRegistration: editingEvent?.enableRegistration || false,
-      enableAttendance: editingEvent?.enableAttendance || false
+      enableAttendance: editingEvent?.enableAttendance || false,
+      meetingMinutes: editingEvent?.meetingMinutes || '',
+      showOnGuestCalendar: eventData.type === 'gbm' // Only GBMs show on guest calendar
     };
 
     const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
@@ -298,14 +299,20 @@ const WeeklyCalendar = () => {
                           {dayEvents.map((event) => {
                             const position = getEventPosition(event.startTime, event.endTime);
                             
+                            const getEventColor = () => {
+                              if (event.type === 'gbm') {
+                                return 'bg-purple-100 border-purple-500 text-purple-800 hover:bg-purple-200';
+                              } else if (event.type === 'meeting') {
+                                return 'bg-indigo-100 border-indigo-500 text-indigo-800 hover:bg-indigo-200';
+                              } else {
+                                return 'bg-green-100 border-green-500 text-green-800 hover:bg-green-200';
+                              }
+                            };
+                            
                             return (
                               <div
                                 key={event.id}
-                                className={`absolute left-1 right-1 rounded-md cursor-pointer shadow-sm border-l-4 z-10 ${
-                                  event.type === 'gbm' 
-                                    ? 'bg-blue-100 border-blue-500 text-blue-800 hover:bg-blue-200' 
-                                    : 'bg-green-100 border-green-500 text-green-800 hover:bg-green-200'
-                                }`}
+                                className={`absolute left-1 right-1 rounded-md cursor-pointer shadow-sm border-l-4 z-10 ${getEventColor()}`}
                                 style={{
                                   top: `${position.top}px`,
                                   height: `${position.height}px`
