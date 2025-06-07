@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,7 +26,6 @@ const EnhancedEventDetailModal = ({
 }: EventDetailModalProps) => {
   const [enableRegistration, setEnableRegistration] = useState(event?.enableRegistration || false);
   const [enableAttendance, setEnableAttendance] = useState(event?.enableAttendance || false);
-  const [enableCertificate, setEnableCertificate] = useState(event?.enableCertificate || false);
   const [registrationData, setRegistrationData] = useState({
     fullName: '',
     phoneNumber: '',
@@ -39,6 +37,7 @@ const EnhancedEventDetailModal = ({
   });
   const [meetingMinutes, setMeetingMinutes] = useState(event?.meetingMinutes || '');
   const [hasMarkedAttendance, setHasMarkedAttendance] = useState(false);
+  const [hasRegistered, setHasRegistered] = useState(false);
 
   if (!event) return null;
 
@@ -51,6 +50,22 @@ const EnhancedEventDetailModal = ({
   };
 
   const isPastEvent = isEventInPast(event.date, event.startTime);
+
+  // Check if user has already registered
+  const isUserRegistered = (regNumber: string) => {
+    return event.registeredUsers?.some((user: any) => 
+      user.registrationNumber === regNumber
+    );
+  };
+
+  // Check if current user has registered when registration number is entered
+  useEffect(() => {
+    if (registrationData.registrationNumber) {
+      setHasRegistered(isUserRegistered(registrationData.registrationNumber));
+    } else {
+      setHasRegistered(false);
+    }
+  }, [registrationData.registrationNumber, event.registeredUsers]);
 
   const handleRegistrationToggle = (checked: boolean) => {
     if (isPastEvent) {
@@ -114,47 +129,12 @@ const EnhancedEventDetailModal = ({
     window.dispatchEvent(new Event('storage'));
   };
 
-  const handleCertificateToggle = (checked: boolean) => {
-    if (isPastEvent) {
-      alert('Cannot modify past events.');
-      return;
-    }
-
-    setEnableCertificate(checked);
-    // Update the event in storage
-    const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
-    const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    const updated = stored.map((e: any) => {
-      if (e.id === event.id) {
-        return { ...e, enableCertificate: checked };
-      }
-      return e;
-    });
-    localStorage.setItem(storageKey, JSON.stringify(updated));
-    
-    // Also update in pastEvents
-    const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-    const updatedPastEvents = pastEvents.map((e: any) => {
-      if (e.id === event.id) {
-        return { ...e, enableCertificate: checked };
-      }
-      return e;
-    });
-    localStorage.setItem('pastEvents', JSON.stringify(updatedPastEvents));
-    
-    window.dispatchEvent(new Event('storage'));
-  };
-
   const handleRegistrationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (registrationData.fullName && registrationData.phoneNumber && registrationData.registrationNumber) {
       // Check if user already registered
-      const existingUser = event.registeredUsers?.find((user: any) => 
-        user.registrationNumber === registrationData.registrationNumber
-      );
-      
-      if (existingUser) {
-        alert('User already registered for this event!');
+      if (isUserRegistered(registrationData.registrationNumber)) {
+        alert('You have already registered for this event!');
         return;
       }
 
@@ -174,7 +154,7 @@ const EnhancedEventDetailModal = ({
         localStorage.setItem(key, JSON.stringify(updated));
       });
 
-      setRegistrationData({ fullName: '', phoneNumber: '', registrationNumber: '' });
+      setHasRegistered(true);
       window.dispatchEvent(new Event('storage'));
       alert('Registration successful!');
     }
@@ -326,63 +306,55 @@ const EnhancedEventDetailModal = ({
                 <Card>
                   <CardContent className="p-4">
                     <h4 className="font-medium mb-3">Register for Event</h4>
-                    <form onSubmit={handleRegistrationSubmit} className="space-y-3">
-                      <div>
-                        <Label htmlFor="fullName" className="text-sm">Full Name</Label>
-                        <Input
-                          id="fullName"
-                          value={registrationData.fullName}
-                          onChange={(e) => setRegistrationData(prev => ({ ...prev, fullName: e.target.value }))}
-                          placeholder="Enter full name"
-                          required
-                        />
+                    {hasRegistered ? (
+                      <div className="text-center py-4">
+                        <p className="text-green-600 font-medium">✓ You have already registered for this event!</p>
                       </div>
-                      <div>
-                        <Label htmlFor="phoneNumber" className="text-sm">Phone Number</Label>
-                        <Input
-                          id="phoneNumber"
-                          type="tel"
-                          value={registrationData.phoneNumber}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, '').slice(0, 10);
-                            setRegistrationData(prev => ({ ...prev, phoneNumber: value }));
-                          }}
-                          placeholder="Enter 10-digit phone number"
-                          maxLength={10}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="registrationNumber" className="text-sm">Registration Number</Label>
-                        <Input
-                          id="registrationNumber"
-                          value={registrationData.registrationNumber}
-                          onChange={(e) => setRegistrationData(prev => ({ ...prev, registrationNumber: e.target.value }))}
-                          placeholder="Enter registration number"
-                          required
-                        />
-                      </div>
-                      <Button type="submit" className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90">
-                        Register
-                      </Button>
-                    </form>
+                    ) : (
+                      <form onSubmit={handleRegistrationSubmit} className="space-y-3">
+                        <div>
+                          <Label htmlFor="fullName" className="text-sm">Full Name</Label>
+                          <Input
+                            id="fullName"
+                            value={registrationData.fullName}
+                            onChange={(e) => setRegistrationData(prev => ({ ...prev, fullName: e.target.value }))}
+                            placeholder="Enter full name"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="phoneNumber" className="text-sm">Phone Number</Label>
+                          <Input
+                            id="phoneNumber"
+                            type="tel"
+                            value={registrationData.phoneNumber}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                              setRegistrationData(prev => ({ ...prev, phoneNumber: value }));
+                            }}
+                            placeholder="Enter 10-digit phone number"
+                            maxLength={10}
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="registrationNumber" className="text-sm">Registration Number</Label>
+                          <Input
+                            id="registrationNumber"
+                            value={registrationData.registrationNumber}
+                            onChange={(e) => setRegistrationData(prev => ({ ...prev, registrationNumber: e.target.value }))}
+                            placeholder="Enter registration number"
+                            required
+                          />
+                        </div>
+                        <Button type="submit" className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90">
+                          Register
+                        </Button>
+                      </form>
+                    )}
                   </CardContent>
                 </Card>
               )}
-
-              {/* Certificate Toggle for Events */}
-              <div className="flex items-center justify-between mt-4">
-                <h3 className="text-lg font-semibold">Certificate</h3>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="enableCertificate"
-                    checked={enableCertificate}
-                    onCheckedChange={handleCertificateToggle}
-                    disabled={isPastEvent}
-                  />
-                  <Label htmlFor="enableCertificate" className="text-sm">Enable Certificate Download</Label>
-                </div>
-              </div>
             </div>
           )}
 
