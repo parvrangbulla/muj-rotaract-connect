@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,8 @@ interface EventDetailModalProps {
   onEdit: (event: any) => void;
   onDelete: (eventId: string) => void;
 }
+
+type RegistrationStatus = 'not_registered' | 'registered' | 'checking';
 
 const EnhancedEventDetailModal = ({ 
   event, 
@@ -38,7 +41,7 @@ const EnhancedEventDetailModal = ({
   });
   const [meetingMinutes, setMeetingMinutes] = useState('');
   const [hasMarkedAttendance, setHasMarkedAttendance] = useState(false);
-  const [userRegistrationStatus, setUserRegistrationStatus] = useState<'not_registered' | 'registered' | 'checking'>('not_registered');
+  const [userRegistrationStatus, setUserRegistrationStatus] = useState<RegistrationStatus>('not_registered');
 
   // Initialize state values when event changes
   useEffect(() => {
