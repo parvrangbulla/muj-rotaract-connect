@@ -24,6 +24,7 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
     location: editData?.location || '',
     description: editData?.description || '',
     meetingType: editData?.meetingType || 'meeting', // 'meeting' or 'gbm'
+    eventCategory: editData?.eventCategory || 'working-team', // 'working-team' or 'gbm'
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -42,7 +43,8 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
       enableRegistration: editData?.enableRegistration || false,
       enableAttendance: editData?.enableAttendance || false,
       meetingMinutes: editData?.meetingMinutes || '',
-      showOnGuestCalendar: isGBM && formData.meetingType === 'gbm'
+      showOnGuestCalendar: isGBM ? formData.meetingType === 'gbm' : formData.eventCategory === 'gbm',
+      eventCategory: !isGBM ? formData.eventCategory : undefined
     };
     
     onEventCreate(eventData);
@@ -58,6 +60,7 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
         location: '',
         description: '',
         meetingType: 'meeting',
+        eventCategory: 'working-team',
       });
     }
   };
@@ -97,6 +100,28 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
                   <SelectItem value="gbm">GBM</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          )}
+
+          {/* Event Category Dropdown - Only for regular events */}
+          {!isGBM && (
+            <div className="space-y-2">
+              <Label htmlFor="eventCategory">Event Category</Label>
+              <Select
+                value={formData.eventCategory}
+                onValueChange={(value) => handleInputChange('eventCategory', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select event category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="working-team">Working Team</SelectItem>
+                  <SelectItem value="gbm">GBM</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500">
+                Working Team events are only visible to logged-in users. GBM events are visible to all users with registration options.
+              </p>
             </div>
           )}
 

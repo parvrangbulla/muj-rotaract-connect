@@ -16,6 +16,7 @@ interface CalendarEvent {
   description: string;
   type: 'event' | 'gbm' | 'meeting';
   showOnGuestCalendar?: boolean;
+  eventCategory?: 'working-team' | 'gbm';
 }
 
 const GuestCalendar = () => {
@@ -29,12 +30,16 @@ const GuestCalendar = () => {
       const calendarEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
       const gbmMeetings = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
       
-      // Combine events and filter for guest calendar
-      const allEvents = [
-        ...calendarEvents,
-        ...gbmMeetings.filter((gbm: any) => gbm.type === 'gbm' || gbm.showOnGuestCalendar)
-      ];
+      // Filter events for guest calendar
+      const guestCalendarEvents = calendarEvents.filter((event: any) => 
+        event.eventCategory === 'gbm' // Only show GBM category events from regular events
+      );
       
+      const guestGBMEvents = gbmMeetings.filter((gbm: any) => 
+        gbm.type === 'gbm' || gbm.showOnGuestCalendar
+      );
+      
+      const allEvents = [...guestCalendarEvents, ...guestGBMEvents];
       setEvents(allEvents);
     };
 
@@ -70,6 +75,11 @@ const GuestCalendar = () => {
   };
 
   const handleEventClick = (event: CalendarEvent) => {
+    // For working team events, don't show popup in guest mode
+    if (event.eventCategory === 'working-team') {
+      return; // No action for working team events
+    }
+    
     setSelectedEvent(event);
     setShowDetailModal(true);
   };
@@ -163,7 +173,9 @@ const GuestCalendar = () => {
                 {selectedDateEvents.map((event) => (
                   <div 
                     key={event.id} 
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                    className={`border border-gray-200 rounded-lg p-4 transition-shadow ${
+                      event.eventCategory === 'working-team' ? '' : 'hover:shadow-md cursor-pointer'
+                    }`}
                     onClick={() => handleEventClick(event)}
                   >
                     <div className="flex items-start justify-between mb-2">
@@ -185,6 +197,10 @@ const GuestCalendar = () => {
                     </div>
                     
                     <p className="mt-3 text-gray-700">{event.description}</p>
+                    
+                    {event.eventCategory === 'working-team' && (
+                      <p className="mt-2 text-xs text-gray-500 italic">Contact organizers for more details</p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -207,7 +223,9 @@ const GuestCalendar = () => {
               .map((event) => (
                 <div 
                   key={event.id} 
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                  className={`flex items-center justify-between p-3 bg-gray-50 rounded-lg transition-colors ${
+                    event.eventCategory === 'working-team' ? '' : 'cursor-pointer hover:bg-gray-100'
+                  }`}
                   onClick={() => handleEventClick(event)}
                 >
                   <div>
@@ -238,6 +256,7 @@ const GuestCalendar = () => {
         }}
         onEdit={handleEditEvent}
         onDelete={handleDeleteEvent}
+        isGuestMode={true}
       />
     </div>
   );

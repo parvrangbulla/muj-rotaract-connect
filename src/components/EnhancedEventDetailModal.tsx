@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ interface EventDetailModalProps {
   onClose: () => void;
   onEdit: (event: any) => void;
   onDelete: (eventId: string) => void;
+  isGuestMode?: boolean; // Add prop to detect guest mode
 }
 
 type RegistrationStatus = 'not_registered' | 'registered' | 'checking';
@@ -24,7 +26,8 @@ const EnhancedEventDetailModal = ({
   isOpen, 
   onClose, 
   onEdit, 
-  onDelete
+  onDelete,
+  isGuestMode = false
 }: EventDetailModalProps) => {
   // All hooks must be declared before any early returns
   const [enableRegistration, setEnableRegistration] = useState(false);
@@ -81,8 +84,8 @@ const EnhancedEventDetailModal = ({
   const isPastEvent = isEventInPast(event.date, event.startTime);
 
   const handleRegistrationToggle = (checked: boolean) => {
-    if (isPastEvent) {
-      alert('Cannot modify past events.');
+    if (isPastEvent || isGuestMode) {
+      alert(isPastEvent ? 'Cannot modify past events.' : 'Guests cannot modify event settings.');
       return;
     }
 
@@ -112,8 +115,8 @@ const EnhancedEventDetailModal = ({
   };
 
   const handleAttendanceToggle = (checked: boolean) => {
-    if (isPastEvent) {
-      alert('Cannot modify past events.');
+    if (isPastEvent || isGuestMode) {
+      alert(isPastEvent ? 'Cannot modify past events.' : 'Guests cannot modify event settings.');
       return;
     }
 
@@ -233,6 +236,11 @@ const EnhancedEventDetailModal = ({
   };
 
   const handleSaveMinutes = () => {
+    if (isGuestMode) {
+      alert('Guests cannot save meeting minutes.');
+      return;
+    }
+
     const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
     storageKeys.forEach(key => {
       const stored = JSON.parse(localStorage.getItem(key) || '[]');
@@ -255,7 +263,7 @@ const EnhancedEventDetailModal = ({
           <div className="flex items-center justify-between">
             <DialogTitle className="text-2xl font-bold">{event.title}</DialogTitle>
             <div className="flex gap-2">
-              {!isPastEvent && (
+              {!isPastEvent && !isGuestMode && (
                 <>
                   <Button
                     variant="outline"
@@ -304,21 +312,23 @@ const EnhancedEventDetailModal = ({
             </div>
           </div>
 
-          {/* Registration Section - Only for Events */}
-          {!isGBM && (
+          {/* Registration Section - Only for Events and GBMs that have registration enabled */}
+          {((event.type === 'event' && event.eventCategory === 'gbm') || !isGBM) && (
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Registration</h3>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    id="enableRegistration"
-                    checked={enableRegistration}
-                    onCheckedChange={handleRegistrationToggle}
-                    disabled={isPastEvent}
-                  />
-                  <Label htmlFor="enableRegistration" className="text-sm">Enable Registration</Label>
+              {!isGuestMode && (
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Registration</h3>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="enableRegistration"
+                      checked={enableRegistration}
+                      onCheckedChange={handleRegistrationToggle}
+                      disabled={isPastEvent}
+                    />
+                    <Label htmlFor="enableRegistration" className="text-sm">Enable Registration</Label>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {enableRegistration && !isPastEvent && (
                 <Card>
@@ -388,43 +398,47 @@ const EnhancedEventDetailModal = ({
           {/* GBM/Meeting Sections */}
           {isGBM && (
             <div className="space-y-6">
-              {/* Meeting Minutes */}
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium">Minutes of Meeting</h4>
-                    <Button
-                      size="sm"
-                      onClick={handleSaveMinutes}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Minutes
-                    </Button>
-                  </div>
-                  <Textarea
-                    value={meetingMinutes}
-                    onChange={(e) => setMeetingMinutes(e.target.value)}
-                    placeholder="Enter meeting minutes, agenda items, decisions made, action items, etc..."
-                    className="min-h-[120px]"
-                  />
-                </CardContent>
-              </Card>
+              {/* Meeting Minutes - Only show for logged in users */}
+              {!isGuestMode && (
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium">Minutes of Meeting</h4>
+                      <Button
+                        size="sm"
+                        onClick={handleSaveMinutes}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Minutes
+                      </Button>
+                    </div>
+                    <Textarea
+                      value={meetingMinutes}
+                      onChange={(e) => setMeetingMinutes(e.target.value)}
+                      placeholder="Enter meeting minutes, agenda items, decisions made, action items, etc..."
+                      className="min-h-[120px]"
+                    />
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Attendance Section */}
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Attendance</h3>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      id="enableAttendance"
-                      checked={enableAttendance}
-                      onCheckedChange={handleAttendanceToggle}
-                      disabled={isPastEvent}
-                    />
-                    <Label htmlFor="enableAttendance" className="text-sm">Enable Attendance</Label>
+                {!isGuestMode && (
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">Attendance</h3>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="enableAttendance"
+                        checked={enableAttendance}
+                        onCheckedChange={handleAttendanceToggle}
+                        disabled={isPastEvent}
+                      />
+                      <Label htmlFor="enableAttendance" className="text-sm">Enable Attendance</Label>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {enableAttendance && (
                   <Card>
