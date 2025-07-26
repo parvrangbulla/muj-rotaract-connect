@@ -376,14 +376,14 @@ const EnhancedEventDetailModal = ({
                             placeholder="Enter registration number"
                             required
                           />
-                          {userRegistrationStatus === 'registered' && registrationData.registrationNumber && (
+                          {userRegistrationStatus === 'checking' && registrationData.registrationNumber && (
                             <p className="text-red-500 text-xs mt-1">This registration number is already registered for this event.</p>
                           )}
                         </div>
                         <Button 
                           type="submit" 
                           className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90"
-                          disabled={userRegistrationStatus === 'registered'}
+                          disabled={userRegistrationStatus === 'checking'}
                         >
                           Register
                         </Button>

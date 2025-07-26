@@ -7,12 +7,12 @@ import { useNavigate } from 'react-router-dom';
 import WeeklyCalendar from './WeeklyCalendar';
 import FeedbackForm from './FeedbackForm';
 import EventManagement from './EventManagement';
-import Certificates from './Certificates';
+
 import Attendance from './Attendance';
 import GuestCalendar from './GuestCalendar';
 
 const UserDashboard = () => {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'certificates' | 'past-events' | 'feedback' | 'attendance'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'past-events' | 'feedback' | 'attendance'>('calendar');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
   const [userProfile, setUserProfile] = useState({
@@ -60,9 +60,31 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 flex">
+    <div className="min-h-screen bg-stone-50 flex flex-col lg:flex-row">
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-white shadow-lg border-b border-gray-200 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <img 
+              src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
+              alt="Rotaract Club MUJ Logo" 
+              className="h-8 w-8 object-contain rounded-full"
+            />
+            <span className="font-bold text-lg text-black">Rotaract MUJ</span>
+          </div>
+          <Button
+            onClick={handleLogout}
+            variant="ghost"
+            size="sm"
+            className="text-red-500 hover:text-red-600"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
       {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} bg-white shadow-lg transition-all duration-300 flex flex-col`}>
+      <div className={`hidden lg:flex ${isSidebarOpen ? 'w-64' : 'w-16'} bg-white shadow-lg transition-all duration-300 flex-col`}>
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
@@ -148,18 +170,6 @@ const UserDashboard = () => {
             {!isGuest && (
               <>
                 <Button
-                  variant={activeTab === 'certificates' ? 'default' : 'ghost'}
-                  className={`w-full justify-start ${
-                    activeTab === 'certificates' 
-                      ? 'bg-rotaract-orange text-white' 
-                      : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-                  }`}
-                  onClick={() => setActiveTab('certificates')}
-                >
-                  <Award className="w-4 h-4 mr-2" />
-                  {isSidebarOpen && 'Certificates'}
-                </Button>
-                <Button
                   variant={activeTab === 'past-events' ? 'default' : 'ghost'}
                   className={`w-full justify-start ${
                     activeTab === 'past-events' 
@@ -213,10 +223,55 @@ const UserDashboard = () => {
         </div>
       </div>
 
+      {/* Mobile Navigation */}
+      <div className="lg:hidden bg-white border-t border-gray-200 p-4 fixed bottom-0 left-0 right-0 z-10">
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            onClick={() => setActiveTab('calendar')}
+            variant={activeTab === 'calendar' ? 'default' : 'ghost'}
+            className="flex flex-col items-center p-2 h-auto"
+            size="sm"
+          >
+            <Calendar className="h-4 w-4 mb-1" />
+            <span className="text-xs">Calendar</span>
+          </Button>
+          {!isGuest && (
+            <>
+              <Button
+                onClick={() => setActiveTab('past-events')}
+                variant={activeTab === 'past-events' ? 'default' : 'ghost'}
+                className="flex flex-col items-center p-2 h-auto"
+                size="sm"
+              >
+                <Camera className="h-4 w-4 mb-1" />
+                <span className="text-xs">Events</span>
+              </Button>
+              <Button
+                onClick={() => setActiveTab('attendance')}
+                variant={activeTab === 'attendance' ? 'default' : 'ghost'}
+                className="flex flex-col items-center p-2 h-auto"
+                size="sm"
+              >
+                <User className="h-4 w-4 mb-1" />
+                <span className="text-xs">Attendance</span>
+              </Button>
+              <Button
+                onClick={() => setActiveTab('feedback')}
+                variant={activeTab === 'feedback' ? 'default' : 'ghost'}
+                className="flex flex-col items-center p-2 h-auto"
+                size="sm"
+              >
+                <MessageSquare className="h-4 w-4 mb-1" />
+                <span className="text-xs">Feedback</span>
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
       {/* Main Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-3 lg:p-6 pb-20 lg:pb-6">
         {activeTab === 'calendar' && (isGuest ? <GuestCalendar /> : <WeeklyCalendar />)}
-        {!isGuest && activeTab === 'certificates' && <Certificates />}
         {!isGuest && activeTab === 'past-events' && <EventManagement />}
         {!isGuest && activeTab === 'attendance' && <Attendance />}
         {!isGuest && activeTab === 'feedback' && <FeedbackForm />}
