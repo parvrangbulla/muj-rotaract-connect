@@ -9,17 +9,17 @@ const Index = () => {
   };
   return <div className="min-h-screen bg-stone-50">
       {/* Manipal University Jaipur Logo - Top Left */}
-      <div className="absolute top-4 left-4 z-20">
+      <div className="absolute top-4 left-4 z-50">
         <a 
           href="https://jaipur.manipal.edu/" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="transform hover:scale-105 transition-all duration-300"
+          className="transform hover:scale-105 transition-all duration-300 block"
         >
           <img 
             src="/lovable-uploads/eae4db5e-0f3f-4a01-a16c-5e8459e8b604.png" 
             alt="Manipal University Jaipur Logo" 
-            className="h-12 md:h-16 object-contain filter drop-shadow-lg hover:drop-shadow-xl transition-all duration-300"
+            className="h-12 md:h-16 object-contain filter drop-shadow-lg hover:drop-shadow-xl transition-all duration-300 bg-white/10 backdrop-blur-sm rounded-lg p-2"
           />
         </a>
       </div>
