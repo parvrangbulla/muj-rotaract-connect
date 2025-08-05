@@ -303,8 +303,8 @@ const WeeklyCalendar = () => {
       {/* Calendar Grid - Teams Style */}
       <Card className="overflow-hidden">
         <CardContent className="p-0">
-          {/* Header Row */}
-          <div className="grid grid-cols-8 border-b bg-gray-50">
+          {/* Header Row - Fixed */}
+          <div className="grid grid-cols-8 border-b bg-gray-50 sticky top-0 z-20">
             <div className="p-3 border-r font-medium text-sm">Time</div>
             {weekDays.map((day, index) => (
               <div key={index} className="p-3 text-center border-r last:border-r-0">
@@ -314,69 +314,71 @@ const WeeklyCalendar = () => {
             ))}
           </div>
           
-          {/* Time Grid */}
-          <div className="relative">
-            {timeSlots.map((time, timeIndex) => (
-              <div key={timeIndex} className="grid grid-cols-8 border-b last:border-b-0" style={{ height: '60px' }}>
-                <div className="p-3 border-r bg-gray-50 text-xs font-medium text-gray-600 flex items-start">
-                  {time}
-                </div>
-                {weekDays.map((day, dayIndex) => (
-                  <div key={dayIndex} className="border-r last:border-r-0 relative" style={{ height: '60px' }}>
-                    {/* Time slot background */}
+          {/* Scrollable Time Grid Container */}
+          <div className="max-h-[600px] overflow-y-auto">
+            <div className="relative">
+              {timeSlots.map((time, timeIndex) => (
+                <div key={timeIndex} className="grid grid-cols-8 border-b last:border-b-0" style={{ height: '60px' }}>
+                  <div className="p-3 border-r bg-gray-50 text-xs font-medium text-gray-600 flex items-start sticky left-0 z-10">
+                    {time}
                   </div>
-                ))}
-              </div>
-            ))}
-            
-            {/* Event Overlays */}
-            {weekDays.map((day, dayIndex) => {
-              const dayEvents = getEventsForDay(day);
+                  {weekDays.map((day, dayIndex) => (
+                    <div key={dayIndex} className="border-r last:border-r-0 relative" style={{ height: '60px' }}>
+                      {/* Time slot background */}
+                    </div>
+                  ))}
+                </div>
+              ))}
               
-              return (
-                <div key={dayIndex} className="absolute inset-0">
-                  <div className="grid grid-cols-8 h-full">
-                    {/* Skip time column */}
-                    <div></div>
-                    {weekDays.map((_, colIndex) => {
-                      if (colIndex !== dayIndex) return <div key={colIndex}></div>;
-                      
-                      return (
-                        <div key={colIndex} className="relative border-r last:border-r-0">
-                          {dayEvents.map((event) => {
-                            const position = getEventPosition(event.startTime, event.endTime);
-                            
-                            return (
-                              <div
-                                key={event.id}
-                                className={`absolute left-1 right-1 rounded-md cursor-pointer shadow-sm border-l-4 z-10 ${getEventColor(event)}`}
-                                style={{
-                                  top: `${position.top}px`,
-                                  height: `${position.height}px`
-                                }}
-                                onClick={() => handleEventClick(event)}
-                              >
-                                <div className="p-2 h-full flex flex-col justify-between">
-                                  <div>
-                                    <div className="font-medium text-xs truncate">{event.title}</div>
-                                    <div className="text-xs opacity-75 truncate">{event.location}</div>
+              {/* Event Overlays */}
+              {weekDays.map((day, dayIndex) => {
+                const dayEvents = getEventsForDay(day);
+                
+                return (
+                  <div key={dayIndex} className="absolute inset-0">
+                    <div className="grid grid-cols-8 h-full">
+                      {/* Skip time column */}
+                      <div></div>
+                      {weekDays.map((_, colIndex) => {
+                        if (colIndex !== dayIndex) return <div key={colIndex}></div>;
+                        
+                        return (
+                          <div key={colIndex} className="relative border-r last:border-r-0">
+                            {dayEvents.map((event) => {
+                              const position = getEventPosition(event.startTime, event.endTime);
+                              
+                              return (
+                                <div
+                                  key={event.id}
+                                  className={`absolute left-1 right-1 rounded-md cursor-pointer shadow-sm border-l-4 z-10 ${getEventColor(event)}`}
+                                  style={{
+                                    top: `${position.top}px`,
+                                    height: `${position.height}px`
+                                  }}
+                                  onClick={() => handleEventClick(event)}
+                                >
+                                  <div className="p-2 h-full flex flex-col justify-between">
+                                    <div>
+                                      <div className="font-medium text-xs truncate">{event.title}</div>
+                                      <div className="text-xs opacity-75 truncate">{event.location}</div>
+                                    </div>
+                                    <div className="text-xs opacity-75">{event.startTime} - {event.endTime}</div>
+                                    {event.enableRegistration && (
+                                      <div className="absolute top-1 right-1 w-2 h-2 bg-rotaract-orange rounded-full" 
+                                           title="Registration Enabled"></div>
+                                    )}
                                   </div>
-                                  <div className="text-xs opacity-75">{event.startTime} - {event.endTime}</div>
-                                  {event.enableRegistration && (
-                                    <div className="absolute top-1 right-1 w-2 h-2 bg-rotaract-orange rounded-full" 
-                                         title="Registration Enabled"></div>
-                                  )}
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      );
-                    })}
+                              );
+                            })}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </CardContent>
       </Card>
