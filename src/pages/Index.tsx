@@ -8,6 +8,22 @@ const Index = () => {
     window.open('https://docs.google.com/forms/d/e/1FAIpQLSeN_0YXl6S4QJrcTJXSfPk_j0Ev_42DUAh6KPnYbYqzd1hVEA/viewform', '_blank');
   };
   return <div className="min-h-screen bg-stone-50">
+      {/* Manipal University Jaipur Logo - Top Left */}
+      <div className="absolute top-4 left-4 z-20">
+        <a 
+          href="https://jaipur.manipal.edu/" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="transform hover:scale-105 transition-all duration-300"
+        >
+          <img 
+            src="/lovable-uploads/eae4db5e-0f3f-4a01-a16c-5e8459e8b604.png" 
+            alt="Manipal University Jaipur Logo" 
+            className="h-12 md:h-16 object-contain filter drop-shadow-lg hover:drop-shadow-xl transition-all duration-300"
+          />
+        </a>
+      </div>
+
       {/* Hero Section */}
       <div className="min-h-screen relative flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black overflow-hidden">
         <AnimatedBackground />
@@ -17,22 +33,6 @@ const Index = () => {
         
         {/* Content */}
         <div className="container mx-auto px-4 text-center text-white z-10 relative">
-          {/* Manipal University Jaipur Logo */}
-          <div className="flex justify-center mb-4">
-            <a 
-              href="https://jaipur.manipal.edu/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="transform hover:scale-105 transition-all duration-300"
-            >
-              <img 
-                src="/lovable-uploads/eae4db5e-0f3f-4a01-a16c-5e8459e8b604.png" 
-                alt="Manipal University Jaipur Logo" 
-                className="h-20 md:h-24 object-contain filter drop-shadow-lg hover:drop-shadow-xl transition-all duration-300"
-              />
-            </a>
-          </div>
-          
           <div className="flex justify-center mb-6">
             <div className="relative group cursor-pointer">
               {/* Outer rotating ring */}
