@@ -17,6 +17,22 @@ const Index = () => {
         
         {/* Content */}
         <div className="container mx-auto px-4 text-center text-white z-10 relative">
+          {/* Manipal University Jaipur Logo */}
+          <div className="flex justify-center mb-4">
+            <a 
+              href="https://jaipur.manipal.edu/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="transform hover:scale-105 transition-all duration-300"
+            >
+              <img 
+                src="/lovable-uploads/eae4db5e-0f3f-4a01-a16c-5e8459e8b604.png" 
+                alt="Manipal University Jaipur Logo" 
+                className="h-20 md:h-24 object-contain filter drop-shadow-lg hover:drop-shadow-xl transition-all duration-300"
+              />
+            </a>
+          </div>
+          
           <div className="flex justify-center mb-6">
             <div className="relative group cursor-pointer">
               {/* Outer rotating ring */}
