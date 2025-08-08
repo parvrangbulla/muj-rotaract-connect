@@ -1,277 +1,232 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Calendar, Users, Heart, Globe, Briefcase, Target } from "lucide-react";
+import { ArrowRight, Calendar, Users, Image, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import AnimatedBackground from "@/components/AnimatedBackground";
 const Index = () => {
   const handleBecomeMember = () => {
     window.open('https://docs.google.com/forms/d/e/1FAIpQLSeN_0YXl6S4QJrcTJXSfPk_j0Ev_42DUAh6KPnYbYqzd1hVEA/viewform', '_blank');
   };
-  return <div className="min-h-screen bg-background">
-      {/* Hero Section - Clean Professional Design */}
-      <section className="relative min-h-screen bg-gradient-to-br from-background to-muted/50 flex items-center">
-        {/* Background Image with Overlay */}
-        <div 
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: 'url(https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=3540&auto=format&fit=crop)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center'
-          }}
-        >
-          <div className="absolute inset-0 bg-foreground/80" />
-        </div>
+  return <div className="min-h-screen bg-stone-50">
+      {/* Hero Section */}
+      <div className="min-h-screen relative flex items-center justify-center bg-gradient-to-br from-black via-gray-900 to-black overflow-hidden">
+        <AnimatedBackground />
+        
+        {/* Background Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/60" />
         
         {/* Content */}
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left Content */}
-            <div className="text-background">
-              <div className="mb-8">
-                <div className="inline-block px-4 py-2 bg-primary rounded-full text-primary-foreground text-sm font-medium mb-6">
-                  Service Above Self
-                </div>
-                <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
-                  Rotaract Club
-                  <span className="block text-primary text-4xl md:text-5xl mt-2">
-                    Manipal University Jaipur
-                  </span>
-                </h1>
-                <p className="text-xl text-background/80 mb-8 leading-relaxed">
-                  Empowering young leaders to create positive change through professional development, 
-                  community service, and global impact initiatives.
-                </p>
+        <div className="container mx-auto px-4 text-center text-white z-10 relative">
+          <div className="flex justify-center mb-6">
+            <div className="relative group cursor-pointer">
+              {/* Outer rotating ring */}
+              <div className="absolute inset-0 w-80 h-80 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{
+              animationDuration: '8s'
+            }}></div>
+              
+              {/* Middle pulsing ring */}
+              <div className="absolute inset-2 w-76 h-76 rounded-full border border-white/30 animate-ping" style={{
+              animationDelay: '1s'
+            }}></div>
+              
+              {/* Background circle for logo */}
+              <div className="absolute inset-4 w-72 h-72 rounded-full bg-gradient-to-br from-rotaract-orange/20 via-white/10 to-rotaract-orange/30 backdrop-blur-sm border border-white/20"></div>
+              
+              {/* Logo with enhanced animations - made smaller */}
+              <div className="relative w-80 h-80 flex items-center justify-center">
+                <img src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" alt="Rotaract Club MUJ Logo" className="w-56 h-56 object-contain z-10 rounded-full group-hover:scale-125 transition-all duration-500 filter drop-shadow-2xl" style={{
+                animation: 'logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate'
+              }} />
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                  <Link to="/about">Discover Our Mission</Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="border-background text-background hover:bg-background hover:text-foreground">
-                  <Link to="/events">View Our Events</Link>
-                </Button>
-              </div>
+              {/* Inner glowing effect */}
+              <div className="absolute inset-12 w-56 h-56 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{
+              animationDelay: '0.5s'
+            }}></div>
             </div>
+          </div>
+          
+          {/* Custom keyframes for logo animations */}
+          <style>{`
+            @keyframes logoFloat {
+              0%, 100% { transform: translateY(0px) rotate(0deg); }
+              50% { transform: translateY(-10px) rotate(5deg); }
+            }
             
-            {/* Right Content - Logo */}
-            <div className="flex justify-center lg:justify-end">
-              <div className="relative">
-                <div className="w-80 h-80 bg-background/10 rounded-full flex items-center justify-center backdrop-blur-sm border border-background/20">
-                  <img 
-                    src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
-                    alt="Rotaract Club MUJ Logo" 
-                    className="w-64 h-64 object-contain"
-                  />
-                </div>
-                {/* Floating Stats */}
-                <div className="absolute -top-4 -right-4 bg-background rounded-lg p-4 shadow-lg">
-                  <div className="text-2xl font-bold text-foreground">200+</div>
-                  <div className="text-sm text-muted-foreground">Active Members</div>
-                </div>
-                <div className="absolute -bottom-4 -left-4 bg-background rounded-lg p-4 shadow-lg">
-                  <div className="text-2xl font-bold text-foreground">50+</div>
-                  <div className="text-sm text-muted-foreground">Events Annually</div>
-                </div>
-              </div>
+            @keyframes logoGlow {
+              0% { filter: drop-shadow(0 0 15px rgba(245, 145, 32, 0.6)) drop-shadow(0 0 25px rgba(255, 255, 255, 0.4)); }
+              100% { filter: drop-shadow(0 0 25px rgba(245, 145, 32, 0.9)) drop-shadow(0 0 35px rgba(255, 255, 255, 0.6)); }
+            }
+            
+            @keyframes scrollBounce {
+              0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+              40% { transform: translateY(-10px); }
+              60% { transform: translateY(-5px); }
+            }
+          `}</style>
+          
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 animate-fade-up bg-gradient-to-r from-white via-rotaract-orange to-white bg-clip-text text-transparent">
+            Rotaract Club
+          </h1>
+          <h2 className="text-2xl md:text-4xl font-medium mb-6 animate-fade-up text-gray-200" style={{
+          animationDelay: '200ms'
+        }}>
+            Manipal University Jaipur
+          </h2>
+          <p className="text-lg md:text-xl max-w-3xl mx-auto mb-8 animate-fade-up text-gray-300" style={{
+          animationDelay: '400ms'
+        }}>
+            Service Above Self
+          </p>
+          <div className="flex flex-wrap gap-4 justify-center animate-fade-up" style={{
+          animationDelay: '600ms'
+        }}>
+            <Button asChild className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0">
+              <Link to="/about">About Us</Link>
+            </Button>
+            <Button asChild variant="outline" className="border-white text-white hover:bg-white hover:text-black transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+              <Link to="/events" className="remove the hover only drop down behaviour">Our Events</Link>
+            </Button>
+          </div>
+          
+          {/* Scroll Indicator */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-fade-up" style={{
+          animationDelay: '800ms'
+        }}>
+            <div className="flex flex-col items-center">
+              
+              
             </div>
           </div>
         </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 bg-foreground text-background">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl font-bold text-primary mb-2">8+</div>
-              <div className="text-sm uppercase tracking-wide">Years of Service</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-primary mb-2">200+</div>
-              <div className="text-sm uppercase tracking-wide">Active Members</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-primary mb-2">50+</div>
-              <div className="text-sm uppercase tracking-wide">Annual Events</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-primary mb-2">1000+</div>
-              <div className="text-sm uppercase tracking-wide">Lives Impacted</div>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* About Section */}
-      <section className="py-20 bg-background">
+      <section className="py-16 md:py-24 bg-stone-50">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <h2 className="section-title text-black">About Rotaract MUJ</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-              <h2 className="text-4xl font-bold text-foreground mb-6">
-                Leading with Purpose, Serving with Impact
-              </h2>
-              <p className="text-lg text-muted-foreground mb-6 leading-relaxed">
-                As the premier service organization at Manipal University Jaipur, we cultivate the next generation 
-                of ethical leaders through meaningful community engagement and professional development.
+              <p className="text-lg mb-6 text-gray-700">
+                Rotaract Club of Manipal University Jaipur is a dynamic organization
+                dedicated to professional development and community service.
+                As part of Rotary International, we strive to make a positive impact
+                on our campus and in the local community.
               </p>
-              <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                Our commitment extends beyond campus boundaries, creating sustainable solutions for community challenges 
-                while fostering global understanding and international cooperation.
+              <p className="text-lg mb-6 text-gray-700">
+                Our members develop leadership skills, engage in meaningful service
+                projects, and build a network of friends and professionals who share
+                a vision of creating positive change.
               </p>
-              <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
+              <Button asChild className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white transform hover:scale-105 transition-all duration-300">
                 <Link to="/about" className="inline-flex items-center">
-                  Learn About Our Values <ArrowRight className="ml-2 h-5 w-5" />
+                  Learn More <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
-            <div className="relative">
-              <img 
-                src="https://images.unsplash.com/photo-1529156066841-6116e61058f4?q=80&w=3432&auto=format&fit=crop" 
-                alt="Rotaract members" 
-                className="rounded-lg shadow-xl w-full"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent rounded-lg" />
+            <div className="flex justify-center">
+              <img src="https://images.unsplash.com/photo-1529156066841-6116e61058f4?q=80&w=3432&auto=format&fit=crop" alt="Rotaract members" className="rounded-lg shadow-lg max-w-full h-auto transform hover:scale-105 transition-transform duration-300" />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Events Showcase */}
-      <section className="py-20 bg-muted/20">
+      {/* Flagship Events Section */}
+      <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
-              Signature Events & Initiatives
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Transforming communities through meaningful action and sustainable impact
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Blood Donation Camp */}
-            <div className="bg-background rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-              <div className="h-64 relative overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" 
-                  alt="Blood Donation Camp" 
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 left-4">
-                  <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                    Annual Event
-                  </span>
-                </div>
+          <h2 className="section-title text-black">Our Flagship Events</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+            {/* Blood Donation Camp Card */}
+            <Card className="overflow-hidden transition-all hover:shadow-xl border-gray-200 hover:border-rotaract-orange transform hover:scale-105 duration-300">
+              <div className="h-64 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" alt="Blood Donation Camp" className="w-full h-full object-cover transition-transform hover:scale-110 duration-300" />
               </div>
-              <div className="p-8">
-                <h3 className="text-2xl font-bold text-foreground mb-4">Blood Donation Camp</h3>
-                <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Our flagship healthcare initiative mobilizing the university community for this vital cause, 
-                  creating awareness about the life-saving impact of blood donation.
+              <CardContent className="p-6">
+                <h3 className="text-2xl font-bold mb-2 text-black">Blood Donation Camp (BDC)</h3>
+                <p className="text-gray-600 mb-4">
+                  Our annual Blood Donation Camp encourages students and faculty to donate blood and
+                  raise awareness about the importance of blood donation in saving lives.
                 </p>
-                <Button asChild variant="outline">
+                <Button asChild className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white transform hover:scale-105 transition-all duration-300">
                   <Link to="/events" className="inline-flex items-center">
-                    View Details <ArrowRight className="ml-2 h-4 w-4" />
+                    Learn More <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
             
-            {/* Daan Utsav */}
-            <div className="bg-background rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-              <div className="h-64 relative overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop" 
-                  alt="Daan Utsav" 
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 left-4">
-                  <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
-                    Festival of Giving
-                  </span>
-                </div>
+            {/* Daan Utsav Card */}
+            <Card className="overflow-hidden transition-all hover:shadow-xl border-gray-200 hover:border-rotaract-orange transform hover:scale-105 duration-300">
+              <div className="h-64 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop" alt="Daan Utsav" className="w-full h-full object-cover transition-transform hover:scale-110 duration-300" />
               </div>
-              <div className="p-8">
-                <h3 className="text-2xl font-bold text-foreground mb-4">Daan Utsav</h3>
-                <p className="text-muted-foreground mb-6 leading-relaxed">
-                  A celebration of generosity bringing our community together to support underprivileged families 
-                  through comprehensive donation drives and educational support initiatives.
+              <CardContent className="p-6">
+                <h3 className="text-2xl font-bold mb-2 text-black">Daan Utsav</h3>
+                <p className="text-gray-600 mb-4">
+                  Daan Utsav is our festival of giving where we organize donation
+                  drives to help the underprivileged communities with clothes, books,
+                  food, and other essential items.
                 </p>
-                <Button asChild variant="outline">
+                <Button asChild className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white transform hover:scale-105 transition-all duration-300">
                   <Link to="/events" className="inline-flex items-center">
-                    View Details <ArrowRight className="ml-2 h-4 w-4" />
+                    Learn More <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* Service Domains */}
-      <section className="py-20 bg-background">
+      {/* Domains Section */}
+      <section className="py-16 md:py-24 bg-black text-white">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">
-              Four Pillars of Excellence
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              Comprehensive service across multiple domains for maximum community impact
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* CSD */}
-            <div className="text-center group hover:bg-muted/50 p-6 rounded-xl transition-colors">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <Users className="w-8 h-8 text-primary-foreground" />
+          <h2 className="text-3xl font-bold text-center mb-12">Our Domains</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+            {/* CSD Domain */}
+            <div className="text-center transform hover:scale-105 transition-all duration-300">
+              <div className="bg-rotaract-orange text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 hover:shadow-lg transition-shadow">
+                <Users size={32} />
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">Club Service</h3>
-              <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
-                Internal development, leadership training, and organizational excellence
-              </p>
-              <Button asChild variant="ghost" size="sm">
+              <h3 className="text-xl font-semibold mb-2">CSD</h3>
+              <p className="mb-4">Club Service Domain</p>
+              <Button asChild variant="outline" className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white transform hover:scale-105 transition-all duration-300">
                 <Link to="/domains">Learn More</Link>
               </Button>
             </div>
             
-            {/* CMD */}
-            <div className="text-center group hover:bg-muted/50 p-6 rounded-xl transition-colors">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <Heart className="w-8 h-8 text-primary-foreground" />
+            {/* CMD Domain */}
+            <div className="text-center transform hover:scale-105 transition-all duration-300">
+              <div className="bg-rotaract-orange text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 hover:shadow-lg transition-shadow">
+                <Users size={32} />
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">Community Service</h3>
-              <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
-                Local engagement, sustainable development, and community upliftment
-              </p>
-              <Button asChild variant="ghost" size="sm">
+              <h3 className="text-xl font-semibold mb-2">CMD</h3>
+              <p className="mb-4">Community Service Domain</p>
+              <Button asChild variant="outline" className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white transform hover:scale-105 transition-all duration-300">
                 <Link to="/domains">Learn More</Link>
               </Button>
             </div>
             
-            {/* ISD */}
-            <div className="text-center group hover:bg-muted/50 p-6 rounded-xl transition-colors">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <Globe className="w-8 h-8 text-primary-foreground" />
+            {/* ISD Domain */}
+            <div className="text-center transform hover:scale-105 transition-all duration-300">
+              <div className="bg-rotaract-orange text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 hover:shadow-lg transition-shadow">
+                <Users size={32} />
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">International Service</h3>
-              <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
-                Global collaboration, cultural exchange, and international partnerships
-              </p>
-              <Button asChild variant="ghost" size="sm">
+              <h3 className="text-xl font-semibold mb-2">ISD</h3>
+              <p className="mb-4">International Service Domain</p>
+              <Button asChild variant="outline" className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white transform hover:scale-105 transition-all duration-300">
                 <Link to="/domains">Learn More</Link>
               </Button>
             </div>
             
-            {/* PDD */}
-            <div className="text-center group hover:bg-muted/50 p-6 rounded-xl transition-colors">
-              <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
-                <Briefcase className="w-8 h-8 text-primary-foreground" />
+            {/* PDD Domain */}
+            <div className="text-center transform hover:scale-105 transition-all duration-300">
+              <div className="bg-rotaract-orange text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 hover:shadow-lg transition-shadow">
+                <Users size={32} />
               </div>
-              <h3 className="text-xl font-bold text-foreground mb-2">Professional Development</h3>
-              <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
-                Skill building, career advancement, and professional networking
-              </p>
-              <Button asChild variant="ghost" size="sm">
+              <h3 className="text-xl font-semibold mb-2">PDD</h3>
+              <p className="mb-4">Professional Development Domain</p>
+              <Button asChild variant="outline" className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white transform hover:scale-105 transition-all duration-300">
                 <Link to="/domains">Learn More</Link>
               </Button>
             </div>
@@ -280,38 +235,26 @@ const Index = () => {
       </section>
 
       {/* Call to Action */}
-      <section className="py-20 bg-primary text-primary-foreground">
+      <section className="py-16 md:py-24 bg-stone-50">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-6">
-            Ready to Make a Difference?
-          </h2>
-          <p className="text-xl mb-12 max-w-3xl mx-auto opacity-90">
-            Join Rotaract Club MUJ and become part of a community dedicated to service, 
-            leadership, and positive change that extends far beyond our campus.
+          <h2 className="text-3xl font-bold mb-6 text-black">Explore More About Rotaract MUJ</h2>
+          <p className="text-lg mb-8 max-w-3xl mx-auto text-gray-600">
+            Check out our events, meet our team, and learn more about how you can get involved
+            with Rotaract Club at Manipal University Jaipur.
           </p>
-          
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center max-w-2xl mx-auto">
-            <Button 
-              onClick={handleBecomeMember} 
-              size="lg" 
-              className="bg-background text-foreground hover:bg-background/90 flex-1 sm:flex-none"
-            >
-              <Target className="mr-2 h-5 w-5" />
-              Join Our Community
-            </Button>
-            
-            <Button asChild variant="outline" size="lg" className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary flex-1 sm:flex-none">
-              <Link to="/events">
-                <Calendar className="mr-2 h-5 w-5" />
-                Upcoming Events
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Button asChild className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+              <Link to="/events" className="inline-flex items-center">
+                <Calendar className="mr-2 h-4 w-4" /> View Events
               </Link>
             </Button>
-            
-            <Button asChild variant="ghost" size="lg" className="text-primary-foreground hover:bg-primary-foreground/10 flex-1 sm:flex-none">
-              <Link to="/team">
-                <Users className="mr-2 h-5 w-5" />
-                Meet Our Team
+            <Button asChild className="bg-black hover:bg-gray-900 text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+              <Link to="/team" className="inline-flex items-center">
+                <Users className="mr-2 h-4 w-4" /> Meet Our Team
               </Link>
+            </Button>
+            <Button onClick={handleBecomeMember} variant="outline" className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
+              <Users className="mr-2 h-4 w-4" /> Become a Member
             </Button>
           </div>
         </div>
