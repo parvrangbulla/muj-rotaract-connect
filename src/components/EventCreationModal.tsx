@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface EventCreationModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ interface EventCreationModalProps {
 }
 
 const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = false }: EventCreationModalProps) => {
+  const { isExecutive } = useAuth();
   const [formData, setFormData] = useState({
     title: editData?.title || '',
     date: editData?.date || '',
@@ -30,6 +32,11 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  // Role-based access control
+  if (!isExecutive) {
+    return null; // Don't render the modal for non-executives
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

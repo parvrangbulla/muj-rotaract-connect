@@ -3,8 +3,21 @@ import PageHeader from "@/components/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const Domains = () => {
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState("csd");
+  
+  // Handle URL parameters to open specific domain tabs
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['csd', 'cmd', 'isd', 'pdd'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
+  
   return (
     <div className="min-h-screen">
       <PageHeader 
@@ -24,7 +37,7 @@ const Domains = () => {
             </p>
           </div>
           
-          <Tabs defaultValue="csd">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full grid grid-cols-4 mb-8">
               <TabsTrigger value="csd" className="text-lg py-3">CSD</TabsTrigger>
               <TabsTrigger value="cmd" className="text-lg py-3">CMD</TabsTrigger>

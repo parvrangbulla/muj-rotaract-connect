@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Edit, Trash2, Plus } from 'lucide-react';
+import { Edit, Trash2, Plus, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface EventImage {
   id: string;
@@ -31,9 +33,24 @@ interface EventData {
 
 const EventManagement = () => {
   const navigate = useNavigate();
+  const { isExecutive } = useAuth();
   
   const [flagshipEvents, setFlagshipEvents] = useState<EventData[]>([]);
   const [pastEvents, setPastEvents] = useState<EventData[]>([]);
+
+  // Role-based access control
+  if (!isExecutive) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Alert className="max-w-md border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            Access Denied. This feature is only available for Executive members.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   // Load events from localStorage
   useEffect(() => {

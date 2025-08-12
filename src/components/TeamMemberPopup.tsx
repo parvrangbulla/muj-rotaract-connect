@@ -1,5 +1,5 @@
 
-import { X, Instagram, Phone } from 'lucide-react';
+import { X, Instagram, Phone, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface TeamMember {
@@ -8,6 +8,7 @@ interface TeamMember {
   position: string;
   image: string;
   instagram: string;
+  linkedin?: string;
   phone?: string;
   bio?: string;
 }
@@ -70,6 +71,16 @@ const TeamMemberPopup = ({ member, onClose }: TeamMemberPopupProps) => {
             >
               <Instagram size={20} />
             </a>
+            {member.linkedin && (
+              <a 
+                href={member.linkedin} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 transition-all duration-300 hover:scale-110 transform flex items-center justify-center"
+              >
+                <Linkedin size={20} />
+              </a>
+            )}
             {member.phone && (
               <a 
                 href={`tel:${member.phone}`}

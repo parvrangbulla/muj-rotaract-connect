@@ -84,8 +84,8 @@ const Index = () => {
             <Button asChild className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0">
               <Link to="/about">About Us</Link>
             </Button>
-            <Button asChild variant="outline" className="border-white text-white hover:bg-white hover:text-black transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
-              <Link to="/events" className="remove the hover only drop down behaviour">Our Events</Link>
+            <Button asChild className="bg-white text-black hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0">
+              <Link to="/events">Our Events</Link>
             </Button>
           </div>
           
@@ -191,7 +191,7 @@ const Index = () => {
               <h3 className="text-xl font-semibold mb-2">CSD</h3>
               <p className="mb-4">Club Service Domain</p>
               <Button asChild variant="outline" className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white transform hover:scale-105 transition-all duration-300">
-                <Link to="/domains">Learn More</Link>
+                <Link to="/domains?tab=csd">Learn More</Link>
               </Button>
             </div>
             
@@ -203,7 +203,7 @@ const Index = () => {
               <h3 className="text-xl font-semibold mb-2">CMD</h3>
               <p className="mb-4">Community Service Domain</p>
               <Button asChild variant="outline" className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white transform hover:scale-105 transition-all duration-300">
-                <Link to="/domains">Learn More</Link>
+                <Link to="/domains?tab=cmd">Learn More</Link>
               </Button>
             </div>
             
@@ -215,7 +215,7 @@ const Index = () => {
               <h3 className="text-xl font-semibold mb-2">ISD</h3>
               <p className="mb-4">International Service Domain</p>
               <Button asChild variant="outline" className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white transform hover:scale-105 transition-all duration-300">
-                <Link to="/domains">Learn More</Link>
+                <Link to="/domains?tab=isd">Learn More</Link>
               </Button>
             </div>
             
@@ -227,7 +227,7 @@ const Index = () => {
               <h3 className="text-xl font-semibold mb-2">PDD</h3>
               <p className="mb-4">Professional Development Domain</p>
               <Button asChild variant="outline" className="border-rotaract-orange text-rotaract-orange hover:bg-rotaract-orange hover:text-white transform hover:scale-105 transition-all duration-300">
-                <Link to="/domains">Learn More</Link>
+                <Link to="/domains?tab=pdd">Learn More</Link>
               </Button>
             </div>
           </div>

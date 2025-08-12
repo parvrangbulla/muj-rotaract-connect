@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Edit, Trash2, Save } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface EventDetailModalProps {
   event: any;
@@ -29,6 +30,7 @@ const EnhancedEventDetailModal = ({
   onDelete,
   isGuestMode = false
 }: EventDetailModalProps) => {
+  const { isExecutive } = useAuth();
   // All hooks must be declared before any early returns
   const [enableRegistration, setEnableRegistration] = useState(false);
   const [enableAttendance, setEnableAttendance] = useState(false);
@@ -263,7 +265,8 @@ const EnhancedEventDetailModal = ({
           <div className="flex items-center justify-between">
             <DialogTitle className="text-2xl font-bold">{event.title}</DialogTitle>
             <div className="flex gap-2">
-              {!isPastEvent && !isGuestMode && (
+              {/* Edit/Delete buttons - Only for Executives */}
+              {!isPastEvent && !isGuestMode && isExecutive && (
                 <>
                   <Button
                     variant="outline"
@@ -315,7 +318,8 @@ const EnhancedEventDetailModal = ({
           {/* Registration Section - Only for Events and GBMs that have registration enabled */}
           {((event.type === 'event' && event.eventCategory === 'gbm') || !isGBM) && (
             <div>
-              {!isGuestMode && (
+              {/* Registration toggle - Only for Executives */}
+              {!isGuestMode && isExecutive && (
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">Registration</h3>
                   <div className="flex items-center space-x-2">
@@ -429,7 +433,8 @@ const EnhancedEventDetailModal = ({
 
               {/* Attendance Section */}
               <div>
-                {!isGuestMode && (
+                {/* Attendance toggle - Only for Executives */}
+                {!isGuestMode && isExecutive && (
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">Attendance</h3>
                     <div className="flex items-center space-x-2">

@@ -1,62 +1,29 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Calendar, MessageSquare, LogOut, Menu, Camera, Award, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import WeeklyCalendar from './WeeklyCalendar';
 import FeedbackForm from './FeedbackForm';
 import EventManagement from './EventManagement';
-
 import Attendance from './Attendance';
 import GuestCalendar from './GuestCalendar';
 
 const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState<'calendar' | 'past-events' | 'feedback' | 'attendance'>('calendar');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
-  const [userProfile, setUserProfile] = useState({
-    fullName: '',
-    profilePicture: null as string | null
-  });
   const navigate = useNavigate();
+  const { user, signOut, isGuest, isExecutive, isStudent } = useAuth();
 
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const username = localStorage.getItem('username') || 'User';
-      const guestMode = localStorage.getItem('isGuest') === 'true';
-      const savedProfile = localStorage.getItem('userProfile');
-      
-      setIsGuest(guestMode);
-      
-      if (savedProfile) {
-        const profile = JSON.parse(savedProfile);
-        setUserProfile({
-          fullName: profile.fullName || username,
-          profilePicture: profile.profilePicture
-        });
-      } else {
-        setUserProfile({
-          fullName: username,
-          profilePicture: null
-        });
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    handleStorageChange();
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('username');
-    localStorage.removeItem('isGuest');
-    window.dispatchEvent(new Event('storage'));
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
@@ -86,23 +53,25 @@ const UserDashboard = () => {
           </div>
           
           {/* User Profile Section */}
-          {isSidebarOpen && !isGuest && (
+          {isSidebarOpen && !isGuest && user && (
             <div 
               className="mt-4 p-3 bg-stone-50 rounded-lg cursor-pointer hover:bg-stone-100 transition-colors"
               onClick={() => navigate('/profile')}
             >
               <div className="flex items-center gap-3">
                 <Avatar className="w-10 h-10">
-                  <AvatarImage src={userProfile.profilePicture || ''} alt="Profile" />
+                  <AvatarImage src={user.profilePicture || ''} alt="Profile" />
                   <AvatarFallback>
                     <User className="w-5 h-5" />
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {userProfile.fullName}
+                    {user.fullName}
                   </p>
-                  <p className="text-xs text-gray-500">View Profile</p>
+                  <p className="text-xs text-gray-500">
+                    {isExecutive ? 'Executive' : 'Student'} • View Profile
+                  </p>
                 </div>
               </div>
             </div>
@@ -144,33 +113,42 @@ const UserDashboard = () => {
               {isSidebarOpen && 'Calendar'}
             </Button>
             
-            {/* Hide other tabs for guests */}
+            {/* Role-based navigation tabs */}
             {!isGuest && (
               <>
-                <Button
-                  variant={activeTab === 'past-events' ? 'default' : 'ghost'}
-                  className={`w-full justify-start ${
-                    activeTab === 'past-events' 
-                      ? 'bg-rotaract-orange text-white' 
-                      : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-                  }`}
-                  onClick={() => setActiveTab('past-events')}
-                >
-                  <Camera className="w-4 h-4 mr-2" />
-                  {isSidebarOpen && 'Past Events'}
-                </Button>
-                <Button
-                  variant={activeTab === 'attendance' ? 'default' : 'ghost'}
-                  className={`w-full justify-start ${
-                    activeTab === 'attendance' 
-                      ? 'bg-rotaract-orange text-white' 
-                      : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
-                  }`}
-                  onClick={() => setActiveTab('attendance')}
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  {isSidebarOpen && 'Attendance'}
-                </Button>
+                {/* Past Events - Only for Executives */}
+                {isExecutive && (
+                  <Button
+                    variant={activeTab === 'past-events' ? 'default' : 'ghost'}
+                    className={`w-full justify-start ${
+                      activeTab === 'past-events' 
+                        ? 'bg-rotaract-orange text-white' 
+                        : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
+                    }`}
+                    onClick={() => setActiveTab('past-events')}
+                  >
+                    <Camera className="w-4 h-4 mr-2" />
+                    {isSidebarOpen && 'Past Events'}
+                  </Button>
+                )}
+                
+                {/* Attendance - Only for Executives */}
+                {isExecutive && (
+                  <Button
+                    variant={activeTab === 'attendance' ? 'default' : 'ghost'}
+                    className={`w-full justify-start ${
+                      activeTab === 'attendance' 
+                        ? 'bg-rotaract-orange text-white' 
+                        : 'text-gray-600 hover:text-rotaract-orange hover:bg-stone-100'
+                    }`}
+                    onClick={() => setActiveTab('attendance')}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    {isSidebarOpen && 'Attendance'}
+                  </Button>
+                )}
+                
+                {/* Feedback - Available for both Students and Executives */}
                 <Button
                   variant={activeTab === 'feedback' ? 'default' : 'ghost'}
                   className={`w-full justify-start ${
@@ -204,8 +182,8 @@ const UserDashboard = () => {
       {/* Main Content */}
       <div className="flex-1 p-6">
         {activeTab === 'calendar' && (isGuest ? <GuestCalendar /> : <WeeklyCalendar />)}
-        {!isGuest && activeTab === 'past-events' && <EventManagement />}
-        {!isGuest && activeTab === 'attendance' && <Attendance />}
+        {isExecutive && activeTab === 'past-events' && <EventManagement />}
+        {isExecutive && activeTab === 'attendance' && <Attendance />}
         {!isGuest && activeTab === 'feedback' && <FeedbackForm />}
       </div>
     </div>

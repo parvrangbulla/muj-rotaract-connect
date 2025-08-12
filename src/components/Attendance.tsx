@@ -1,17 +1,34 @@
 
 import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, Users, Download, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, Users, Download, Search, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Attendance = () => {
+  const { isExecutive } = useAuth();
   const [eventsWithAttendance, setEventsWithAttendance] = useState<any[]>([]);
   const [openEvents, setOpenEvents] = useState<{ [key: string]: boolean }>({});
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Role-based access control
+  if (!isExecutive) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Alert className="max-w-md border-red-200 bg-red-50">
+          <AlertCircle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            Access Denied. This feature is only available for Executive members.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
   useEffect(() => {
     loadEventsWithAttendance();

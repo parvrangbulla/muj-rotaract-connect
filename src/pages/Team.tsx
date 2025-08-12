@@ -2,7 +2,7 @@
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { Instagram } from "lucide-react";
+import { Instagram, Linkedin } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import TeamMemberPopup from "@/components/TeamMemberPopup";
 
@@ -13,6 +13,7 @@ type TeamMember = {
   position: string;
   image: string;
   instagram: string;
+  linkedin?: string;
   phone?: string;
   bio?: string;
 };
@@ -133,6 +134,16 @@ const Team = () => {
       image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=3387&auto=format&fit=crop",
       instagram: "https://www.instagram.com/tanisha1607/",
       phone: "+91 90254 96635"
+    },
+    {
+      id: 15,
+      name: "Krish Gupta",
+      position: "Tech Head",
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=3387&auto=format&fit=crop",
+      instagram: "https://www.instagram.com/7_krishgupta_7/",
+      linkedin: "https://www.linkedin.com/in/krish-gupta-51637b1b8/",
+      phone: "+91 98765 43210",
+      bio: "Leading technical initiatives and digital transformation for the club."
     }
   ]);
 
@@ -181,7 +192,7 @@ const Team = () => {
                       </TooltipContent>
                     </Tooltip>
                     
-                    <div className="social-links absolute top-6 right-6">
+                    <div className="social-links absolute top-6 right-6 flex gap-2">
                       <a 
                         href={member.instagram} 
                         target="_blank" 
@@ -191,6 +202,17 @@ const Team = () => {
                       >
                         <Instagram size={18} />
                       </a>
+                      {member.linkedin && (
+                        <a 
+                          href={member.linkedin} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-all duration-300 hover:scale-110 flex items-center justify-center"
+                        >
+                          <Linkedin size={18} />
+                        </a>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

@@ -9,8 +9,10 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import EventCreationModal from './EventCreationModal';
 import EnhancedEventDetailModal from './EnhancedEventDetailModal';
+import { useAuth } from '@/contexts/AuthContext';
 
 const WeeklyCalendar = () => {
+  const { isExecutive } = useAuth();
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [showEventModal, setShowEventModal] = useState(false);
   const [showGBMModal, setShowGBMModal] = useState(false);
@@ -282,22 +284,25 @@ const WeeklyCalendar = () => {
           </Popover>
         </div>
         
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setShowEventModal(true)}
-            className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Event
-          </Button>
-          <Button
-            onClick={() => setShowGBMModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New GBM / Meeting
-          </Button>
-        </div>
+        {/* Event Creation Buttons - Only for Executives */}
+        {isExecutive && (
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setShowEventModal(true)}
+              className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Event
+            </Button>
+            <Button
+              onClick={() => setShowGBMModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              New GBM / Meeting
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Calendar Grid - Teams Style */}
