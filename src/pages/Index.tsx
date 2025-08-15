@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Users, Image, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import AnimatedBackground from "@/components/AnimatedBackground";
 const Index = () => {
   const handleBecomeMember = () => {
@@ -18,32 +19,30 @@ const Index = () => {
         {/* Content */}
         <div className="container mx-auto px-4 text-center text-white z-10 relative">
           <div className="flex justify-center mb-6">
-            <div className="relative group cursor-pointer">
-              {/* Outer rotating ring */}
-              <div className="absolute inset-0 w-80 h-80 rounded-full border-2 border-rotaract-orange/40 animate-spin" style={{
-              animationDuration: '8s'
-            }}></div>
-              
-              {/* Middle pulsing ring */}
-              <div className="absolute inset-2 w-76 h-76 rounded-full border border-white/30 animate-ping" style={{
-              animationDelay: '1s'
-            }}></div>
-              
-              {/* Background circle for logo */}
-              <div className="absolute inset-4 w-72 h-72 rounded-full bg-gradient-to-br from-rotaract-orange/20 via-white/10 to-rotaract-orange/30 backdrop-blur-sm border border-white/20"></div>
-              
-              {/* Logo with enhanced animations - made smaller */}
-              <div className="relative w-80 h-80 flex items-center justify-center">
-                <img src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" alt="Rotaract Club MUJ Logo" className="w-56 h-56 object-contain z-10 rounded-full group-hover:scale-125 transition-all duration-500 filter drop-shadow-2xl" style={{
-                animation: 'logoFloat 3s ease-in-out infinite, logoGlow 2s ease-in-out infinite alternate'
-              }} />
-              </div>
-              
-              {/* Inner glowing effect */}
-              <div className="absolute inset-12 w-56 h-56 rounded-full bg-gradient-to-r from-rotaract-orange/30 to-white/30 blur-md animate-pulse" style={{
-              animationDelay: '0.5s'
-            }}></div>
-            </div>
+            <CardContainer className="inter-var" containerClassName="py-8">
+              <CardBody className="bg-gradient-to-br from-black/80 via-gray-900/80 to-black/80 relative group/card dark:hover:shadow-2xl dark:hover:shadow-rotaract-orange/[0.3] border-rotaract-orange/[0.2] w-80 h-80 rounded-full border backdrop-blur-sm">
+                <CardItem
+                  translateZ="100"
+                  rotateX={5}
+                  rotateY={5}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  <img 
+                    src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
+                    alt="Rotaract Club MUJ Logo" 
+                    className="w-56 h-56 object-contain rounded-full filter drop-shadow-2xl group-hover/card:drop-shadow-[0_0_25px_rgba(245,145,32,0.6)]" 
+                  />
+                </CardItem>
+                
+                {/* Background glow effect */}
+                <CardItem
+                  translateZ="50"
+                  className="absolute inset-12 w-56 h-56 rounded-full bg-gradient-to-r from-rotaract-orange/20 to-white/20 blur-lg"
+                >
+                  <div></div>
+                </CardItem>
+              </CardBody>
+            </CardContainer>
           </div>
           
           {/* Custom keyframes for logo animations */}
