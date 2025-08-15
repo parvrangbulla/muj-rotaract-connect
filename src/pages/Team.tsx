@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Instagram, Linkedin } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import TeamMemberPopup from "@/components/TeamMemberPopup";
+import CardHoverEffectDemo from "@/components/ui/card-hover-effect-demo";
 
 // Define team member type
 type TeamMember = {
@@ -147,6 +148,14 @@ const Team = () => {
     }
   ]);
 
+  // Transform team members data for hover effect
+  const hoverEffectItems = teamMembers.map(member => ({
+    title: member.name,
+    description: member.position,
+    image: member.image,
+    onClick: () => setSelectedMember(member)
+  }));
+
   return (
     <div className="min-h-screen">
       <PageHeader 
@@ -165,6 +174,10 @@ const Team = () => {
             </p>
           </div>
           
+          {/* New Hover Effect Team Cards */}
+          <CardHoverEffectDemo items={hoverEffectItems} />
+          
+          {/* Original Team Cards - Commented out but kept for reference
           <TooltipProvider>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
               {teamMembers.map((member) => (
@@ -219,6 +232,7 @@ const Team = () => {
               ))}
             </div>
           </TooltipProvider>
+          */}
         </div>
       </section>
 
