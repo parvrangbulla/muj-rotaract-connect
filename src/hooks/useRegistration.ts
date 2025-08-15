@@ -216,7 +216,7 @@ export const useRealtimeEventAttendance = (eventId: string) => {
 // Hook for exporting attendance to CSV
 export const useExportAttendance = () => {
   return useMutation({
-    mutationFn: ({ 
+    mutationFn: async ({ 
       eventId, 
       registrations, 
       attendance 
