@@ -23,10 +23,18 @@ service firebase.storage {
     }
 
     // Event banners and galleries
-    match /event-images/{eventId}/{allPaths=**} {
-      // All authenticated users can read event images
-      allow read: if isAuthenticated();
+    match /event-images/{allPaths=**} {
+      // All users can read event images
+      allow read: if true;
       // Only executives can upload/modify event images
+      allow write: if isExecutive();
+    }
+
+    // Event gallery images
+    match /event-gallery/{allPaths=**} {
+      // All users can read event gallery images
+      allow read: if true;
+      // Only executives can upload/modify event gallery images
       allow write: if isExecutive();
     }
 

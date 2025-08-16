@@ -5,10 +5,10 @@ import { Globe, Mail, Phone } from 'lucide-react';
 const NGO = () => {
   const ngos = [{
     id: 1,
-    name: "Aahan Foundation",
-    description: "Working towards providing education and healthcare to underprivileged children. We collaborate with them on various educational initiatives and health camps.",
-    collaboration: "Educational workshops, health awareness programs, and skill development sessions for children.",
-    images: ["https://images.unsplash.com/photo-1559027615-cd4628902d4a?q=80&w=3000&auto=format&fit=crop", "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?q=80&w=3000&auto=format&fit=crop"],
+    name: "Ahaan Foundation",
+    description: "Ahaan describes its mission as giving a 'New Dawn' to girls at risk through holistic education, emotional well-being, and skill-building. Their work includes programs like the CREATE model for delivering 21st-century learning and emotional resilience.",
+    collaboration: "Educational workshops, leadership training, emotional well-being sessions, and creative skill development programs to empower girls from marginalized communities.",
+    images: ["/ngo-photos/aahan foundation.jpg", "/ngo-photos/aahaan foundation.jpg"],
     website: "https://ahanfoundation.in",
     email: "ahanfoundation.in@gmail.com",
     phone: "+91-97825-17428"
@@ -17,7 +17,7 @@ const NGO = () => {
     name: "Paathshala",
     description: "Dedicated to providing quality education to children from marginalized communities through innovative teaching methods and community engagement.",
     collaboration: "Teaching support, book donation drives, and mentorship programs for students.",
-    images: ["https://images.unsplash.com/photo-1497486751825-1233686d5d80?q=80&w=3000&auto=format&fit=crop", "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=3000&auto=format&fit=crop"],
+    images: ["/ngo-photos/paathshala.jpg", "/ngo-photos/pathshala.jpg"],
     website: "https://www.paathshalatrust.org/",
     email: "info@paathshalatrust.org",
     phone: "97822 09683"
@@ -26,10 +26,11 @@ const NGO = () => {
     name: "Hope Foundation",
     description: "Focused on community development through healthcare initiatives, environmental conservation, and women empowerment programs.",
     collaboration: "Community clean-up drives, women's skill development workshops, and healthcare awareness campaigns.",
-    images: ["https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?q=80&w=3000&auto=format&fit=crop", "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?q=80&w=3000&auto=format&fit=crop"]
+    images: ["/ngo-photos/hopefoundation.jpg", "/ngo-photos/hope.jpg"]
   }];
 
-  return <div className="min-h-screen bg-stone-50 py-16">
+  return (
+    <div className="min-h-screen bg-stone-50 py-16">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-black mb-4">Our NGO Partners</h1>
@@ -40,7 +41,8 @@ const NGO = () => {
         </div>
 
         <div className="space-y-12">
-          {ngos.map((ngo, index) => <Card key={ngo.id} className="overflow-hidden shadow-lg">
+          {ngos.map((ngo, index) => (
+            <Card key={ngo.id} className="overflow-hidden shadow-lg">
               <CardContent className="p-0">
                 <div className={`grid grid-cols-1 lg:grid-cols-2 gap-0 ${index % 2 === 1 ? 'lg:grid-flow-col-dense' : ''}`}>
                   {/* Content */}
@@ -108,13 +110,16 @@ const NGO = () => {
 
                   {/* Images */}
                   <div className={`grid grid-cols-2 gap-2 p-2 ${index % 2 === 1 ? 'lg:order-1' : ''}`}>
-                    {ngo.images.map((image, imgIndex) => <div key={imgIndex} className="aspect-square overflow-hidden rounded-lg">
+                    {ngo.images.map((image, imgIndex) => (
+                      <div key={imgIndex} className="aspect-square overflow-hidden rounded-lg">
                         <img src={image} alt={`${ngo.name} collaboration ${imgIndex + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
-                      </div>)}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </CardContent>
-            </Card>)}
+            </Card>
+          ))}
         </div>
 
         <div className="text-center mt-16">
@@ -132,7 +137,8 @@ const NGO = () => {
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default NGO;

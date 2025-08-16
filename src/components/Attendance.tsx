@@ -44,9 +44,11 @@ const Attendance = () => {
       const allEvents = await eventService.getCalendarEvents();
       console.log('Attendance: All events loaded:', allEvents);
       
-      // Filter events that have registrations
+      // Filter events that have registrations OR attendance records
       const attendanceEvents = allEvents.filter(event => 
-        event.registeredUsers && event.registeredUsers.length > 0
+        (event.registeredUsers && event.registeredUsers.length > 0) || 
+        (event.attendance && Object.keys(event.attendance).length > 0) ||
+        event.type === 'gbm' || event.type === 'meeting' // Always show GBM/Meetings for attendance
       );
       
       console.log('Attendance: Events with registrations:', attendanceEvents);
@@ -157,8 +159,21 @@ const Attendance = () => {
   };
 
   const getAttendanceStats = (event: any) => {
-    const totalUsers = event.registeredUsers?.length || 0;
+    const registeredUsers = event.registeredUsers || [];
     const attendance = event.attendance || {};
+    
+    // For GBM events, count all registered users and mark them as pending if no attendance
+    if (event.type === 'gbm' || event.type === 'meeting') {
+      const totalUsers = registeredUsers.length;
+      const present = Object.values(attendance).filter(status => status === 'present').length;
+      const absent = Object.values(attendance).filter(status => status === 'absent').length;
+      const pending = totalUsers - present - absent; // Pending = registered but no attendance marked
+      
+      return { totalUsers, present, absent, pending };
+    }
+    
+    // For regular events, count based on registrations
+    const totalUsers = registeredUsers.length;
     const present = Object.values(attendance).filter(status => status === 'present').length;
     const absent = Object.values(attendance).filter(status => status === 'absent').length;
     const pending = totalUsers - present - absent;
@@ -299,59 +314,114 @@ const Attendance = () => {
                         </div>
                       </div>
                       
-                      {event.registeredUsers.map((user: any, index: number) => {
-                        const userId = user.registrationNumber || user.fullName;
-                        const currentStatus = event.attendance?.[userId] || 'pending';
-                        const isAttendanceMarked = isGBM && event.attendance && event.attendance[userId];
-                        
-                        return (
-                          <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex-1">
-                              <div className="font-medium">{user.fullName}</div>
-                              <div className="text-sm text-gray-600">
-                                {user.phoneNumber} • {user.registrationNumber}
-                                {user.manuallyAdded && (
-                                  <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                    Manually Added
-                                  </span>
+                      {/* Show participants from registrations */}
+                      {event.registeredUsers && event.registeredUsers.length > 0 && (
+                        <div className="space-y-2">
+                          <h5 className="text-sm font-medium text-gray-700">Registered Participants</h5>
+                          {event.registeredUsers.map((user: any, index: number) => {
+                            const userId = user.registrationNumber || user.fullName;
+                            const currentStatus = event.attendance?.[userId] || 'pending';
+                            const isAttendanceMarked = isGBM && event.attendance && event.attendance[userId];
+                            
+                            return (
+                              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                                <div className="flex-1">
+                                  <div className="font-medium">{user.fullName}</div>
+                                  <div className="text-sm text-gray-600">
+                                    {user.phoneNumber} • {user.registrationNumber}
+                                    {user.manuallyAdded && (
+                                      <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                        Manually Added
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                {isAttendanceMarked ? (
+                                  <Badge 
+                                    className={`${
+                                      currentStatus === 'present' 
+                                        ? 'bg-green-600 text-white' 
+                                        : 'bg-red-600 text-white'
+                                    }`}
+                                  >
+                                    {currentStatus === 'present' ? 'Present' : 'Absent'}
+                                  </Badge>
+                                ) : (
+                                  <Select
+                                    value={currentStatus}
+                                    onValueChange={(value) => updateAttendance(event.id, userId, value as 'present' | 'absent')}
+                                  >
+                                    <SelectTrigger className="w-32">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="pending">
+                                        <span className="text-gray-600">Pending</span>
+                                      </SelectItem>
+                                      <SelectItem value="present">
+                                        <span className="text-green-600">Present</span>
+                                      </SelectItem>
+                                      <SelectItem value="absent">
+                                        <span className="text-red-600">Absent</span>
+                                      </SelectItem>
+                                    </SelectContent>
+                                  </Select>
                                 )}
                               </div>
-                            </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Show participants from attendance records (especially for GBM events) */}
+                      {event.attendance && Object.keys(event.attendance).length > 0 && (
+                        <div className="space-y-2">
+                          <h5 className="text-sm font-medium text-gray-700">
+                            {isGBM ? 'Attendance Records' : 'Additional Attendance'}
+                          </h5>
+                          {Object.entries(event.attendance).map(([userId, status]) => {
+                            // Skip if this user is already shown in registered users
+                            if (event.registeredUsers?.some((user: any) => 
+                              (user.registrationNumber || user.fullName) === userId
+                            )) {
+                              return null;
+                            }
                             
-                            {isAttendanceMarked ? (
-                              <Badge 
-                                className={`${
-                                  currentStatus === 'present' 
-                                    ? 'bg-green-600 text-white' 
-                                    : 'bg-red-600 text-white'
-                                }`}
-                              >
-                                {currentStatus === 'present' ? 'Present' : 'Absent'}
-                              </Badge>
-                            ) : (
-                              <Select
-                                value={currentStatus}
-                                onValueChange={(value) => updateAttendance(event.id, userId, value as 'present' | 'absent')}
-                              >
-                                <SelectTrigger className="w-32">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="pending">
-                                    <span className="text-gray-600">Pending</span>
-                                  </SelectItem>
-                                  <SelectItem value="present">
-                                    <span className="text-green-600">Present</span>
-                                  </SelectItem>
-                                  <SelectItem value="absent">
-                                    <span className="text-red-600">Absent</span>
-                                  </SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
-                          </div>
-                        );
-                      })}
+                            return (
+                              <div key={userId} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
+                                <div className="flex-1">
+                                  <div className="font-medium">{userId}</div>
+                                  <div className="text-sm text-gray-600">
+                                    {isGBM ? 'Direct Attendance Marking' : 'Manual Entry'}
+                                  </div>
+                                </div>
+                                
+                                <Badge 
+                                  className={`${
+                                    status === 'present' 
+                                      ? 'bg-green-600 text-white' 
+                                      : 'bg-red-600 text-white'
+                                  }`}
+                                >
+                                  {status === 'present' ? 'Present' : 'Absent'}
+                                </Badge>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+
+                      {/* Show message if no participants */}
+                      {(!event.registeredUsers || event.registeredUsers.length === 0) && 
+                       (!event.attendance || Object.keys(event.attendance).length === 0) && (
+                        <div className="text-center text-gray-500 py-4">
+                          <p>No participants or attendance records yet.</p>
+                          {!isGBM && (
+                            <p className="text-sm mt-1">Use "Add Participant" to add people manually.</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </CollapsibleContent>

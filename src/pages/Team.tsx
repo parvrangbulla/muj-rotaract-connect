@@ -1,11 +1,10 @@
 
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
-import { Card, CardContent } from "@/components/ui/card";
-import { Instagram, Linkedin } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import TeamMemberPopup from "@/components/TeamMemberPopup";
-import CardHoverEffectDemo from "@/components/ui/card-hover-effect-demo";
+import { HoverEffect } from "@/components/ui/card-hover-effect";
+
 
 // Define team member type
 type TeamMember = {
@@ -21,130 +20,140 @@ type TeamMember = {
 
 const Team = () => {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  
+  // Team Members Array - Easy to update images
   const [teamMembers] = useState<TeamMember[]>([
+    // ===== EXECUTIVE BOARD =====
     {
       id: 1,
       name: "Kshitij Verma",
       position: "President",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=3387&auto=format&fit=crop",
+      image: "/team-photos/kshitij.jpg",
       instagram: "https://www.instagram.com/shhtjjj/",
       phone: "+91 70580 32405",
-      bio: "Leading the club with vision and dedication to service above self."
+      bio: "Making big plans, and even bigger WhatsApp groups."
     },
     {
       id: 2,
-      name: "Satya Agarwal",
+      name: "Satya Agrawal",
       position: "Secretary",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=3387&auto=format&fit=crop",
+      image: "/team-photos/satya.jpeg",
       instagram: "https://www.instagram.com/satya_agrawal_/",
       phone: "+91 98259 31989",
-      bio: "Ensuring smooth operations and maintaining club records."
+      bio: "Order in chaos? That's my signature."
     },
     {
       id: 3,
       name: "Anwesha Jain",
       position: "Joint Secretary",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=3387&auto=format&fit=crop",
+      image: "/team-photos/Anwesha jain.JPG",
       instagram: "https://www.instagram.com/anweshaa_06/",
-      phone: "+91 79995 43121"
+      phone: "+91 79995 43121",
+      bio: "My role? Basically the club's walking reminder notification."
     },
     {
       id: 4,
       name: "Parv Rangbulla",
       position: "Treasurer",
-      image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=3456&auto=format&fit=crop",
+      image: "/team-photos/parv.jpg",
       instagram: "https://www.instagram.com/parv.rangbulla/",
-      phone: "7389498920"
+      phone: "7389498920",
+      bio: "Every number has a story. I just make sure they tell the right one."
     },
+    
+    // ===== DOMAIN DIRECTORS =====
     {
       id: 5,
-      name: "Natasha Joan Menezes",
-      position: "CSD Director",
-      image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=3387&auto=format&fit=crop",
-      instagram: "https://www.instagram.com/natasha_meneze.s/",
-      phone: "+91 83100 60026"
+      name: "Dev Kanabar",
+      position: "ISD Director",
+      image: "/team-photos/DEV.jpg",
+      instagram: "https://www.instagram.com/dev__kanabar/",
+      phone: "+91 91 0 6970 255",
+      bio: "Building connections and collaborations that quietly fuel the club's growth."
     },
     {
       id: 6,
       name: "Teshant Arora",
       position: "CMD Director",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=3270&auto=format&fit=crop",
+      image: "/team-photos/teshnat.jpeg",
       instagram: "https://www.instagram.com/tes_hant/",
-      phone: "+91 97294 31475"
+      phone: "+91 97294 31475",
+      bio: "Driven by empathy and insight to serve the community with heart and purpose."
     },
     {
       id: 7,
-      name: "Dev Kanabar",
-      position: "ISD Director",
-      image: "https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?q=80&w=3366&auto=format&fit=crop",
-      instagram: "https://www.instagram.com/dev__kanabar/",
-      phone: "+91 91 0 6970 255"
+      name: "Natasha Joan Menezes",
+      position: "CSD Director",
+      image: "/team-photos/Natasha Joan Menezes.JPG",
+      instagram: "https://www.instagram.com/natasha_meneze.s/",
+      phone: "+91 83100 60026",
+      bio: "Driven by people, powered by purpose, grounded in love."
     },
     {
       id: 8,
       name: "Harshit Attri",
-      position: "PDD Director",
-      image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=3376&auto=format&fit=crop",
+      position: "PDD Director & Social Media Director",
+      image: "/team-photos/harshit.jpeg",
       instagram: "https://www.instagram.com/harshitattri_/",
-      phone: "+91 78279 65667"
+      phone: "+91 78279 65667",
+      bio: "Fuelled by coffee, curiosity, and a bit of chaos."
     },
     {
       id: 9,
       name: "Ojas Kheterpal",
       position: "PID Director",
-      image: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?q=80&w=3387&auto=format&fit=crop",
+      image: "/team-photos/OJAS KHETARPAL.jpg",
       instagram: "https://www.instagram.com/ojaskhetarpal/",
-      phone: "+91 70428 83896"
+      phone: "+91 70428 83896",
+      bio: "Serious about impact, unserious about everything else!"
     },
+    
+    // ===== SUPPORTING ROLES =====
     {
       id: 10,
       name: "Antash Patodi",
       position: "Sergeant-at-Arms",
-      image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=3540&auto=format&fit=crop",
+      image: "/team-photos/Antash_.jpg",
       instagram: "https://www.instagram.com/antash_patodi/",
-      phone: "+91 79995 43121"
+      phone: "+91 79995 43121",
+      bio: "The quiet force behind punctuality and protocol."
     },
     {
       id: 11,
       name: "Lavanya Choudhary",
       position: "Sergeant-at-Arms",
-      image: "https://images.unsplash.com/photo-1619895862022-09114b41f16f?q=80&w=3387&auto=format&fit=crop",
+      image: "/team-photos/lavanya.jpeg",
       instagram: "https://www.instagram.com/la_va_nya.c/",
-      phone: "+91 74780 28678"
+      phone: "+91 74780 28678",
+      bio: "Getting things done without drama, but somehow is the drama."
     },
     {
       id: 12,
-      name: "Harshit Attri",
-      position: "Social Media Director",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=3387&auto=format&fit=crop",
-      instagram: "https://www.instagram.com/harshitattri_/",
-      phone: "+91 78279 65667"
+      name: "Shreyasi Pandey",
+      position: "Editor",
+      image: "/team-photos/Shreyasi.png",
+      instagram: "https://www.instagram.com/its.shreyasiiii/",
+      phone: "+91 76480 30765",
+      bio: "Turning drafts into deliverables and confusion into communication."
     },
     {
       id: 13,
-      name: "Shreyasi Pandey",
-      position: "Editor",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=3387&auto=format&fit=crop",
-      instagram: "https://www.instagram.com/its.shreyasiiii/",
-      phone: "+91 76480 30765"
+      name: "Tanisha Chaturvedi",
+      position: "Service Project Chair",
+      image: "/team-photos/Tanisha Chaturvedi.jpg",
+      instagram: "https://www.instagram.com/real_tanisha/",
+      phone: "+91 90254 96635",
+      bio: "Fuelled by purpose, my heart meets hustle to create meaningful magic."
     },
     {
       id: 14,
-      name: "Tanisha Chaturvedi",
-      position: "Service Project Chair",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=3387&auto=format&fit=crop",
-      instagram: "https://www.instagram.com/tanisha1607/",
-      phone: "+91 90254 96635"
-    },
-    {
-      id: 15,
       name: "Krish Gupta",
       position: "Tech Head",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=3387&auto=format&fit=crop",
+      image: "/team-photos/krish.jpeg",
       instagram: "https://www.instagram.com/7_krishgupta_7/",
       linkedin: "https://www.linkedin.com/in/krish-gupta-51637b1b8/",
       phone: "+91 98765 43210",
-      bio: "Leading technical initiatives and digital transformation for the club."
+      bio: "Transforming ideas into digital reality, one code at a time."
     }
   ]);
 
@@ -174,65 +183,19 @@ const Team = () => {
             </p>
           </div>
           
-          {/* New Hover Effect Team Cards */}
-          <CardHoverEffectDemo items={hoverEffectItems} />
+          {/* Team Cards with Hover Effect */}
+          <HoverEffect 
+            items={teamMembers.map(member => ({
+              title: member.name,
+              description: member.position,
+              image: member.image,
+              link: `#${member.id}`
+            }))}
+            className="max-w-7xl mx-auto"
+            onCardClick={(index) => setSelectedMember(teamMembers[index])}
+          />
           
-          {/* Original Team Cards - Commented out but kept for reference
-          <TooltipProvider>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-              {teamMembers.map((member) => (
-                <Card 
-                  key={member.id} 
-                  className="team-card overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 cursor-pointer transform"
-                  onClick={() => setSelectedMember(member)}
-                >
-                  <div className="h-48 sm:h-56 md:h-64 overflow-hidden">
-                    <img 
-                      src={member.image} 
-                      alt={member.name} 
-                      className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-110"
-                    />
-                  </div>
-                  <CardContent className="p-4 md:p-6 relative">
-                    <h3 className="font-bold text-base md:text-lg mb-1">{member.name}</h3>
-                    
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <p className="text-gray-600 cursor-help text-sm md:text-base">{member.position}</p>
-                      </TooltipTrigger>
-                      <TooltipContent className="bg-black text-white p-2">
-                        <p>Click to view more details</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    
-                    <div className="social-links absolute top-4 md:top-6 right-4 md:right-6 flex gap-1 md:gap-2">
-                      <a 
-                        href={member.instagram} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="bg-pink-600 text-white p-1.5 md:p-2 rounded-full hover:bg-pink-700 transition-all duration-300 hover:scale-110 flex items-center justify-center"
-                      >
-                        <Instagram size={16} className="md:w-[18px] md:h-[18px]" />
-                      </a>
-                      {member.linkedin && (
-                        <a 
-                          href={member.linkedin} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="bg-blue-600 text-white p-1.5 md:p-2 rounded-full hover:bg-blue-700 transition-all duration-300 hover:scale-110 flex items-center justify-center"
-                        >
-                          <Linkedin size={16} className="md:w-[18px] md:h-[18px]" />
-                        </a>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TooltipProvider>
-          */}
+
         </div>
       </section>
 

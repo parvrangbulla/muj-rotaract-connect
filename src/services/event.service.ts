@@ -18,13 +18,13 @@ export interface EventData {
   id?: string;
   title: string;
   description: string;
-  type: 'gbm' | 'meeting' | 'working-team' | 'gbm-event';
+  type: 'gbm' | 'meeting' | 'working-team' | 'gbm-event' | 'past-event';
   date: string;
   startTime: string;
   endTime: string;
   location: string;
   domain?: 'CSD' | 'CMD' | 'ISD' | 'PDD';
-  eventCategory?: 'working-team' | 'gbm';
+  eventCategory?: 'working-team' | 'gbm' | 'past' | 'flagship';
   enableRegistration: boolean;
   enableAttendance: boolean;
   maxParticipants?: number;
@@ -39,6 +39,7 @@ export interface EventData {
   venue?: string;
   impact?: string;
   shortDescription?: string;
+  category?: string; // Add category field for past events
   registeredUsers?: Array<{
     fullName: string;
     phoneNumber: string;

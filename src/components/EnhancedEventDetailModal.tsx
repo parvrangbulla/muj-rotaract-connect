@@ -189,7 +189,7 @@ const EnhancedEventDetailModal = ({
         
         // Refresh the event data
         if (onEdit) {
-          window.dispatchEvent(new Event('storage'));
+          onEdit(event);
         }
       } catch (error) {
         console.error('Error registering for event:', error);
@@ -200,83 +200,85 @@ const EnhancedEventDetailModal = ({
     }
   };
 
-  const handleAttendanceAction = (status: 'present' | 'absent') => {
+  const handleAttendanceAction = async (status: 'present' | 'absent') => {
     if (!newAttendee.fullName || !newAttendee.registrationNumber) {
-      alert('Please enter both name and registration number.');
+      toast.error('Please enter both name and registration number.');
       return;
     }
 
     if (hasMarkedAttendance) {
-      alert('You have already marked attendance for this session.');
+      toast.error('You have already marked attendance for this session.');
       return;
     }
 
-    const userId = newAttendee.registrationNumber;
-    
-    // Update attendance
-    const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
-    storageKeys.forEach(key => {
-      const stored = JSON.parse(localStorage.getItem(key) || '[]');
-      const updated = stored.map((e: any) => {
-        if (e.id === event.id) {
-          const attendance = e.attendance || {};
-          return { ...e, attendance: { ...attendance, [userId]: status } };
-        }
-        return e;
-      });
-      localStorage.setItem(key, JSON.stringify(updated));
-    });
-
-    // Add user to registeredUsers if not exists
-    const existingUser = event.registeredUsers?.find((user: any) => 
-      user.registrationNumber === newAttendee.registrationNumber
-    );
-    
-    if (!existingUser) {
-      const attendeeData = { 
-        ...newAttendee, 
-        phoneNumber: '', 
-        registeredAt: new Date().toISOString() 
-      };
+    try {
+      const userId = newAttendee.registrationNumber;
       
-      storageKeys.forEach(key => {
-        const stored = JSON.parse(localStorage.getItem(key) || '[]');
-        const updated = stored.map((e: any) => {
-          if (e.id === event.id) {
-            const registeredUsers = e.registeredUsers || [];
-            return { ...e, registeredUsers: [...registeredUsers, attendeeData] };
-          }
-          return e;
-        });
-        localStorage.setItem(key, JSON.stringify(updated));
-      });
+      // Get current attendance data
+      const currentAttendance = event.attendance || {};
+      const updatedAttendance = { ...currentAttendance, [userId]: status };
+      
+      // Prepare update data
+      const updateData: any = { attendance: updatedAttendance };
+      
+      // Add user to registeredUsers if not exists
+      const existingUser = event.registeredUsers?.find((user: any) => 
+        user.registrationNumber === newAttendee.registrationNumber
+      );
+      
+      if (!existingUser) {
+        const attendeeData = { 
+          ...newAttendee, 
+          phoneNumber: '', 
+          registeredAt: new Date().toISOString() 
+        };
+        
+        const currentRegisteredUsers = event.registeredUsers || [];
+        updateData.registeredUsers = [...currentRegisteredUsers, attendeeData];
+      }
+      
+      // Update the event in Firebase
+      await eventService.updateEvent(event.id, updateData);
+      
+      // Update local state
+      setHasMarkedAttendance(true);
+      setNewAttendee({ fullName: '', registrationNumber: '' });
+      
+      // Show success message
+      toast.success(`Attendance marked as ${status}!`);
+      
+      // Refresh the event data
+      if (onEdit) {
+        onEdit(event);
+      }
+    } catch (error) {
+      console.error('Error marking attendance:', error);
+      toast.error('Failed to mark attendance. Please try again.');
     }
-    
-    setNewAttendee({ fullName: '', registrationNumber: '' });
-    setHasMarkedAttendance(true);
-    window.dispatchEvent(new Event('storage'));
-    alert(`Attendance marked as ${status}!`);
   };
 
-  const handleSaveMinutes = () => {
+  const handleSaveMinutes = async () => {
     if (isGuestMode) {
-      alert('Guests cannot save meeting minutes.');
+      toast.error('Guests cannot save meeting minutes.');
       return;
     }
 
-    const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
-    storageKeys.forEach(key => {
-      const stored = JSON.parse(localStorage.getItem(key) || '[]');
-      const updated = stored.map((e: any) => {
-        if (e.id === event.id) {
-          return { ...e, meetingMinutes };
-        }
-        return e;
+    try {
+      // Update the event in Firebase
+      await eventService.updateEvent(event.id, {
+        meetingMinutes
       });
-      localStorage.setItem(key, JSON.stringify(updated));
-    });
-    window.dispatchEvent(new Event('storage'));
-    alert('Meeting minutes saved successfully!');
+      
+      toast.success('Meeting minutes saved successfully!');
+      
+      // Refresh the event data
+      if (onEdit) {
+        onEdit(event);
+      }
+    } catch (error) {
+      console.error('Error saving meeting minutes:', error);
+      toast.error('Failed to save meeting minutes. Please try again.');
+    }
   };
 
   return (

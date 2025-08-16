@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Upload, X, Calendar, MapPin } from 'lucide-react';
+import { ArrowLeft, Upload, X, Calendar, MapPin, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { eventService } from '@/services/event.service';
 import { toast } from 'sonner';
+import { uploadImageToCloudinary, deleteImageFromCloudinary } from '@/lib/cloudinary';
 
 interface EventImage {
   id: string;
@@ -77,44 +78,94 @@ const AdminPastEvents = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setBannerFile(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setFormData(prev => ({ ...prev, bannerUrl: e.target?.result as string }));
-        }
-      };
-      reader.readAsDataURL(file);
+  const uploadImageToStorage = async (file: File, path: string): Promise<string> => {
+    try {
+      // Upload to Cloudinary instead of Firebase Storage
+      const downloadURL = await uploadImageToCloudinary(file);
+      return downloadURL;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      throw new Error('Failed to upload image');
     }
   };
 
-  const handleGalleryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setGalleryFiles(prev => [...prev, ...files]);
-    
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          setFormData(prev => ({
-            ...prev,
-            galleryUrls: [...prev.galleryUrls, e.target?.result as string]
-          }));
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        setBannerFile(file);
+        toast.info('Uploading banner image...');
+        
+        // Upload to Cloudinary
+        const downloadURL = await uploadImageToStorage(file, 'banner');
+        
+        setFormData(prev => ({ ...prev, bannerUrl: downloadURL }));
+        toast.success('Banner image uploaded successfully!');
+      } catch (error) {
+        console.error('Error uploading banner:', error);
+        toast.error('Failed to upload banner image');
+        setBannerFile(null);
+      }
+    }
   };
 
-  const removeBanner = () => {
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    
+    try {
+      toast.info(`Uploading ${files.length} image(s)...`);
+      setGalleryFiles(prev => [...prev, ...files]);
+      
+      const uploadPromises = files.map(async (file) => {
+        return await uploadImageToStorage(file, 'gallery');
+      });
+      
+      const downloadURLs = await Promise.all(uploadPromises);
+      
+      setFormData(prev => ({
+        ...prev,
+        galleryUrls: [...prev.galleryUrls, ...downloadURLs]
+      }));
+      
+      toast.success(`${files.length} image(s) uploaded successfully!`);
+    } catch (error) {
+      console.error('Error uploading gallery images:', error);
+      toast.error('Failed to upload gallery images');
+      // Remove the files that failed to upload
+      setGalleryFiles(prev => prev.slice(0, -files.length));
+    }
+  };
+
+  const removeBanner = async () => {
+    try {
+      if (formData.bannerUrl && formData.bannerUrl.includes('cloudinary.com')) {
+        // Delete from Cloudinary if it's a Cloudinary URL
+        await deleteImageFromCloudinary(formData.bannerUrl);
+        toast.success('Banner image removed from storage');
+      }
+    } catch (error) {
+      console.error('Error removing banner from storage:', error);
+      // Continue with removal even if storage deletion fails
+    }
+    
     setBannerFile(null);
     setFormData(prev => ({ ...prev, bannerUrl: '' }));
   };
 
-  const removeGalleryImage = (index: number) => {
+  const removeGalleryImage = async (index: number) => {
+    try {
+      const imageUrl = formData.galleryUrls[index];
+      if (imageUrl && imageUrl.includes('cloudinary.com')) {
+        // Delete from Cloudinary if it's a Cloudinary URL
+        await deleteImageFromCloudinary(imageUrl);
+        toast.success('Gallery image removed from storage');
+      }
+    } catch (error) {
+      console.error('Error removing gallery image from storage:', error);
+      // Continue with removal even if storage deletion fails
+    }
+    
     setFormData(prev => ({
       ...prev,
       galleryUrls: prev.galleryUrls.filter((_, i) => i !== index)
@@ -133,13 +184,13 @@ const AdminPastEvents = () => {
       const eventData = {
         title: formData.title,
         description: formData.description,
-        type: 'past-event', // Use consistent type for past events
+        type: 'past-event' as any, // Use consistent type for past events
         date: formData.date,
         startTime: '00:00', // Default time for past events
         endTime: '23:59',
         location: formData.venue,
         domain: formData.domain as 'CSD' | 'CMD' | 'ISD' | 'PDD',
-        eventCategory: formData.category === 'Flagship' ? 'flagship' : 'past',
+        eventCategory: (formData.category === 'Flagship' ? 'flagship' : 'past') as any,
         enableRegistration: false, // Past events don't need registration
         enableAttendance: false, // Past events don't need attendance
         createdBy: 'admin', // Will be updated with actual user ID
@@ -151,7 +202,8 @@ const AdminPastEvents = () => {
         galleryUrls: formData.galleryUrls,
         venue: formData.venue,
         impact: formData.impact,
-        shortDescription: formData.shortDescription
+        shortDescription: formData.shortDescription,
+        category: formData.category // Add category field for display
       };
 
       if (editData?.editMode) {
@@ -210,6 +262,8 @@ const AdminPastEvents = () => {
             {editData?.editMode ? 'Edit Event' : 'Create Past Event'}
           </h1>
         </div>
+
+
 
         {/* Form */}
         <Card>
@@ -370,8 +424,16 @@ const AdminPastEvents = () => {
                           type="button"
                           variant="outline"
                           onClick={() => document.getElementById('banner')?.click()}
+                          disabled={bannerFile !== null}
                         >
-                          Upload Banner Image
+                          {bannerFile ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            'Upload Banner Image'
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -398,8 +460,16 @@ const AdminPastEvents = () => {
                         type="button"
                         variant="outline"
                         onClick={() => document.getElementById('gallery')?.click()}
+                        disabled={galleryFiles.length > 0}
                       >
-                        Upload Gallery Images
+                        {galleryFiles.length > 0 ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Uploading...
+                          </>
+                        ) : (
+                          'Upload Gallery Images'
+                        )}
                       </Button>
                     </div>
                   </div>

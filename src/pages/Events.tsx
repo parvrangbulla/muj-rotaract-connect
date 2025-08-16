@@ -14,6 +14,7 @@ interface EventData {
   date: string;
   description: string;
   category?: string;
+  domain?: string; // Add domain field for past events
   images: Array<{ id: string; url: string; name: string }>;
   shortDescription: string;
   venue?: string;
@@ -38,11 +39,26 @@ const Events = () => {
         
         // Filter past events and flagship events
         const pastEvents = allEvents.filter(event => 
-          event.type === 'past-event' && event.eventCategory === 'past'
+          (event as any).type === 'past-event' && (event as any).eventCategory === 'past'
         );
         const flagshipEvents = allEvents.filter(event => 
-          event.eventCategory === 'flagship'
+          (event as any).eventCategory === 'flagship'
         );
+        
+        console.log('Events: All events loaded:', allEvents);
+        console.log('Events: Past events filtered:', pastEvents);
+        console.log('Events: Flagship events filtered:', flagshipEvents);
+        
+        // Log individual flagship events to debug banner images
+        flagshipEvents.forEach((event, index) => {
+          console.log(`Events: Flagship event ${index}:`, {
+            id: event.id,
+            title: event.title,
+            bannerUrl: event.bannerUrl,
+            eventCategory: (event as any).eventCategory,
+            type: (event as any).type
+          });
+        });
         
         console.log('Events: Past events:', pastEvents);
         console.log('Events: Flagship events:', flagshipEvents);
@@ -82,12 +98,21 @@ const Events = () => {
       case 'PDD': return 'bg-red-600';
       case 'Flagship': return 'bg-rotaract-orange';
       case 'GBM': return 'bg-gray-600';
+      case 'Past Event': return 'bg-gray-600';
       default: return 'bg-gray-600';
     }
   };
 
   const filterEventsByCategory = (events: EventData[], category: string) => {
-    return events.filter(event => event.category === category || event.type === category.toLowerCase());
+    return events.filter(event => {
+      // Check both category and domain fields for compatibility
+      const eventCategory = (event as any).category;
+      const eventDomain = (event as any).domain;
+      
+      return eventCategory === category || 
+             eventDomain === category || 
+             event.type === category.toLowerCase();
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -125,10 +150,12 @@ const Events = () => {
               >
                 <div className="h-64 overflow-hidden">
                   <img 
-                    src={event.id === 'bdc-2024' 
-                      ? "https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" 
-                      : "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop"
-                    } 
+                    src={event.bannerUrl || `https://images.unsplash.com/photo-${
+                      event.id && event.id.includes('orientation') ? '1540575467063-178a50c2df87' :
+                      event.id && event.id.includes('tree') ? '1488521787991-ed7bbaae773c' :
+                      event.id && event.id.includes('cultural') ? '1559223607-a43f990c67bd' :
+                      '1528605248644-14dd04022da1'
+                    }?q=80&w=3540&auto=format&fit=crop`}
                     alt={event.title} 
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" 
                   />
@@ -209,9 +236,9 @@ const Events = () => {
                           />
                         </div>
                         <CardContent className="pt-4">
-                          {event.category && (
-                            <Badge className={`${getCategoryColor(event.category)} mb-2`}>
-                              {event.category}
+                          {(event.category || event.domain) && (
+                            <Badge className={`${getCategoryColor(event.category || event.domain || '')} mb-2`}>
+                              {event.category || event.domain}
                             </Badge>
                           )}
                           <h3 className="font-semibold text-lg">{event.title}</h3>

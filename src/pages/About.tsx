@@ -15,64 +15,66 @@ const About = () => {
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-6">Our Story</h2>
             <p className="text-lg mb-6">
-              The Rotaract Club of Manipal University Jaipur is a service-oriented organization 
-              that brings together students who are dedicated to making a positive impact in 
-              their community and developing their leadership and professional skills.
+              The Rotaract Club of Manipal University Jaipur (MUJ) is a vibrant, service-oriented organization 
+              that unites students passionate about creating a positive impact in their community while developing 
+              their leadership and professional skills.
             </p>
             <p className="text-lg mb-6">
-              Founded as part of Rotary International's global network, our club follows the 
-              principle of "Service Above Self" and works to address various social issues 
-              through meaningful projects and initiatives.
+              Founded as part of Rotary International's global network, our club lives by the principle of 
+              "Service Above Self" and actively works to address social issues through meaningful projects 
+              and impactful initiatives.
             </p>
             <p className="text-lg mb-10">
-              Our members come from diverse academic backgrounds but share a common commitment 
-              to community service, leadership development, and building international understanding.
+              Our members come from diverse academic backgrounds but share a common commitment to community 
+              service, leadership development, and fostering international understanding.
             </p>
             
             <h2 className="text-3xl font-bold mb-6">Our Mission</h2>
             <p className="text-lg mb-10">
-              To develop a network of young adults committed to the advancement of international 
-              understanding, goodwill, and peace through a framework of friendship and service.
+              To inspire and empower young leaders to create meaningful change through service, collaboration, 
+              and innovation. We aim to build a community of driven individuals who are committed to addressing 
+              social challenges, fostering cross-cultural understanding, and making a lasting impact locally and globally.
             </p>
             
             <h2 className="text-3xl font-bold mb-6">Our Vision</h2>
             <p className="text-lg mb-6">
-              To be recognized as the leading youth service organization at Manipal University Jaipur 
-              that empowers students to create sustainable positive change in our communities.
+              To be recognized as the leading youth service organization at Manipal University Jaipur, 
+              empowering students to create sustainable positive change in our communities.
             </p>
             <p className="text-lg mb-10">
-              We strive to foster an environment where members can develop professionally, build 
-              meaningful relationships, and contribute to society through service projects.
+              We strive to build an environment where members can grow professionally, form meaningful 
+              relationships, and contribute to society through service-driven initiatives.
             </p>
             
             <h2 className="text-3xl font-bold mb-6">Core Values</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl font-semibold mb-3">Service</h3>
-                <p>We are committed to serving our community and addressing critical societal needs.</p>
+                <p>Committed to addressing societal needs and serving our community with purpose.</p>
               </div>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl font-semibold mb-3">Leadership</h3>
-                <p>We develop leadership skills through hands-on experience in organizing and executing projects.</p>
+                <p>Cultivating leadership skills through hands-on project planning and execution.</p>
               </div>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl font-semibold mb-3">Fellowship</h3>
-                <p>We build lasting friendships and professional connections through our shared commitment to service.</p>
+                <p>Building lifelong friendships and professional connections through shared service.</p>
               </div>
               <div className="bg-gray-50 p-6 rounded-lg">
                 <h3 className="text-xl font-semibold mb-3">Integrity</h3>
-                <p>We uphold ethical standards and transparency in all our activities.</p>
+                <p>Upholding ethical standards, transparency, and accountability in all we do.</p>
               </div>
             </div>
             
             <h2 className="text-3xl font-bold mb-6">Our Affiliation</h2>
             <p className="text-lg mb-6">
-              The Rotaract Club of Manipal University Jaipur is sponsored by a local Rotary Club and is part 
-              of Rotary International's global network of service clubs.
+              The Rotaract Club of MUJ is proudly sponsored by a local Rotary Club and is part of 
+              Rotary International's global network of service clubs.
             </p>
             <p className="text-lg">
-              This connection gives our members opportunities to collaborate with Rotarians, access mentorship, 
-              and participate in district, national, and international Rotary events and conferences.
+              This affiliation provides our members with opportunities to collaborate with experienced 
+              Rotarians, access mentorship and professional guidance, and participate in district, 
+              national, and international Rotary events and conferences.
             </p>
           </div>
         </div>

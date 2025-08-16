@@ -80,16 +80,32 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
-              alt="Rotaract Club MUJ Logo" 
-              className="h-10 w-10 object-contain rounded-full border border-rotaract-orange/30"
-            />
-            <span className={`font-bold text-lg ${isScrolled ? "text-black" : "text-white"}`}>
-              Rotaract MUJ
-            </span>
-          </Link>
+          <div className="flex items-center gap-3">
+            {/* University Logo - Clickable link to MUJ website */}
+            <a 
+              href="https://jaipur.manipal.edu/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:opacity-80 transition-opacity duration-200"
+            >
+              <img 
+                src="/Manipal_University_Jaipur_logo.png" 
+                alt="Manipal University Jaipur Logo" 
+                className="h-10 w-10 object-contain"
+              />
+            </a>
+            {/* Club Logo and Text - Links to home page */}
+            <Link to="/" className="flex items-center gap-2">
+              <img 
+                src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
+                alt="Rotaract Club MUJ Logo" 
+                className="h-10 w-10 object-contain rounded-full border border-rotaract-orange/30"
+              />
+              <span className={`font-bold text-lg ${isScrolled ? "text-black" : "text-white"}`}>
+                Rotaract MUJ
+              </span>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">

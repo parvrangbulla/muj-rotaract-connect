@@ -31,10 +31,12 @@ service cloud.firestore {
     // Events collection
     match /events/{eventId} {
       allow read: if true; // Allow public read access for guests
-      allow create, update, delete: if isAuthenticated() && isExecutive();
-      // Allow students to update only the registeredUsers array for registration
-      allow update: if isAuthenticated() && isStudent() && 
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registeredUsers', 'updatedAt']);
+      allow create, delete: if isAuthenticated() && isExecutive();
+      // Allow executives to update everything, students to update only specific fields
+      allow update: if isAuthenticated() && (
+        isExecutive() || 
+        (isStudent() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registeredUsers', 'updatedAt']))
+      );
     }
     
     // Past Events collection

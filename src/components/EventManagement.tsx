@@ -18,19 +18,39 @@ interface EventImage {
 }
 
 interface EventData {
-  id: string;
+  id?: string;
   title: string;
-  date: string;
   description: string;
-  category?: string;
-  images: EventImage[];
-  shortDescription: string;
-  venue?: string;
-  impact?: string;
-  eventType?: 'past' | 'flagship';
-  domain?: string;
+  type?: string;
+  date: string;
+  startTime?: string;
+  endTime?: string;
+  location?: string;
+  domain?: 'CSD' | 'CMD' | 'ISD' | 'PDD';
+  eventCategory?: string;
+  enableRegistration?: boolean;
+  enableAttendance?: boolean;
+  maxParticipants?: number;
+  createdBy?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+  isActive?: boolean;
+  showOnGuestCalendar?: boolean;
   bannerUrl?: string;
   galleryUrls?: string[];
+  meetingMinutes?: string;
+  venue?: string;
+  impact?: string;
+  shortDescription?: string;
+  registeredUsers?: Array<{
+    fullName: string;
+    phoneNumber: string;
+    registrationNumber: string;
+    registeredAt: string;
+  }>;
+  attendance?: Record<string, 'present' | 'absent' | 'pending'>;
+  category?: string;
+  images?: EventImage[];
 }
 
 const EventManagement = () => {
@@ -61,46 +81,30 @@ const EventManagement = () => {
 
   const loadEvents = async () => {
     try {
-      // Load past events from Firebase
-      const pastEvents = await eventService.getAllPastEvents();
-      setPastEvents(pastEvents);
+      console.log('EventManagement: Loading events from Firebase...');
       
-      // For now, keep default flagship events
-      // TODO: Move flagship events to Firebase as well
-      const defaultFlagship = [
-        {
-          id: 'bdc-2024',
-          title: 'Blood Donation Camp (BDC)',
-          date: 'July 2024',
-          shortDescription: 'Our annual Blood Donation Camp encourages students and faculty to donate blood.',
-          description: 'Our annual Blood Donation Camp is one of our most impactful events.',
-          category: 'Flagship',
-          eventType: 'flagship' as const,
-          venue: 'MUJ Campus',
-          impact: '300+ donations annually',
-          images: [],
-          bannerUrl: '',
-          galleryUrls: []
-        },
-        {
-          id: 'daan-utsav-2024',
-          title: 'Daan Utsav',
-          date: 'October 2024',
-          shortDescription: 'Daan Utsav is our festival of giving.',
-          description: 'Daan Utsav (Festival of Giving) is our annual contribution.',
-          category: 'Flagship',
-          eventType: 'flagship' as const,
-          venue: 'Multiple locations',
-          impact: '1000+ beneficiaries annually',
-          images: [],
-          bannerUrl: '',
-          galleryUrls: []
-        }
-      ];
-      setFlagshipEvents(defaultFlagship);
+      // Load all events from Firebase and filter by type
+      const allEvents = await eventService.getCalendarEvents();
+      console.log('EventManagement: All events loaded:', allEvents);
+      
+      // Filter past events and flagship events
+      const pastEvents = allEvents.filter(event => 
+        (event as any).type === 'past-event' && (event as any).eventCategory === 'past'
+      );
+      const flagshipEvents = allEvents.filter(event => 
+        (event as any).eventCategory === 'flagship'
+      );
+      
+      console.log('EventManagement: Past events:', pastEvents);
+      console.log('EventManagement: Flagship events:', flagshipEvents);
+      
+      setPastEvents(pastEvents);
+      setFlagshipEvents(flagshipEvents);
     } catch (error) {
-      console.error('Error loading events:', error);
+      console.error('EventManagement: Error loading events:', error);
       toast.error('Failed to load events');
+      setPastEvents([]);
+      setFlagshipEvents([]);
     }
   };
 
@@ -121,30 +125,31 @@ const EventManagement = () => {
     }
   };
 
-  const handleDeleteEvent = (eventId: string, eventType: 'flagship' | 'past') => {
+  const handleDeleteEvent = async (eventId: string, eventType: 'flagship' | 'past') => {
     if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-      if (eventType === 'flagship') {
-        const updatedFlagship = flagshipEvents.filter(event => event.id !== eventId);
-        setFlagshipEvents(updatedFlagship);
+      try {
+        console.log(`EventManagement: Deleting ${eventType} event with ID:`, eventId);
         
-        // Update localStorage (only for non-default events)
-        const storedFlagship = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
-        const updatedStoredFlagship = storedFlagship.filter((event: any) => event.id !== eventId);
-        localStorage.setItem('flagshipEvents', JSON.stringify(updatedStoredFlagship));
-      } else {
-        const updatedPast = pastEvents.filter(event => event.id !== eventId);
-        setPastEvents(updatedPast);
+        // Delete from Firebase
+        await eventService.deleteEvent(eventId);
         
-        // Update localStorage (only for non-default events)
-        const storedPast = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-        const updatedStoredPast = storedPast.filter((event: any) => event.id !== eventId);
-        localStorage.setItem('pastEvents', JSON.stringify(updatedStoredPast));
+        // Update local state
+        if (eventType === 'flagship') {
+          const updatedFlagship = flagshipEvents.filter(event => event.id !== eventId);
+          setFlagshipEvents(updatedFlagship);
+        } else {
+          const updatedPast = pastEvents.filter(event => event.id !== eventId);
+          setPastEvents(updatedPast);
+        }
+        
+        toast.success('Event deleted successfully!');
+        
+        // Reload events to ensure consistency
+        await loadEvents();
+      } catch (error) {
+        console.error('EventManagement: Error deleting event:', error);
+        toast.error('Failed to delete event. Please try again.');
       }
-      
-      alert('Event deleted successfully!');
-      
-      // Trigger storage event to update other components
-      window.dispatchEvent(new Event('storage'));
     }
   };
 
@@ -186,7 +191,7 @@ const EventManagement = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleEditEvent(event.id, eventType)}
+              onClick={() => handleEditEvent(event.id!, eventType)}
               className="flex items-center gap-2"
             >
               <Edit className="w-4 h-4" />
@@ -195,7 +200,7 @@ const EventManagement = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleDeleteEvent(event.id, eventType)}
+              onClick={() => handleDeleteEvent(event.id!, eventType)}
               className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-600"
             >
               <Trash2 className="w-4 h-4" />
@@ -257,7 +262,23 @@ const EventManagement = () => {
         </TabsContent>
 
         <TabsContent value="flagship" className="space-y-4">
-          {flagshipEvents.map((event) => renderEventCard(event, 'flagship'))}
+          {flagshipEvents.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center text-gray-500">
+                  <p>No flagship events found.</p>
+                  <Button
+                    onClick={() => navigate('/admin/past-events')}
+                    className="mt-4 bg-rotaract-orange hover:bg-rotaract-orange/90"
+                  >
+                    Create Your First Flagship Event
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            flagshipEvents.map((event) => renderEventCard(event, 'flagship'))
+          )}
         </TabsContent>
       </Tabs>
     </div>

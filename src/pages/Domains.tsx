@@ -67,9 +67,9 @@ const Domains = () => {
                     </CardHeader>
                     <CardContent className="px-0">
                       <p className="mb-6">
-                        The Club Service Domain (CSD) focuses on strengthening the internal workings of our club
-                        and fostering a sense of belonging among members. This domain is responsible for
-                        organizing club meetings, member engagement activities, and internal events.
+                        The Club Service Domain focuses on strengthening the internal operations of our club 
+                        and fostering a strong sense of belonging among members. This domain ensures smooth 
+                        functioning, active engagement, and a vibrant club culture.
                       </p>
                       
                       <h3 className="text-xl font-semibold mb-4">Key Responsibilities:</h3>
@@ -77,23 +77,23 @@ const Domains = () => {
                         <li>Organizing club meetings and member orientation sessions</li>
                         <li>Planning team-building activities and recreational events</li>
                         <li>Maintaining club records and documentation</li>
-                        <li>Fostering fellowship among members</li>
+                        <li>Fostering fellowship and unity among members</li>
                         <li>Coordinating with other domains for collaborative events</li>
                       </ul>
                       
                       <h3 className="text-xl font-semibold mb-4">Notable CSD Events:</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="bg-green-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-1">Orientation Week</h4>
-                          <p className="text-sm">Welcoming and orienting new members to the club</p>
+                          <h4 className="font-medium mb-1">Movie Nights</h4>
+                          <p className="text-sm">Fun-filled evenings to relax and bond with fellow members</p>
                         </div>
                         <div className="bg-green-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-1">Annual Club Day</h4>
-                          <p className="text-sm">Celebrating the club's achievements and milestones</p>
+                          <h4 className="font-medium mb-1">Treks</h4>
+                          <p className="text-sm">Adventure trips promoting camaraderie and team spirit</p>
                         </div>
                         <div className="bg-green-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-1">Team Building Retreats</h4>
-                          <p className="text-sm">Strengthening bonds between members through activities</p>
+                          <h4 className="font-medium mb-1">Khel Utsav</h4>
+                          <p className="text-sm">Sports and games to encourage teamwork and healthy competition</p>
                         </div>
                         <div className="bg-green-50 p-4 rounded-lg">
                           <h4 className="font-medium mb-1">Installation Ceremony</h4>
@@ -128,9 +128,9 @@ const Domains = () => {
                     </CardHeader>
                     <CardContent className="px-0">
                       <p className="mb-6">
-                        The Community Service Domain (CMD) is dedicated to identifying and addressing needs
-                        within our local community. This domain organizes projects that make a tangible
-                        difference in people's lives and create positive social impact.
+                        The Community Service Domain is dedicated to identifying and addressing the needs 
+                        of our local community. Through impactful projects and initiatives, this domain 
+                        strives to create meaningful social change and improve lives.
                       </p>
                       
                       <h3 className="text-xl font-semibold mb-4">Key Responsibilities:</h3>
@@ -138,27 +138,27 @@ const Domains = () => {
                         <li>Planning and executing community service projects</li>
                         <li>Identifying areas of need within the local community</li>
                         <li>Organizing donation drives and charitable initiatives</li>
-                        <li>Coordinating with local organizations and NGOs</li>
-                        <li>Evaluating the impact of community service projects</li>
+                        <li>Collaborating with local organizations and NGOs</li>
+                        <li>Evaluating the impact of service projects</li>
                       </ul>
                       
                       <h3 className="text-xl font-semibold mb-4">Notable CMD Events:</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="bg-blue-50 p-4 rounded-lg">
                           <h4 className="font-medium mb-1">Blood Donation Camp</h4>
-                          <p className="text-sm">Annual blood donation drive for local blood banks</p>
+                          <p className="text-sm">Annual drive supporting local hospitals and blood banks</p>
                         </div>
                         <div className="bg-blue-50 p-4 rounded-lg">
                           <h4 className="font-medium mb-1">Daan Utsav</h4>
-                          <p className="text-sm">Festival of giving to help underprivileged communities</p>
+                          <p className="text-sm">Festival of Giving to support underprivileged communities</p>
                         </div>
                         <div className="bg-blue-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-1">Tree Plantation Drive</h4>
+                          <h4 className="font-medium mb-1">Plantation Drive</h4>
                           <p className="text-sm">Environmental initiative to increase green cover</p>
                         </div>
                         <div className="bg-blue-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-1">School Supply Drive</h4>
-                          <p className="text-sm">Collection and distribution of educational materials</p>
+                          <h4 className="font-medium mb-1">Education Drive</h4>
+                          <p className="text-sm">Collecting and distributing books, stationery, and learning resources</p>
                         </div>
                       </div>
                     </CardContent>
@@ -189,9 +189,9 @@ const Domains = () => {
                     </CardHeader>
                     <CardContent className="px-0">
                       <p className="mb-6">
-                        The International Service Domain (ISD) promotes international understanding,
-                        goodwill, and peace by connecting our club with Rotaract clubs worldwide and
-                        organizing projects with global impact.
+                        The International Service Domain promotes international understanding, goodwill, 
+                        and peace by connecting our club with Rotaract clubs worldwide and organizing 
+                        projects with global impact.
                       </p>
                       
                       <h3 className="text-xl font-semibold mb-4">Key Responsibilities:</h3>
@@ -206,20 +206,20 @@ const Domains = () => {
                       <h3 className="text-xl font-semibold mb-4">Notable ISD Events:</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="bg-purple-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-1">Global Cultural Exchange</h4>
-                          <p className="text-sm">Virtual meetings with Rotaract clubs from other countries</p>
+                          <h4 className="font-medium mb-1">ICYE & IDYE</h4>
+                          <p className="text-sm">Inter-Country and International District Youth Exchanges</p>
                         </div>
                         <div className="bg-purple-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-1">International Peace Day</h4>
-                          <p className="text-sm">Events promoting global peace and understanding</p>
+                          <h4 className="font-medium mb-1">Twin Club Initiatives</h4>
+                          <p className="text-sm">Collaborative projects with international partner clubs</p>
                         </div>
                         <div className="bg-purple-50 p-4 rounded-lg">
                           <h4 className="font-medium mb-1">Global Issues Awareness</h4>
                           <p className="text-sm">Campaigns on international humanitarian issues</p>
                         </div>
                         <div className="bg-purple-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-1">Twin Club Initiatives</h4>
-                          <p className="text-sm">Collaborative projects with partner clubs abroad</p>
+                          <h4 className="font-medium mb-1">Cultural Exchange Programs</h4>
+                          <p className="text-sm">Promoting cross-cultural understanding and friendship</p>
                         </div>
                       </div>
                     </CardContent>
@@ -250,9 +250,9 @@ const Domains = () => {
                     </CardHeader>
                     <CardContent className="px-0">
                       <p className="mb-6">
-                        The Professional Development Domain (PDD) focuses on enhancing the career development
-                        and professional skills of our members through workshops, seminars, and
-                        networking opportunities with industry professionals.
+                        The Professional Development Domain focuses on enhancing the career growth and 
+                        skill development of our members through interactive workshops, training sessions, 
+                        and networking opportunities with industry professionals.
                       </p>
                       
                       <h3 className="text-xl font-semibold mb-4">Key Responsibilities:</h3>
@@ -267,20 +267,20 @@ const Domains = () => {
                       <h3 className="text-xl font-semibold mb-4">Notable PDD Events:</h3>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="bg-red-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-1">Resume Building Workshop</h4>
-                          <p className="text-sm">Guidance on creating effective professional resumes</p>
+                          <h4 className="font-medium mb-1">Yoga Awareness Workshop</h4>
+                          <p className="text-sm">Promoting physical and mental well-being for balanced lifestyle</p>
                         </div>
                         <div className="bg-red-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-1">Interview Skills Seminar</h4>
-                          <p className="text-sm">Training on interview techniques and preparation</p>
+                          <h4 className="font-medium mb-1">Self-Defense Workshop</h4>
+                          <p className="text-sm">Equipping members with essential safety and defense techniques</p>
+                        </div>
+                        <div className="bg-red-50 p-4 rounded-lg">
+                          <h4 className="font-medium mb-1">LinkedIn & Resume Building</h4>
+                          <p className="text-sm">Training members to create impactful profiles and resumes</p>
                         </div>
                         <div className="bg-red-50 p-4 rounded-lg">
                           <h4 className="font-medium mb-1">Industry Expert Talks</h4>
                           <p className="text-sm">Sessions with professionals from various industries</p>
-                        </div>
-                        <div className="bg-red-50 p-4 rounded-lg">
-                          <h4 className="font-medium mb-1">Career Fair</h4>
-                          <p className="text-sm">Connecting students with potential employers</p>
                         </div>
                       </div>
                     </CardContent>
