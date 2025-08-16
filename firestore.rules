@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isExecutive() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'executive';
+    }
+    
+    function isStudent() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isExecutive());
+      allow create: if isAuthenticated() && isExecutive();
+      allow update: if isAuthenticated() && (isOwner(userId) || isExecutive());
+      allow delete: if isAuthenticated() && isExecutive();
+    }
+    
+    // Events collection
+    match /events/{eventId} {
+      allow read: if true; // Allow public read access for guests
+      allow create, update, delete: if isAuthenticated() && isExecutive();
+      // Allow students to update only the registeredUsers array for registration
+      allow update: if isAuthenticated() && isStudent() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registeredUsers', 'updatedAt']);
+    }
+    
+    // Past Events collection
+    match /pastEvents/{eventId} {
+      allow read: if true; // Allow public read access for guests
+      allow create, update, delete: if isAuthenticated() && isExecutive();
+    }
+    
+    // Registrations collection
+    match /registrations/{registrationId} {
+      allow read: if isAuthenticated() && (isOwner(resource.data.userId) || isExecutive());
+      allow create: if isAuthenticated() && isStudent();
+      allow update, delete: if isAuthenticated() && (isOwner(resource.data.userId) || isExecutive());
+    }
+    
+    // Attendance collection
+    match /attendance/{attendanceId} {
+      allow read: if isAuthenticated() && (isOwner(resource.data.userId) || isExecutive());
+      allow create, update, delete: if isAuthenticated() && isExecutive();
+    }
+    
+    // Feedback collection
+    match /feedback/{feedbackId} {
+      allow read: if isAuthenticated() && (isOwner(resource.data.userId) || isExecutive());
+      allow create: if isAuthenticated();
+      allow update, delete: if isAuthenticated() && isExecutive();
+    }
+    
+    // Team Members collection
+    match /teamMembers/{memberId} {
+      allow read: if true; // Public read access
+      allow create, update, delete: if isAuthenticated() && isExecutive();
+    }
+  }
+}

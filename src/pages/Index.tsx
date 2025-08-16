@@ -77,13 +77,13 @@ const Index = () => {
         }}>
             Service Above Self
           </p>
-          <div className="flex flex-wrap gap-4 justify-center animate-fade-up" style={{
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center animate-fade-up" style={{
           animationDelay: '600ms'
         }}>
-            <Button asChild className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0">
+            <Button asChild className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0 text-sm md:text-base py-2 md:py-3">
               <Link to="/about">About Us</Link>
             </Button>
-            <Button asChild className="bg-white text-black hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0">
+            <Button asChild className="bg-white text-black hover:bg-gray-100 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl border-0 text-sm md:text-base py-2 md:py-3">
               <Link to="/events">Our Events</Link>
             </Button>
           </div>
@@ -134,15 +134,15 @@ const Index = () => {
       <section className="py-16 md:py-24 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="section-title text-black">Our Flagship Events</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mt-8 md:mt-12">
             {/* Blood Donation Camp Card */}
             <Card className="overflow-hidden transition-all hover:shadow-xl border-gray-200 hover:border-rotaract-orange transform hover:scale-105 duration-300">
-              <div className="h-64 overflow-hidden">
+              <div className="h-48 md:h-64 overflow-hidden">
                 <img src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" alt="Blood Donation Camp" className="w-full h-full object-cover transition-transform hover:scale-110 duration-300" />
               </div>
-              <CardContent className="p-6">
-                <h3 className="text-2xl font-bold mb-2 text-black">Blood Donation Camp (BDC)</h3>
-                <p className="text-gray-600 mb-4">
+              <CardContent className="p-4 md:p-6">
+                <h3 className="text-xl md:text-2xl font-bold mb-2 text-black">Blood Donation Camp (BDC)</h3>
+                <p className="text-gray-600 mb-4 text-sm md:text-base">
                   Our annual Blood Donation Camp encourages students and faculty to donate blood and
                   raise awareness about the importance of blood donation in saving lives.
                 </p>
@@ -156,12 +156,12 @@ const Index = () => {
             
             {/* Daan Utsav Card */}
             <Card className="overflow-hidden transition-all hover:shadow-xl border-gray-200 hover:border-rotaract-orange transform hover:scale-105 duration-300">
-              <div className="h-64 overflow-hidden">
+              <div className="h-48 md:h-64 overflow-hidden">
                 <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop" alt="Daan Utsav" className="w-full h-full object-cover transition-transform hover:scale-110 duration-300" />
               </div>
-              <CardContent className="p-6">
-                <h3 className="text-2xl font-bold mb-2 text-black">Daan Utsav</h3>
-                <p className="text-gray-600 mb-4">
+              <CardContent className="p-4 md:p-6">
+                <h3 className="text-xl md:text-2xl font-bold mb-2 text-black">Daan Utsav</h3>
+                <p className="text-gray-600 mb-4 text-sm md:text-base">
                   Daan Utsav is our festival of giving where we organize donation
                   drives to help the underprivileged communities with clothes, books,
                   food, and other essential items.
@@ -181,7 +181,7 @@ const Index = () => {
       <section className="py-16 md:py-24 bg-black text-white">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Our Domains</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {/* CSD Domain */}
             <div className="text-center transform hover:scale-105 transition-all duration-300">
               <div className="bg-rotaract-orange text-white rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 hover:shadow-lg transition-shadow">
@@ -241,7 +241,7 @@ const Index = () => {
             Check out our events, meet our team, and learn more about how you can get involved
             with Rotaract Club at Manipal University Jaipur.
           </p>
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Button asChild className="bg-rotaract-orange hover:bg-rotaract-orange/90 text-white transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl">
               <Link to="/events" className="inline-flex items-center">
                 <Calendar className="mr-2 h-4 w-4" /> View Events

@@ -10,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Edit, Trash2, Save } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { eventService } from '@/services/event.service';
+import { toast } from 'sonner';
 
 interface EventDetailModalProps {
   event: any;
@@ -85,97 +87,116 @@ const EnhancedEventDetailModal = ({
 
   const isPastEvent = isEventInPast(event.date, event.startTime);
 
-  const handleRegistrationToggle = (checked: boolean) => {
+  const handleRegistrationToggle = async (checked: boolean) => {
     if (isPastEvent || isGuestMode) {
       alert(isPastEvent ? 'Cannot modify past events.' : 'Guests cannot modify event settings.');
       return;
     }
 
-    setEnableRegistration(checked);
-    // Update the event in storage
-    const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
-    const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    const updated = stored.map((e: any) => {
-      if (e.id === event.id) {
-        return { ...e, enableRegistration: checked };
+    try {
+      setEnableRegistration(checked);
+      
+      // Update the event in Firebase
+      await eventService.updateEvent(event.id, {
+        enableRegistration: checked
+      });
+      
+      // Show success message
+      toast.success(`Registration ${checked ? 'enabled' : 'disabled'} successfully`);
+      
+      // Refresh the event data
+      if (onEdit) {
+        // Trigger a refresh of the parent component
+        window.dispatchEvent(new Event('storage'));
       }
-      return e;
-    });
-    localStorage.setItem(storageKey, JSON.stringify(updated));
-    
-    // Also update in pastEvents
-    const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-    const updatedPastEvents = pastEvents.map((e: any) => {
-      if (e.id === event.id) {
-        return { ...e, enableRegistration: checked };
-      }
-      return e;
-    });
-    localStorage.setItem('pastEvents', JSON.stringify(updatedPastEvents));
-    
-    window.dispatchEvent(new Event('storage'));
+    } catch (error) {
+      console.error('Error updating registration status:', error);
+      toast.error('Failed to update registration status');
+      
+      // Revert the local state if Firebase update failed
+      setEnableRegistration(!checked);
+    }
   };
 
-  const handleAttendanceToggle = (checked: boolean) => {
+  const handleAttendanceToggle = async (checked: boolean) => {
     if (isPastEvent || isGuestMode) {
       alert(isPastEvent ? 'Cannot modify past events.' : 'Guests cannot modify event settings.');
       return;
     }
 
-    setEnableAttendance(checked);
-    // Update the event in storage
-    const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
-    const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    const updated = stored.map((e: any) => {
-      if (e.id === event.id) {
-        return { ...e, enableAttendance: checked };
+    try {
+      setEnableAttendance(checked);
+      
+      // Update the event in Firebase
+      await eventService.updateEvent(event.id, {
+        enableAttendance: checked
+      });
+      
+      // Show success message
+      toast.success(`Attendance tracking ${checked ? 'enabled' : 'disabled'} successfully`);
+      
+      // Refresh the event data
+      if (onEdit) {
+        // Trigger a refresh of the parent component
+        window.dispatchEvent(new Event('storage'));
       }
-      return e;
-    });
-    localStorage.setItem(storageKey, JSON.stringify(updated));
-    
-    // Also update in pastEvents
-    const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-    const updatedPastEvents = pastEvents.map((e: any) => {
-      if (e.id === event.id) {
-        return { ...e, enableAttendance: checked };
-      }
-      return e;
-    });
-    localStorage.setItem('pastEvents', JSON.stringify(updatedPastEvents));
-    
-    window.dispatchEvent(new Event('storage'));
+    } catch (error) {
+      console.error('Error updating attendance status:', error);
+      toast.error('Failed to update attendance status');
+      
+      // Revert the local state if Firebase update failed
+      setEnableAttendance(!checked);
+    }
   };
 
-  const handleRegistrationSubmit = (e: React.FormEvent) => {
+  const handleRegistrationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (registrationData.fullName && registrationData.phoneNumber && registrationData.registrationNumber) {
       // Check if user already registered
       if (userRegistrationStatus === 'registered') {
-        alert('You have already registered for this event!');
+        toast.error('You have already registered for this event!');
         return;
       }
 
-      const newUser = { ...registrationData, registeredAt: new Date().toISOString() };
-      
-      // Update the event in all storage locations
-      const storageKeys = ['calendarEvents', 'gbmMeetings', 'pastEvents'];
-      storageKeys.forEach(key => {
-        const stored = JSON.parse(localStorage.getItem(key) || '[]');
-        const updated = stored.map((e: any) => {
-          if (e.id === event.id) {
-            const registeredUsers = e.registeredUsers || [];
-            return { ...e, registeredUsers: [...registeredUsers, newUser] };
-          }
-          return e;
+      try {
+        console.log('Starting registration process for event:', event.id);
+        console.log('Event data:', event);
+        
+        const newUser = { ...registrationData, registeredAt: new Date().toISOString() };
+        console.log('New user data:', newUser);
+        
+        // Get current registered users from the event
+        const currentRegisteredUsers = event.registeredUsers || [];
+        const updatedRegisteredUsers = [...currentRegisteredUsers, newUser];
+        console.log('Updated registered users:', updatedRegisteredUsers);
+        
+        // Validate event ID
+        if (!event.id) {
+          throw new Error('Event ID is missing');
+        }
+        
+        // Update the event in Firebase
+        console.log('Updating event in Firebase with ID:', event.id);
+        await eventService.updateEvent(event.id, {
+          registeredUsers: updatedRegisteredUsers
         });
-        localStorage.setItem(key, JSON.stringify(updated));
-      });
-
-      // Don't clear the form, just update status
-      setUserRegistrationStatus('registered');
-      window.dispatchEvent(new Event('storage'));
-      alert('Registration successful!');
+        
+        console.log('Firebase update successful');
+        
+        // Update local state
+        setUserRegistrationStatus('registered');
+        toast.success('Registration successful!');
+        
+        // Refresh the event data
+        if (onEdit) {
+          window.dispatchEvent(new Event('storage'));
+        }
+      } catch (error) {
+        console.error('Error registering for event:', error);
+        console.error('Event object:', event);
+        console.error('Registration data:', registrationData);
+        toast.error(`Failed to register for event: ${error.message || 'Unknown error'}`);
+      }
     }
   };
 

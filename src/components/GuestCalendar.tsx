@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar as CalendarIcon, Clock, MapPin } from 'lucide-react';
 import EnhancedEventDetailModal from './EnhancedEventDetailModal';
+import { eventService } from '@/services/event.service';
+import { toast } from 'sonner';
 
 interface CalendarEvent {
   id: string;
@@ -26,27 +28,37 @@ const GuestCalendar = () => {
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   useEffect(() => {
-    const loadEvents = () => {
-      const calendarEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
-      const gbmMeetings = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
-      
-      // Show all events but handle interaction differently
-      const allCalendarEvents = calendarEvents; // Show all calendar events
-      const guestGBMEvents = gbmMeetings.filter((gbm: any) => 
-        gbm.type === 'gbm' || gbm.showOnGuestCalendar
-      );
-      
-      const allEvents = [...allCalendarEvents, ...guestGBMEvents];
-      setEvents(allEvents);
-    };
-
+    console.log('GuestCalendar: Component mounted, loading events...');
     loadEvents();
-    
-    const handleStorageChange = () => loadEvents();
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  const loadEvents = async () => {
+    try {
+      console.log('GuestCalendar: Loading events...');
+      const events = await eventService.getCalendarEvents();
+      console.log('GuestCalendar: All events loaded:', events);
+      
+      // Filter events that should be visible to guests
+      // Show GBM events, meetings, and any events explicitly marked for guest visibility
+      const guestVisibleEvents = events.filter(event => {
+        const isVisible = event.showOnGuestCalendar || 
+                         event.type === 'gbm' || 
+                         event.type === 'meeting' ||
+                         event.enableRegistration; // Show events where registration is enabled
+        
+        console.log(`Event "${event.title}": showOnGuestCalendar=${event.showOnGuestCalendar}, type=${event.type}, enableRegistration=${event.enableRegistration}, visible=${isVisible}`);
+        
+        return isVisible;
+      });
+      
+      console.log('GuestCalendar: Guest visible events:', guestVisibleEvents);
+      setEvents(guestVisibleEvents);
+    } catch (error) {
+      console.error('GuestCalendar: Error loading events:', error);
+      toast.error('Failed to load events');
+      setEvents([]);
+    }
+  };
 
   // Filter events for the selected date
   const selectedDateEvents = events.filter(event => {

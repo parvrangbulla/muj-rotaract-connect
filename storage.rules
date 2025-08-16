@@ -1,0 +1,55 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isExecutive() {
+      return isAuthenticated() && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'executive';
+    }
+    
+    function isStudent() {
+      return isAuthenticated() && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'student';
+    }
+
+    // Profile pictures
+    match /profile-pictures/{userId}/{allPaths=**} {
+      // Users can read and write their own profile pictures, executives can access all
+      allow read, write: if request.auth.uid == userId || isExecutive();
+    }
+
+    // Event banners and galleries
+    match /event-images/{eventId}/{allPaths=**} {
+      // All authenticated users can read event images
+      allow read: if isAuthenticated();
+      // Only executives can upload/modify event images
+      allow write: if isExecutive();
+    }
+
+    // Past event images
+    match /past-event-images/{eventId}/{allPaths=**} {
+      // All users can read past event images
+      allow read: if true;
+      // Only executives can upload/modify past event images
+      allow write: if isExecutive();
+    }
+
+    // Feedback attachments
+    match /feedback-attachments/{userId}/{allPaths=**} {
+      // Users can read and write their own feedback attachments, executives can access all
+      allow read, write: if request.auth.uid == userId || isExecutive();
+    }
+
+    // General uploads (team photos, etc.)
+    match /uploads/{allPaths=**} {
+      // All users can read general uploads
+      allow read: if true;
+      // Only executives can upload/modify general uploads
+      allow write: if isExecutive();
+    }
+  }
+}

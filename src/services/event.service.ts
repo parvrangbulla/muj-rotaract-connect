@@ -39,6 +39,13 @@ export interface EventData {
   venue?: string;
   impact?: string;
   shortDescription?: string;
+  registeredUsers?: Array<{
+    fullName: string;
+    phoneNumber: string;
+    registrationNumber: string;
+    registeredAt: string;
+  }>;
+  attendance?: Record<string, 'present' | 'absent' | 'pending'>;
 }
 
 export interface PastEventData {
@@ -85,14 +92,33 @@ class EventService {
   // Update event
   async updateEvent(eventId: string, updates: Partial<EventData>): Promise<void> {
     try {
+      console.log('EventService: Updating event with ID:', eventId);
+      console.log('EventService: Updates to apply:', updates);
+      
       const eventDoc = doc(this.eventsCollection, eventId);
+      
+      // Validate that the document exists
+      const eventSnapshot = await getDoc(eventDoc);
+      if (!eventSnapshot.exists()) {
+        throw new Error(`Event with ID ${eventId} does not exist`);
+      }
+      
+      console.log('EventService: Event exists, proceeding with update');
+      
       await updateDoc(eventDoc, {
         ...updates,
         updatedAt: new Date()
       });
+      
+      console.log('EventService: Event updated successfully');
     } catch (error) {
-      console.error('Error updating event:', error);
-      throw new Error('Failed to update event');
+      console.error('EventService: Error updating event:', error);
+      console.error('EventService: Error details:', {
+        code: error.code,
+        message: error.message,
+        stack: error.stack
+      });
+      throw new Error(`Failed to update event: ${error.message}`);
     }
   }
 
@@ -120,6 +146,77 @@ class EventService {
     } catch (error) {
       console.error('Error getting events:', error);
       throw new Error('Failed to get events');
+    }
+  }
+
+  // Get active events (current and future events)
+  async getActiveEvents(): Promise<EventData[]> {
+    try {
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+      const querySnapshot = await getDocs(
+        query(
+          this.eventsCollection,
+          where('date', '>=', today),
+          orderBy('date', 'asc')
+        )
+      );
+      
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      } as EventData));
+    } catch (error) {
+      console.error('Error getting active events:', error);
+      throw new Error('Failed to get active events');
+    }
+  }
+
+  // Get all events for calendar view (including past events)
+  async getCalendarEvents(): Promise<EventData[]> {
+    try {
+      console.log('Fetching calendar events from collection:', this.eventsCollection.path);
+      
+      // First try with ordering
+      try {
+        const querySnapshot = await getDocs(
+          query(
+            this.eventsCollection,
+            orderBy('date', 'asc')
+          )
+        );
+        
+        console.log('Query snapshot size:', querySnapshot.size);
+        const events = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as EventData));
+        
+        console.log('Fetched events:', events);
+        return events;
+      } catch (orderError) {
+        console.log('Ordering failed, trying without order:', orderError);
+        
+        // Fallback: get all events without ordering
+        const querySnapshot = await getDocs(this.eventsCollection);
+        console.log('Fallback query snapshot size:', querySnapshot.size);
+        const events = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as EventData));
+        
+        console.log('Fetched events (fallback):', events);
+        return events;
+      }
+    } catch (error) {
+      console.error('Error getting calendar events:', error);
+      
+      // Check if it's a collection doesn't exist error
+      if (error.code === 'failed-precondition' || error.message.includes('collection')) {
+        console.log('Collection might not exist, returning empty array');
+        return [];
+      }
+      
+      throw new Error('Failed to get calendar events');
     }
   }
 

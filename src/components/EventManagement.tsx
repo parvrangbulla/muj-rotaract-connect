@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { eventService } from '@/services/event.service';
+import { toast } from 'sonner';
 
 interface EventImage {
   id: string;
@@ -52,13 +54,19 @@ const EventManagement = () => {
     );
   }
 
-  // Load events from localStorage
+  // Load events from Firebase
   useEffect(() => {
-    const loadEvents = () => {
-      // Load flagship events
-      const storedFlagshipRaw = localStorage.getItem('flagshipEvents');
-      const storedFlagship = storedFlagshipRaw ? JSON.parse(storedFlagshipRaw) : [];
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      // Load past events from Firebase
+      const pastEvents = await eventService.getAllPastEvents();
+      setPastEvents(pastEvents);
       
+      // For now, keep default flagship events
+      // TODO: Move flagship events to Firebase as well
       const defaultFlagship = [
         {
           id: 'bdc-2024',
@@ -89,57 +97,12 @@ const EventManagement = () => {
           galleryUrls: []
         }
       ];
-      
-      // Ensure storedFlagship is an array before spreading
-      const flagshipArray = Array.isArray(storedFlagship) ? storedFlagship : [];
-      setFlagshipEvents([...defaultFlagship, ...flagshipArray]);
-
-      // Load past events
-      const storedPastRaw = localStorage.getItem('pastEvents');
-      const storedPast = storedPastRaw ? JSON.parse(storedPastRaw) : [];
-      
-      const defaultPast = [
-        {
-          id: 'orientation-2024',
-          title: 'Orientation Session',
-          date: 'August 2024',
-          shortDescription: 'Welcome session for new members.',
-          description: 'A comprehensive orientation session.',
-          category: 'CSD',
-          eventType: 'past' as const,
-          domain: 'CSD',
-          images: [],
-          bannerUrl: '',
-          galleryUrls: []
-        },
-        {
-          id: 'tree-plantation-2024',
-          title: 'Tree Plantation Drive',
-          date: 'September 2024',
-          shortDescription: 'Environmental initiative to plant trees.',
-          description: 'An environmental sustainability initiative.',
-          category: 'CMD',
-          eventType: 'past' as const,
-          domain: 'CMD',
-          images: [],
-          bannerUrl: '',
-          galleryUrls: []
-        }
-      ];
-      
-      // Ensure storedPast is an array before spreading
-      const pastArray = Array.isArray(storedPast) ? storedPast : [];
-      setPastEvents([...defaultPast, ...pastArray]);
-    };
-
-    loadEvents();
-
-    // Listen for storage changes
-    const handleStorageChange = () => loadEvents();
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+      setFlagshipEvents(defaultFlagship);
+    } catch (error) {
+      console.error('Error loading events:', error);
+      toast.error('Failed to load events');
+    }
+  };
 
   const handleEditEvent = (eventId: string, eventType: 'flagship' | 'past') => {
     // Find the event to edit

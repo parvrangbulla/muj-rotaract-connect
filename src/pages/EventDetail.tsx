@@ -125,11 +125,11 @@ const EventDetail = () => {
               : event.id === 'daan-utsav-2024'
               ? "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop"
               : `https://images.unsplash.com/photo-${
-                  event.id.includes('orientation') ? '1540575467063-178a50c2df87' :
-                  event.id.includes('tree') ? '1488521787991-ed7bbaae773c' :
-                  event.id.includes('cultural') ? '1559223607-a43f990c67bd' :
-                  event.id.includes('resume') ? '1517048676732-d65bc937f952' :
-                  event.id.includes('orphanage') ? '1607988795691-3d0147b43231' :
+                  event.id && event.id.includes('orientation') ? '1540575467063-178a50c2df87' :
+                  event.id && event.id.includes('tree') ? '1488521787991-ed7bbaae773c' :
+                  event.id && event.id.includes('cultural') ? '1559223607-a43f990c67bd' :
+                  event.id && event.id.includes('resume') ? '1517048676732-d65bc937f952' :
+                  event.id && event.id.includes('orphanage') ? '1607988795691-3d0147b43231' :
                   '1528605248644-14dd04022da1'
                 }?q=80&w=3540&auto=format&fit=crop`
             )}

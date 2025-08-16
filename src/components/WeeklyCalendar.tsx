@@ -10,9 +10,11 @@ import { cn } from '@/lib/utils';
 import EventCreationModal from './EventCreationModal';
 import EnhancedEventDetailModal from './EnhancedEventDetailModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { eventService, EventData } from '@/services/event.service';
+import { toast } from 'sonner';
 
 const WeeklyCalendar = () => {
-  const { isExecutive } = useAuth();
+  const { isExecutive, user } = useAuth();
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [showEventModal, setShowEventModal] = useState(false);
   const [showGBMModal, setShowGBMModal] = useState(false);
@@ -24,78 +26,112 @@ const WeeklyCalendar = () => {
 
   useEffect(() => {
     loadEvents();
-    const handleStorageChange = () => loadEvents();
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const loadEvents = () => {
+  const loadEvents = async () => {
     try {
-      const storedEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
-      const storedGBMs = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
-      
-      const events = Array.isArray(storedEvents) ? storedEvents : [];
-      const gbms = Array.isArray(storedGBMs) ? storedGBMs : [];
-      
-      // Show all events, including past ones
-      const allEvents = [...events, ...gbms];
-      
-      setEvents(allEvents);
+      console.log('WeeklyCalendar: Starting to load events...');
+      const events = await eventService.getCalendarEvents();
+      console.log('WeeklyCalendar: Events loaded successfully:', events);
+      setEvents(events);
     } catch (error) {
-      console.error('Error loading events:', error);
+      console.error('WeeklyCalendar: Error loading events:', error);
+      toast.error('Failed to load events');
       setEvents([]);
     }
   };
 
-  const isEventInPast = (eventDate: string, eventTime: string) => {
-    const now = new Date();
-    const eventDateTime = new Date(`${eventDate}T${eventTime}`);
-    return eventDateTime < now;
+  const isEventInPast = (eventDate: string | undefined, eventTime: string | undefined) => {
+    // Handle cases where eventDate or eventTime might be undefined
+    if (!eventDate || !eventTime) {
+      return false; // Default to not past if we can't determine
+    }
+
+    try {
+      const now = new Date();
+      const eventDateTime = new Date(`${eventDate}T${eventTime}`);
+      return eventDateTime < now;
+    } catch (error) {
+      console.warn('Error checking if event is in past:', error, { eventDate, eventTime });
+      return false; // Default to not past if we can't determine
+    }
   };
 
-  const saveEvent = (eventData: any) => {
+  const saveEvent = async (eventData: any) => {
+    // Debug logging
+    console.log('WeeklyCalendar: Received event data:', eventData);
+    console.log('WeeklyCalendar: eventCategory:', eventData.eventCategory);
+    console.log('WeeklyCalendar: type:', eventData.type);
+    
     const isPastEvent = isEventInPast(eventData.date, eventData.startTime);
     
     if (isPastEvent && !editingEvent) {
-      alert('Cannot schedule events in the past. Please select a future date and time.');
+      toast.error('Cannot schedule events in the past. Please select a future date and time.');
       return;
     }
 
-    const isGBM = eventData.type === 'gbm' || eventData.type === 'meeting';
-    const eventWithDefaults = {
-      ...eventData,
-      id: editingEvent?.id || Date.now().toString(),
-      type: eventData.type, // Keep the exact type (gbm, meeting, or event)
-      createdAt: editingEvent?.createdAt || new Date().toISOString(),
-      registeredUsers: editingEvent?.registeredUsers || [],
-      attendance: editingEvent?.attendance || {},
-      enableRegistration: editingEvent?.enableRegistration || false,
-      enableAttendance: editingEvent?.enableAttendance || false,
-      meetingMinutes: editingEvent?.meetingMinutes || '',
-      showOnGuestCalendar: eventData.type === 'gbm' || eventData.eventCategory === 'gbm'
-    };
-
-    const storageKey = isGBM ? 'gbmMeetings' : 'calendarEvents';
-    const existingEvents = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    
-    if (editingEvent) {
-      const updatedEvents = existingEvents.map((e: any) => 
-        e.id === editingEvent.id ? eventWithDefaults : e
-      );
-      localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
-    } else {
-      existingEvents.push(eventWithDefaults);
-      localStorage.setItem(storageKey, JSON.stringify(existingEvents));
+    try {
+      if (editingEvent) {
+        // Update existing event
+        await eventService.updateEvent(editingEvent.id, {
+          title: eventData.title,
+          description: eventData.description,
+          type: eventData.type,
+          date: eventData.date,
+          startTime: eventData.startTime,
+          endTime: eventData.endTime,
+          location: eventData.location,
+          eventCategory: eventData.eventCategory,
+          enableRegistration: eventData.enableRegistration || false,
+          enableAttendance: eventData.enableAttendance || false,
+          showOnGuestCalendar: true // Make all events visible to guests by default
+        });
+        toast.success('Event updated successfully');
+      } else {
+        // Create new event
+        const newEventData: Omit<EventData, 'id' | 'createdAt' | 'updatedAt'> = {
+          title: eventData.title,
+          description: eventData.description,
+          type: eventData.type,
+          date: eventData.date,
+          startTime: eventData.startTime,
+          endTime: eventData.endTime,
+          location: eventData.location,
+          eventCategory: eventData.eventCategory,
+          enableRegistration: eventData.enableRegistration || false,
+          enableAttendance: eventData.enableAttendance || false,
+          showOnGuestCalendar: true, // Make all events visible to guests by default
+          createdBy: user?.uid || 'unknown',
+          isActive: true
+        };
+        
+        await eventService.createEvent(newEventData);
+        toast.success('Event created successfully');
+      }
+      
+      // Reload events from Firebase
+      await loadEvents();
+      setEditingEvent(null);
+    } catch (error) {
+      console.error('Error saving event:', error);
+      toast.error('Failed to save event');
     }
-    
-    loadEvents();
-    setEditingEvent(null);
-    window.dispatchEvent(new Event('storage'));
   };
 
   const handleEventClick = (event: any) => {
     setSelectedEvent(event);
     setShowDetailModal(true);
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      await eventService.deleteEvent(eventId);
+      toast.success('Event deleted successfully');
+      await loadEvents();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast.error('Failed to delete event');
+    }
   };
 
   const handleEditEvent = (event: any) => {
@@ -113,25 +149,7 @@ const WeeklyCalendar = () => {
     }
   };
 
-  const handleDeleteEvent = (eventId: string) => {
-    const event = events.find(e => e.id === eventId);
-    if (event && isEventInPast(event.date, event.startTime)) {
-      alert('Cannot delete past events.');
-      return;
-    }
 
-    if (window.confirm('Are you sure you want to delete this event?')) {
-      ['calendarEvents', 'gbmMeetings'].forEach(key => {
-        const stored = JSON.parse(localStorage.getItem(key) || '[]');
-        const filtered = stored.filter((e: any) => e.id !== eventId);
-        localStorage.setItem(key, JSON.stringify(filtered));
-      });
-      
-      loadEvents();
-      setShowDetailModal(false);
-      window.dispatchEvent(new Event('storage'));
-    }
-  };
 
   const getWeekDays = () => {
     const start = new Date(currentWeek);
@@ -158,26 +176,52 @@ const WeeklyCalendar = () => {
     return events.filter(event => event.date === dateStr);
   };
 
-  const getEventDuration = (startTime: string, endTime: string) => {
-    const start = new Date(`2000-01-01T${startTime}`);
-    const end = new Date(`2000-01-01T${endTime}`);
-    const diffInMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
-    return Math.max(60, diffInMinutes); // Minimum 1 hour
+  const getEventDuration = (startTime: string | undefined, endTime: string | undefined) => {
+    // Handle cases where startTime or endTime might be undefined
+    if (!startTime || !endTime) {
+      return 60; // Default 1 hour duration
+    }
+
+    try {
+      const start = new Date(`2000-01-01T${startTime}`);
+      const end = new Date(`2000-01-01T${endTime}`);
+      const diffInMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
+      return Math.max(60, diffInMinutes); // Minimum 1 hour
+    } catch (error) {
+      console.warn('Error calculating event duration:', error, { startTime, endTime });
+      return 60; // Default 1 hour duration
+    }
   };
 
-  const getEventPosition = (startTime: string, endTime: string) => {
-    const startHour = parseInt(startTime.split(':')[0]);
-    const startMinute = parseInt(startTime.split(':')[1]);
-    const endHour = parseInt(endTime.split(':')[0]);
-    const endMinute = parseInt(endTime.split(':')[1]);
-    
-    const startOffset = (startHour - 10) * 60 + startMinute;
-    const duration = (endHour - startHour) * 60 + (endMinute - startMinute);
-    
-    return {
-      top: (startOffset / 60) * 60, // 60px per hour
-      height: Math.max(30, (duration / 60) * 60) // Minimum 30px height
-    };
+  const getEventPosition = (startTime: string | undefined, endTime: string | undefined) => {
+    // Handle cases where startTime or endTime might be undefined
+    if (!startTime || !endTime) {
+      return {
+        top: 0,
+        height: 60 // Default height
+      };
+    }
+
+    try {
+      const startHour = parseInt(startTime.split(':')[0]);
+      const startMinute = parseInt(startTime.split(':')[1]);
+      const endHour = parseInt(endTime.split(':')[0]);
+      const endMinute = parseInt(endTime.split(':')[1]);
+      
+      const startOffset = (startHour - 10) * 60 + startMinute;
+      const duration = (endHour - startHour) * 60 + (endMinute - startMinute);
+      
+      return {
+        top: (startOffset / 60) * 60, // 60px per hour
+        height: Math.max(30, (duration / 60) * 60) // Minimum 30px height
+      };
+    } catch (error) {
+      console.warn('Error calculating event position:', error, { startTime, endTime });
+      return {
+        top: 0,
+        height: 60 // Default height
+      };
+    }
   };
 
   const navigateWeek = (direction: 'prev' | 'next') => {
@@ -419,7 +463,12 @@ const WeeklyCalendar = () => {
           setSelectedEvent(null);
         }}
         onEdit={handleEditEvent}
-        onDelete={handleDeleteEvent}
+        onDelete={() => {
+          if (selectedEvent) {
+            handleDeleteEvent(selectedEvent.id);
+            setShowDetailModal(false);
+          }
+        }}
       />
     </div>
   );

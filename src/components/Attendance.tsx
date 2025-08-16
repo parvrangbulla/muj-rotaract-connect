@@ -9,6 +9,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
+import { eventService } from '@/services/event.service';
+import { toast } from 'sonner';
 
 const Attendance = () => {
   const { isExecutive } = useAuth();
@@ -32,83 +34,98 @@ const Attendance = () => {
 
   useEffect(() => {
     loadEventsWithAttendance();
-    const handleStorageChange = () => loadEventsWithAttendance();
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const loadEventsWithAttendance = () => {
-    // Only load from calendar events and GBM meetings (not past events)
-    const calendarEvents = JSON.parse(localStorage.getItem('calendarEvents') || '[]');
-    const gbmMeetings = JSON.parse(localStorage.getItem('gbmMeetings') || '[]');
-    
-    const allEvents = [...calendarEvents, ...gbmMeetings];
-    
-    // Show all scheduled events in attendance (both future and past)
-    const attendanceEvents = allEvents.filter(event => 
-      event.registeredUsers && event.registeredUsers.length > 0
-    );
-    
-    setEventsWithAttendance(attendanceEvents);
-  };
-
-  const updateAttendance = (eventId: string, userId: string, status: 'present' | 'absent') => {
-    // Find the event to check if it's a GBM and if attendance is already marked
-    const event = eventsWithAttendance.find(e => e.id === eventId);
-    if (event && event.type === 'gbm' && event.attendance && event.attendance[userId]) {
-      // For GBMs, if attendance is already marked, don't allow changes
-      alert('Attendance for GBM/Meeting participants cannot be modified once marked.');
-      return;
+  const loadEventsWithAttendance = async () => {
+    try {
+      console.log('Attendance: Loading events with registrations from Firebase...');
+      
+      // Load all events from Firebase
+      const allEvents = await eventService.getCalendarEvents();
+      console.log('Attendance: All events loaded:', allEvents);
+      
+      // Filter events that have registrations
+      const attendanceEvents = allEvents.filter(event => 
+        event.registeredUsers && event.registeredUsers.length > 0
+      );
+      
+      console.log('Attendance: Events with registrations:', attendanceEvents);
+      setEventsWithAttendance(attendanceEvents);
+    } catch (error) {
+      console.error('Attendance: Error loading events:', error);
+      toast.error('Failed to load events for attendance');
+      setEventsWithAttendance([]);
     }
-
-    // Update in calendar storage locations only
-    const storageKeys = ['calendarEvents', 'gbmMeetings'];
-    
-    storageKeys.forEach(key => {
-      const stored = JSON.parse(localStorage.getItem(key) || '[]');
-      const updated = stored.map((event: any) => {
-        if (event.id === eventId) {
-          const attendance = event.attendance || {};
-          return { ...event, attendance: { ...attendance, [userId]: status } };
-        }
-        return event;
-      });
-      localStorage.setItem(key, JSON.stringify(updated));
-    });
-
-    loadEventsWithAttendance();
-    window.dispatchEvent(new Event('storage'));
   };
 
-  const addManualParticipant = (eventId: string) => {
+  const updateAttendance = async (eventId: string, userId: string, status: 'present' | 'absent') => {
+    try {
+      // Find the event to check if it's a GBM and if attendance is already marked
+      const event = eventsWithAttendance.find(e => e.id === eventId);
+      if (event && event.type === 'gbm' && event.attendance && event.attendance[userId]) {
+        // For GBMs, if attendance is already marked, don't allow changes
+        toast.error('Attendance for GBM/Meeting participants cannot be modified once marked.');
+        return;
+      }
+
+      console.log(`Attendance: Updating attendance for event ${eventId}, user ${userId} to ${status}`);
+
+      // Get current attendance data
+      const currentAttendance = event?.attendance || {};
+      const updatedAttendance = { ...currentAttendance, [userId]: status };
+
+      // Update the event in Firebase
+      await eventService.updateEvent(eventId, {
+        attendance: updatedAttendance
+      });
+
+      console.log('Attendance: Attendance updated successfully in Firebase');
+      toast.success(`Attendance marked as ${status}`);
+
+      // Reload events to get updated data
+      await loadEventsWithAttendance();
+    } catch (error) {
+      console.error('Attendance: Error updating attendance:', error);
+      toast.error('Failed to update attendance');
+    }
+  };
+
+  const addManualParticipant = async (eventId: string) => {
     const name = prompt('Enter participant name:');
     const regNumber = prompt('Enter registration number:');
     const phone = prompt('Enter phone number:');
     
     if (name && regNumber && phone) {
-      const newParticipant = {
-        fullName: name,
-        registrationNumber: regNumber,
-        phoneNumber: phone,
-        registeredAt: new Date().toISOString(),
-        manuallyAdded: true
-      };
+      try {
+        const newParticipant = {
+          fullName: name,
+          registrationNumber: regNumber,
+          phoneNumber: phone,
+          registeredAt: new Date().toISOString(),
+          manuallyAdded: true
+        };
 
-      const storageKeys = ['calendarEvents', 'gbmMeetings'];
-      storageKeys.forEach(key => {
-        const stored = JSON.parse(localStorage.getItem(key) || '[]');
-        const updated = stored.map((event: any) => {
-          if (event.id === eventId) {
-            const registeredUsers = event.registeredUsers || [];
-            return { ...event, registeredUsers: [...registeredUsers, newParticipant] };
-          }
-          return event;
+        console.log(`Attendance: Adding manual participant ${name} to event ${eventId}`);
+
+        // Get current registered users
+        const event = eventsWithAttendance.find(e => e.id === eventId);
+        const currentRegisteredUsers = event?.registeredUsers || [];
+        const updatedRegisteredUsers = [...currentRegisteredUsers, newParticipant];
+
+        // Update the event in Firebase
+        await eventService.updateEvent(eventId, {
+          registeredUsers: updatedRegisteredUsers
         });
-        localStorage.setItem(key, JSON.stringify(updated));
-      });
 
-      loadEventsWithAttendance();
-      window.dispatchEvent(new Event('storage'));
+        console.log('Attendance: Manual participant added successfully to Firebase');
+        toast.success('Participant added successfully');
+
+        // Reload events to get updated data
+        await loadEventsWithAttendance();
+      } catch (error) {
+        console.error('Attendance: Error adding manual participant:', error);
+        toast.error('Failed to add participant');
+      }
     }
   };
 

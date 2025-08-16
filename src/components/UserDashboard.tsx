@@ -27,9 +27,84 @@ const UserDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 flex">
-      {/* Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} bg-white shadow-lg transition-all duration-300 flex flex-col`}>
+    <div className="min-h-screen bg-stone-50 flex flex-col lg:flex-row">
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-white shadow-lg p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <img 
+              src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
+              alt="Rotaract Club MUJ Logo" 
+              className="h-8 w-8 object-contain rounded-full"
+            />
+            <span className="font-bold text-lg text-black">Rotaract MUJ</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            <Menu className="w-4 h-4" />
+          </Button>
+        </div>
+        
+        {/* Mobile User Profile */}
+        {!isGuest && user && (
+          <div 
+            className="mt-3 p-3 bg-stone-50 rounded-lg cursor-pointer hover:bg-stone-100 transition-colors"
+            onClick={() => navigate('/profile')}
+          >
+            <div className="flex items-center gap-3">
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={user.profilePicture || ''} alt="Profile" />
+                <AvatarFallback>
+                  <User className="w-4 h-4" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {user.fullName}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {isExecutive ? 'Executive' : 'Student'} • View Profile
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Guest Mode Indicator */}
+        {isGuest && (
+          <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Avatar className="w-8 h-8">
+                <AvatarFallback>
+                  <User className="w-4 h-4" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900">
+                  Guest User
+                </p>
+                <p className="text-xs text-blue-600">Read-only access</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - Hidden on mobile by default */}
+      <div className={`${isSidebarOpen ? 'w-64' : 'w-16'} bg-white shadow-lg transition-all duration-300 flex flex-col ${
+        isSidebarOpen ? 'fixed lg:relative inset-y-0 left-0 z-40' : 'hidden lg:flex'
+      }`}>
         {/* Sidebar Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
@@ -180,7 +255,75 @@ const UserDashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-4 lg:p-6">
+        {/* Mobile Tab Navigation */}
+        <div className="lg:hidden mb-6">
+          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+            <Button
+              variant={activeTab === 'calendar' ? 'default' : 'ghost'}
+              size="sm"
+              className={`flex-1 text-xs ${
+                activeTab === 'calendar' 
+                  ? 'bg-rotaract-orange text-white' 
+                  : 'text-gray-600 hover:text-rotaract-orange'
+              }`}
+              onClick={() => setActiveTab('calendar')}
+            >
+              <Calendar className="w-3 h-3 mr-1" />
+              Calendar
+            </Button>
+            
+            {!isGuest && isExecutive && (
+              <Button
+                variant={activeTab === 'past-events' ? 'default' : 'ghost'}
+                size="sm"
+                className={`flex-1 text-xs ${
+                  activeTab === 'past-events' 
+                    ? 'bg-rotaract-orange text-white' 
+                    : 'text-gray-600 hover:text-rotaract-orange'
+                }`}
+                onClick={() => setActiveTab('past-events')}
+              >
+                <Camera className="w-3 h-3 mr-1" />
+                Events
+              </Button>
+            )}
+            
+            {!isGuest && isExecutive && (
+              <Button
+                variant={activeTab === 'attendance' ? 'default' : 'ghost'}
+                size="sm"
+                className={`flex-1 text-xs ${
+                  activeTab === 'attendance' 
+                    ? 'bg-rotaract-orange text-white' 
+                    : 'text-gray-600 hover:text-rotaract-orange'
+                }`}
+                onClick={() => setActiveTab('attendance')}
+              >
+                <User className="w-3 h-3 mr-1" />
+                Attendance
+              </Button>
+            )}
+            
+            {!isGuest && (
+              <Button
+                variant={activeTab === 'feedback' ? 'default' : 'ghost'}
+                size="sm"
+                className={`flex-1 text-xs ${
+                  activeTab === 'feedback' 
+                    ? 'bg-rotaract-orange text-white' 
+                    : 'text-gray-600 hover:text-rotaract-orange'
+                }`}
+                onClick={() => setActiveTab('feedback')}
+              >
+                <MessageSquare className="w-3 h-3 mr-1" />
+                Feedback
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Content */}
         {activeTab === 'calendar' && (isGuest ? <GuestCalendar /> : <WeeklyCalendar />)}
         {isExecutive && activeTab === 'past-events' && <EventManagement />}
         {isExecutive && activeTab === 'attendance' && <Attendance />}

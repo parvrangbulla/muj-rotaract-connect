@@ -40,6 +40,13 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Debug logging
+    console.log('EventCreationModal: Form data:', formData);
+    console.log('EventCreationModal: isGBM:', isGBM);
+    console.log('EventCreationModal: meetingType:', formData.meetingType);
+    console.log('EventCreationModal: eventCategory from form:', formData.eventCategory);
+    
     const eventData = {
       ...formData,
       id: editData?.id || Date.now().toString(),
@@ -51,8 +58,13 @@ const EventCreationModal = ({ isOpen, onClose, onEventCreate, editData, isGBM = 
       enableAttendance: editData?.enableAttendance || false,
       meetingMinutes: editData?.meetingMinutes || '',
       showOnGuestCalendar: isGBM ? formData.meetingType === 'gbm' : formData.eventCategory === 'gbm',
-      eventCategory: !isGBM ? formData.eventCategory : undefined
+      // Always set eventCategory to a valid value
+      eventCategory: isGBM ? formData.meetingType : (formData.eventCategory || 'working-team')
     };
+    
+    // Debug logging
+    console.log('EventCreationModal: Final event data:', eventData);
+    console.log('EventCreationModal: Final eventCategory:', eventData.eventCategory);
     
     onEventCreate(eventData);
     onClose();

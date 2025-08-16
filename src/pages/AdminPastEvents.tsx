@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { eventService } from '@/services/event.service';
+import { toast } from 'sonner';
 
 interface EventImage {
   id: string;
@@ -127,46 +129,42 @@ const AdminPastEvents = () => {
     try {
       console.log('Submitting event:', formData);
       
-      // Create event object
+      // Create event object for Firebase
       const eventData = {
-        id: editData?.editMode ? editData.eventData.id : Date.now().toString(),
-        ...formData,
-        eventType: formData.category === 'Flagship' ? 'flagship' : 'past',
-        createdAt: editData?.editMode ? editData.eventData.createdAt : new Date().toISOString()
+        title: formData.title,
+        description: formData.description,
+        type: 'past-event', // Use consistent type for past events
+        date: formData.date,
+        startTime: '00:00', // Default time for past events
+        endTime: '23:59',
+        location: formData.venue,
+        domain: formData.domain as 'CSD' | 'CMD' | 'ISD' | 'PDD',
+        eventCategory: formData.category === 'Flagship' ? 'flagship' : 'past',
+        enableRegistration: false, // Past events don't need registration
+        enableAttendance: false, // Past events don't need attendance
+        createdBy: 'admin', // Will be updated with actual user ID
+        createdAt: editData?.editMode ? editData.eventData.createdAt : new Date(),
+        updatedAt: new Date(),
+        isActive: true,
+        showOnGuestCalendar: true,
+        bannerUrl: formData.bannerUrl,
+        galleryUrls: formData.galleryUrls,
+        venue: formData.venue,
+        impact: formData.impact,
+        shortDescription: formData.shortDescription
       };
 
       if (editData?.editMode) {
-        // Update existing event
-        if (editData.eventType === 'flagship') {
-          const flagshipEvents = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
-          const updatedEvents = flagshipEvents.map((event: any) => 
-            event.id === eventData.id ? eventData : event
-          );
-          localStorage.setItem('flagshipEvents', JSON.stringify(updatedEvents));
-        } else {
-          const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-          const updatedEvents = pastEvents.map((event: any) => 
-            event.id === eventData.id ? eventData : event
-          );
-          localStorage.setItem('pastEvents', JSON.stringify(updatedEvents));
-        }
-        alert('Event updated successfully!');
+        // Update existing event in Firebase
+        console.log('AdminPastEvents: Updating existing event:', editData.eventData.id);
+        await eventService.updateEvent(editData.eventData.id, eventData);
+        toast.success('Event updated successfully!');
       } else {
-        // Create new event
-        if (formData.category === 'Flagship') {
-          const flagshipEvents = JSON.parse(localStorage.getItem('flagshipEvents') || '[]');
-          flagshipEvents.push(eventData);
-          localStorage.setItem('flagshipEvents', JSON.stringify(flagshipEvents));
-        } else {
-          const pastEvents = JSON.parse(localStorage.getItem('pastEvents') || '[]');
-          pastEvents.push(eventData);
-          localStorage.setItem('pastEvents', JSON.stringify(pastEvents));
-        }
-        alert('Event created successfully!');
+        // Create new event in Firebase
+        console.log('AdminPastEvents: Creating new event');
+        await eventService.createEvent(eventData);
+        toast.success('Event created successfully!');
       }
-
-      // Trigger storage event to update other components
-      window.dispatchEvent(new Event('storage'));
 
       // Reset form
       setFormData({

@@ -30,7 +30,7 @@ const TeamMemberPopup = ({ member, onClose }: TeamMemberPopupProps) => {
       />
       
       {/* Popup */}
-      <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in zoom-in-95 fade-in-0 duration-500">
+      <div className="relative bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 fade-in-0 duration-500">
         {/* Close Button */}
         <Button
           variant="ghost"
@@ -42,7 +42,7 @@ const TeamMemberPopup = ({ member, onClose }: TeamMemberPopupProps) => {
         </Button>
 
         {/* Member Image */}
-        <div className="h-64 overflow-hidden">
+        <div className="h-48 sm:h-56 md:h-64 overflow-hidden">
           <img 
             src={member.image} 
             alt={member.name} 
@@ -51,8 +51,8 @@ const TeamMemberPopup = ({ member, onClose }: TeamMemberPopupProps) => {
         </div>
 
         {/* Member Info */}
-        <div className="p-6">
-          <h3 className="text-2xl font-bold text-gray-900 mb-1">{member.name}</h3>
+        <div className="p-4 md:p-6">
+          <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">{member.name}</h3>
           <p className="text-rotaract-orange font-semibold mb-4">{member.position}</p>
           
           {member.bio && (
@@ -62,31 +62,31 @@ const TeamMemberPopup = ({ member, onClose }: TeamMemberPopupProps) => {
           )}
 
           {/* Contact Links */}
-          <div className="flex gap-3 justify-center">
+          <div className="flex gap-2 md:gap-3 justify-center">
             <a 
               href={member.instagram} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="bg-pink-600 text-white p-3 rounded-full hover:bg-pink-700 transition-all duration-300 hover:scale-110 transform flex items-center justify-center"
+              className="bg-pink-600 text-white p-2 md:p-3 rounded-full hover:bg-pink-700 transition-all duration-300 hover:scale-110 transform flex items-center justify-center"
             >
-              <Instagram size={20} />
+              <Instagram size={18} className="md:w-5 md:h-5" />
             </a>
             {member.linkedin && (
               <a 
                 href={member.linkedin} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="bg-blue-600 text-white p-3 rounded-full hover:bg-blue-700 transition-all duration-300 hover:scale-110 transform flex items-center justify-center"
+                className="bg-blue-600 text-white p-2 md:p-3 rounded-full hover:bg-blue-700 transition-all duration-300 hover:scale-110 transform flex items-center justify-center"
               >
-                <Linkedin size={20} />
+                <Linkedin size={18} className="md:w-5 md:h-5" />
               </a>
             )}
             {member.phone && (
               <a 
                 href={`tel:${member.phone}`}
-                className="bg-rotaract-orange text-white p-3 rounded-full hover:bg-rotaract-orange/90 transition-all duration-300 hover:scale-110 transform flex items-center justify-center"
+                className="bg-rotaract-orange text-white p-2 md:p-3 rounded-full hover:bg-rotaract-orange/90 transition-all duration-300 hover:scale-110 transform flex items-center justify-center"
               >
-                <Phone size={20} />
+                <Phone size={18} className="md:w-5 md:h-5" />
               </a>
             )}
           </div>

@@ -97,22 +97,22 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center p-4 relative overflow-hidden">
       <AnimatedBackground />
       
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-md relative z-10 px-4">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <img 
               src="/lovable-uploads/1d809d48-9a0d-444b-bd9b-8282016cd2a9.png" 
               alt="Rotaract Club MUJ Logo" 
-              className="h-20 w-20 object-contain rounded-full border-2 border-rotaract-orange/50 p-1"
+              className="h-16 w-16 md:h-20 md:w-20 object-contain rounded-full border-2 border-rotaract-orange/50 p-1"
             />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-          <p className="text-gray-400">Sign in to access your dashboard</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Welcome Back</h1>
+          <p className="text-gray-400 text-sm md:text-base">Sign in to access your dashboard</p>
         </div>
 
         <Card className="bg-white/10 backdrop-blur-md border-gray-700">
           <CardHeader>
-            <CardTitle className="text-2xl text-center text-white">Login</CardTitle>
+            <CardTitle className="text-xl md:text-2xl text-center text-white">Login</CardTitle>
           </CardHeader>
           <CardContent>
             {error && (
@@ -122,7 +122,7 @@ const Login = () => {
               </Alert>
             )}
             
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-4 md:space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-white">Email</Label>
                 <Input
@@ -162,7 +162,7 @@ const Login = () => {
 
               <Button 
                 type="submit" 
-                className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90 text-white"
+                className="w-full bg-rotaract-orange hover:bg-rotaract-orange/90 text-white text-sm md:text-base py-2 md:py-3"
                 disabled={isLoading}
               >
                 <LogIn className="w-4 h-4 mr-2" />
@@ -183,7 +183,7 @@ const Login = () => {
               <Button
                 onClick={handleGuestAccess}
                 variant="outline"
-                className="w-full mt-4 border-gray-400 text-gray-200 bg-gray-800/30 hover:bg-white/20 hover:border-white hover:text-white transition-all duration-200"
+                className="w-full mt-4 border-gray-400 text-gray-200 bg-gray-800/30 hover:bg-white/20 hover:border-white hover:text-white transition-all duration-200 text-sm md:text-base py-2 md:py-3"
                 disabled={isLoading}
               >
                 <Users className="w-4 h-4 mr-2" />
@@ -191,8 +191,8 @@ const Login = () => {
               </Button>
             </div>
 
-            <div className="mt-6 text-center">
-              <p className="text-gray-400 text-sm">
+            <div className="mt-4 md:mt-6 text-center">
+              <p className="text-gray-400 text-xs md:text-sm">
                 Don't have an account? Contact your club administrator
               </p>
             </div>

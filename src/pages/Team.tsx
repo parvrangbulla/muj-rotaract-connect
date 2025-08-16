@@ -179,41 +179,41 @@ const Team = () => {
           
           {/* Original Team Cards - Commented out but kept for reference
           <TooltipProvider>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
               {teamMembers.map((member) => (
                 <Card 
                   key={member.id} 
                   className="team-card overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-105 cursor-pointer transform"
                   onClick={() => setSelectedMember(member)}
                 >
-                  <div className="h-64 overflow-hidden">
+                  <div className="h-48 sm:h-56 md:h-64 overflow-hidden">
                     <img 
                       src={member.image} 
                       alt={member.name} 
                       className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-110"
                     />
                   </div>
-                  <CardContent className="p-6 relative">
-                    <h3 className="font-bold text-lg mb-1">{member.name}</h3>
+                  <CardContent className="p-4 md:p-6 relative">
+                    <h3 className="font-bold text-base md:text-lg mb-1">{member.name}</h3>
                     
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <p className="text-gray-600 cursor-help">{member.position}</p>
+                        <p className="text-gray-600 cursor-help text-sm md:text-base">{member.position}</p>
                       </TooltipTrigger>
                       <TooltipContent className="bg-black text-white p-2">
                         <p>Click to view more details</p>
                       </TooltipContent>
                     </Tooltip>
                     
-                    <div className="social-links absolute top-6 right-6 flex gap-2">
+                    <div className="social-links absolute top-4 md:top-6 right-4 md:right-6 flex gap-1 md:gap-2">
                       <a 
                         href={member.instagram} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="bg-pink-600 text-white p-2 rounded-full hover:bg-pink-700 transition-all duration-300 hover:scale-110 flex items-center justify-center"
+                        className="bg-pink-600 text-white p-1.5 md:p-2 rounded-full hover:bg-pink-700 transition-all duration-300 hover:scale-110 flex items-center justify-center"
                       >
-                        <Instagram size={18} />
+                        <Instagram size={16} className="md:w-[18px] md:h-[18px]" />
                       </a>
                       {member.linkedin && (
                         <a 
@@ -221,9 +221,9 @@ const Team = () => {
                           target="_blank" 
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-all duration-300 hover:scale-110 flex items-center justify-center"
+                          className="bg-blue-600 text-white p-1.5 md:p-2 rounded-full hover:bg-blue-700 transition-all duration-300 hover:scale-110 flex items-center justify-center"
                         >
-                          <Linkedin size={18} />
+                          <Linkedin size={16} className="md:w-[18px] md:h-[18px]" />
                         </a>
                       )}
                     </div>
