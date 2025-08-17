@@ -1,8 +1,11 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Globe, Mail, Phone } from 'lucide-react';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
 const NGO = () => {
+  // Scroll to top when component mounts
+  useScrollToTop();
   const ngos = [{
     id: 1,
     name: "Ahaan Foundation",

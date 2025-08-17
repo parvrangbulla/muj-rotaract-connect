@@ -1,0 +1,28 @@
+{
+  "name": "rotaract-executive-setup",
+  "version": "1.0.0",
+  "description": "Scripts for setting up Rotaract Club MUJ executive accounts",
+  "main": "create-executives.js",
+  "scripts": {
+    "setup": "node create-executives.js",
+    "install-deps": "npm install",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "rotaract",
+    "firebase",
+    "executive",
+    "accounts",
+    "setup"
+  ],
+  "author": "Rotaract Club MUJ",
+  "license": "MIT",
+  "dependencies": {
+    "csv-parser": "^3.2.0",
+    "firebase": "^10.14.1"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

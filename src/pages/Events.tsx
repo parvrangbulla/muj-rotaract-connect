@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { eventService } from "@/services/event.service";
 import { toast } from "sonner";
+import { useScrollToTop } from "@/hooks/useScrollToTop";
 
 interface EventData {
   id: string;
@@ -28,6 +29,9 @@ const Events = () => {
   const navigate = useNavigate();
   const [storedEvents, setStoredEvents] = useState<EventData[]>([]);
   const [gbmMeetings, setGbmMeetings] = useState<EventData[]>([]);
+  
+  // Scroll to top when component mounts
+  useScrollToTop();
   
   // Load events from Firebase
   useEffect(() => {

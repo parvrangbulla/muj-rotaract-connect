@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff, LogIn, Users, AlertCircle, Info } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Users, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
-import { devAuthService } from '@/services/auth-dev.service';
 import AnimatedBackground from '@/components/AnimatedBackground';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -19,20 +19,16 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showDevInfo, setShowDevInfo] = useState(false);
   const navigate = useNavigate();
   const { signIn, signInAsGuest, user, loading } = useAuth();
+  
+  // Scroll to top when component mounts
+  useScrollToTop();
   
   // Debug: Log auth state
   console.log('🔍 Auth state - User:', user, 'Loading:', loading);
 
-  // Check if we're in development mode
-  const isFirebaseConfigured = () => {
-    const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
-    return apiKey && apiKey !== "your-api-key";
-  };
 
-  const demoAccounts = devAuthService.getDemoAccounts();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -197,62 +193,7 @@ const Login = () => {
               </p>
             </div>
 
-            {/* Demo Accounts Info */}
-            <div className="mt-4">
-              <Button
-                onClick={() => setShowDevInfo(!showDevInfo)}
-                variant="ghost"
-                className="w-full text-gray-400 hover:text-white"
-                size="sm"
-              >
-                <Info className="w-4 h-4 mr-2" />
-                {showDevInfo ? 'Hide' : 'Show'} Test Accounts
-              </Button>
-              
-              {showDevInfo && (
-                <Alert className="mt-3 border-blue-600 bg-blue-50">
-                  <Info className="h-4 w-4 text-blue-600" />
-                  <AlertDescription className="text-blue-800">
-                    <div className="text-sm">
-                      <p className="font-medium mb-2">Test Accounts:</p>
-                      
-                      <div className="mb-2 p-2 bg-white rounded border">
-                        <div className="font-medium">👔 Executive Account</div>
-                        <div>Email: <span className="font-mono text-xs">admin@rotaract.muj</span></div>
-                        <div>Password: <span className="font-mono text-xs">RotaractMUJ@2024</span></div>
-                        <Button
-                          onClick={() => setFormData({ email: 'admin@rotaract.muj', password: 'RotaractMUJ@2024' })}
-                          size="sm"
-                          variant="outline"
-                          className="mt-1 h-6 text-xs"
-                        >
-                          Use This Account
-                        </Button>
-                      </div>
-                      
-                      <div className="mb-2 p-2 bg-white rounded border">
-                        <div className="font-medium">🎓 Student Account</div>
-                        <div>Email: <span className="font-mono text-xs">student@rotaract.muj</span></div>
-                        <div>Password: <span className="font-mono text-xs">Student@2024</span></div>
-                        <div>Name: <span className="text-xs">Arjun Kumar (CSD Domain)</span></div>
-                        <Button
-                          onClick={() => setFormData({ email: 'student@rotaract.muj', password: 'Student@2024' })}
-                          size="sm"
-                          variant="outline"
-                          className="mt-1 h-6 text-xs"
-                        >
-                          Use This Account
-                        </Button>
-                      </div>
-                      
-                      <p className="text-xs mt-2 text-blue-600">
-                        🔥 Real Firebase Authentication Active
-                      </p>
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
+
           </CardContent>
         </Card>
       </div>

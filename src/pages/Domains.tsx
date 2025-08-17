@@ -5,10 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useScrollToTop } from "@/hooks/useScrollToTop";
 
 const Domains = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("csd");
+  
+  // Scroll to top when component mounts
+  useScrollToTop();
   
   // Handle URL parameters to open specific domain tabs
   useEffect(() => {
@@ -51,7 +55,7 @@ const Domains = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2">
                   <div className="h-auto">
                     <img 
-                      src="https://images.unsplash.com/photo-1507537297725-24a1c029d3ca?q=80&w=3387&auto=format&fit=crop" 
+                      src="/domain-photos/CSD.jpg" 
                       alt="Club Service Domain" 
                       className="w-full h-full object-cover"
                     />
@@ -112,7 +116,7 @@ const Domains = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2">
                   <div className="h-auto">
                     <img 
-                      src="https://images.unsplash.com/photo-1509099836639-18ba1795216d?q=80&w=3431&auto=format&fit=crop" 
+                      src="/domain-photos/CMD.jpg" 
                       alt="Community Service Domain" 
                       className="w-full h-full object-cover"
                     />
@@ -173,7 +177,7 @@ const Domains = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2">
                   <div className="h-auto">
                     <img 
-                      src="https://images.unsplash.com/photo-1596386461350-326ccb383e9f?q=80&w=3387&auto=format&fit=crop" 
+                      src="/domain-photos/ISD.jpg" 
                       alt="International Service Domain" 
                       className="w-full h-full object-cover"
                     />
@@ -234,7 +238,7 @@ const Domains = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2">
                   <div className="h-auto">
                     <img 
-                      src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=3540&auto=format&fit=crop" 
+                      src="/domain-photos/PDD.jpg" 
                       alt="Professional Development Domain" 
                       className="w-full h-full object-cover"
                     />

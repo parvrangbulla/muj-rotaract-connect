@@ -1,9 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageHeader from "@/components/PageHeader";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import TeamMemberPopup from "@/components/TeamMemberPopup";
 import { HoverEffect } from "@/components/ui/card-hover-effect";
+import { useScrollToTop } from "@/hooks/useScrollToTop";
 
 
 // Define team member type
@@ -20,6 +21,9 @@ type TeamMember = {
 
 const Team = () => {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
+  
+  // Scroll to top when component mounts
+  useScrollToTop();
   
   // Team Members Array - Easy to update images
   const [teamMembers] = useState<TeamMember[]>([
@@ -57,6 +61,7 @@ const Team = () => {
       position: "Treasurer",
       image: "/team-photos/parv.jpg",
       instagram: "https://www.instagram.com/parv.rangbulla/",
+      linkedin: "https://www.linkedin.com/in/parv-rangbulla-65831a2a1/",
       phone: "7389498920",
       bio: "Every number has a story. I just make sure they tell the right one."
     },

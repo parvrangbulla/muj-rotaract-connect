@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X, ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,6 +24,8 @@ const EventDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [event, setEvent] = useState<EventData | null>(location.state?.event || null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     if (!event && id) {
@@ -35,6 +37,73 @@ const EventDetail = () => {
       }
     }
   }, [id, event]);
+
+  // Get all images for the lightbox
+  const getAllImages = () => {
+    const images: string[] = [];
+    
+    // Add banner image if available
+    if (event?.bannerUrl) {
+      images.push(event.bannerUrl);
+    }
+    
+    // Add gallery images
+    if (event?.galleryUrls) {
+      images.push(...event.galleryUrls);
+    }
+    
+    // Add legacy images
+    if (event?.images) {
+      images.push(...event.images.map(img => img.url));
+    }
+    
+    return images;
+  };
+
+  const openLightbox = (index: number) => {
+    setSelectedImageIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const closeLightbox = () => {
+    setLightboxOpen(false);
+    setSelectedImageIndex(null);
+  };
+
+  const goToPrevious = () => {
+    const images = getAllImages();
+    if (selectedImageIndex !== null) {
+      setSelectedImageIndex(selectedImageIndex === 0 ? images.length - 1 : selectedImageIndex - 1);
+    }
+  };
+
+  const goToNext = () => {
+    const images = getAllImages();
+    if (selectedImageIndex !== null) {
+      setSelectedImageIndex(selectedImageIndex === images.length - 1 ? 0 : selectedImageIndex + 1);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (lightboxOpen) {
+      switch (e.key) {
+        case 'Escape':
+          closeLightbox();
+          break;
+        case 'ArrowLeft':
+          goToPrevious();
+          break;
+        case 'ArrowRight':
+          goToNext();
+          break;
+      }
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxOpen, selectedImageIndex]);
 
   if (!event) {
     return (
@@ -72,6 +141,8 @@ const EventDetail = () => {
       return dateString;
     }
   };
+
+  const allImages = getAllImages();
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
@@ -118,7 +189,7 @@ const EventDetail = () => {
         </div>
 
         {/* Hero Image */}
-        <div className="mb-8 h-96 overflow-hidden rounded-lg shadow-lg">
+        <div className="mb-8 h-96 overflow-hidden rounded-lg shadow-lg relative group cursor-pointer" onClick={() => openLightbox(0)}>
           <img 
             src={event.bannerUrl || (event.id === 'bdc-2024' 
               ? "https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" 
@@ -134,8 +205,14 @@ const EventDetail = () => {
                 }?q=80&w=3540&auto=format&fit=crop`
             )}
             alt={event.title} 
-            className="w-full h-full object-cover" 
+            className="w-full h-full object-cover transition-transform group-hover:scale-105" 
           />
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-3">
+              <ZoomIn className="w-6 h-6 text-gray-800" />
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -149,35 +226,48 @@ const EventDetail = () => {
             </Card>
           </div>
 
-          {/* Photo Gallery */}
+          {/* Enhanced Photo Gallery */}
           <div>
             <Card>
               <CardContent className="p-6">
                 <h3 className="text-xl font-semibold mb-4">Photo Gallery</h3>
-                {(!event.galleryUrls || event.galleryUrls.length === 0) && (!event.images || event.images.length === 0) ? (
+                {allImages.length === 0 ? (
                   <div className="text-center text-gray-500 py-8">
                     <p>No images uploaded yet for this event.</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Display gallery URLs for stored events */}
-                    {event.galleryUrls?.map((url, index) => (
-                      <img
+                  <div className="grid grid-cols-2 gap-3">
+                    {allImages.map((imageUrl, index) => (
+                      <div 
                         key={index}
-                        src={url}
-                        alt={`Gallery ${index + 1}`}
-                        className="w-full h-24 object-cover rounded shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                      />
+                        className="relative group cursor-pointer overflow-hidden rounded-lg shadow-sm hover:shadow-lg transition-all duration-300"
+                        onClick={() => openLightbox(index)}
+                      >
+                        <img
+                          src={imageUrl}
+                          alt={`Gallery ${index + 1}`}
+                          className="w-full h-24 object-cover transition-transform group-hover:scale-110"
+                        />
+                        {/* Hover overlay */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/90 rounded-full p-2">
+                            <ZoomIn className="w-4 h-4 text-gray-800" />
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                    {/* Display traditional images for legacy events */}
-                    {event.images?.map((image) => (
-                      <img
-                        key={image.id}
-                        src={image.url}
-                        alt={image.name}
-                        className="w-full h-24 object-cover rounded shadow-sm hover:shadow-md transition-shadow cursor-pointer"
-                      />
-                    ))}
+                  </div>
+                )}
+                
+                {/* Gallery Info */}
+                {allImages.length > 0 && (
+                  <div className="mt-4 text-center">
+                    <p className="text-sm text-gray-500">
+                      Click on any image to view in full size
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Use arrow keys or click navigation to browse
+                    </p>
                   </div>
                 )}
               </CardContent>
@@ -185,6 +275,54 @@ const EventDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Lightbox Modal */}
+      {lightboxOpen && selectedImageIndex !== null && (
+        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+          <div className="relative max-w-7xl max-h-full">
+            {/* Close Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={closeLightbox}
+              className="absolute top-4 right-4 z-10 bg-white/20 hover:bg-white/30 text-white rounded-full"
+            >
+              <X className="w-6 h-6" />
+            </Button>
+
+            {/* Navigation Buttons */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goToPrevious}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/20 hover:bg-white/30 text-white rounded-full"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={goToNext}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 bg-white/20 hover:bg-white/30 text-white rounded-full"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </Button>
+
+            {/* Main Image */}
+            <img
+              src={allImages[selectedImageIndex]}
+              alt={`Gallery ${selectedImageIndex + 1}`}
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+
+            {/* Image Counter */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
+              {selectedImageIndex + 1} of {allImages.length}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

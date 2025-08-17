@@ -1,7 +1,10 @@
 
 import PageHeader from "@/components/PageHeader";
+import { useScrollToTop } from "@/hooks/useScrollToTop";
 
 const About = () => {
+  // Scroll to top when component mounts
+  useScrollToTop();
   return (
     <div className="min-h-screen">
       <PageHeader 

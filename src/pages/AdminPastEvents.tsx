@@ -307,10 +307,10 @@ const AdminPastEvents = () => {
                       <SelectValue placeholder="Select domain" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="CSD">CSD (Community Service Director)</SelectItem>
-                      <SelectItem value="CMD">CMD (Club Membership Director)</SelectItem>
-                      <SelectItem value="ISD">ISD (International Service Director)</SelectItem>
-                      <SelectItem value="PDD">PDD (Professional Development Director)</SelectItem>
+                      <SelectItem value="CSD">CSD (Club Service Domain)</SelectItem>
+                      <SelectItem value="CMD">CMD (Community Service Domain)</SelectItem>
+                      <SelectItem value="ISD">ISD (International Service Domain)</SelectItem>
+                      <SelectItem value="PDD">PDD (Professional Development Domain)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

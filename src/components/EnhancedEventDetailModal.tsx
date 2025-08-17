@@ -289,17 +289,21 @@ const EnhancedEventDetailModal = ({
             <DialogTitle className="text-2xl font-bold">{event.title}</DialogTitle>
             <div className="flex gap-2">
               {/* Edit/Delete buttons - Only for Executives */}
-              {!isPastEvent && !isGuestMode && isExecutive && (
+              {!isGuestMode && isExecutive && (
                 <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onEdit(event)}
-                    className="flex items-center gap-2"
-                  >
-                    <Edit className="w-4 h-4" />
-                    Edit
-                  </Button>
+                  {/* Edit button - Only for non-past events */}
+                  {!isPastEvent && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onEdit(event)}
+                      className="flex items-center gap-2"
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit
+                    </Button>
+                  )}
+                  {/* Delete button - Always available for executives */}
                   <Button
                     variant="outline"
                     size="sm"

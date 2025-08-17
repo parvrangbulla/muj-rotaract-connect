@@ -166,7 +166,7 @@ const Index = () => {
               </Button>
             </div>
             <div className="flex justify-center">
-              <img src="https://images.unsplash.com/photo-1529156066841-6116e61058f4?q=80&w=3432&auto=format&fit=crop" alt="Rotaract members" className="rounded-lg shadow-lg max-w-full h-auto transform hover:scale-105 transition-transform duration-300" />
+              <img src="/site-photos/homepageAboutRotaractMUJ/ABOUT.jpg" alt="Rotaract members" className="rounded-lg shadow-lg max-w-full h-auto transform hover:scale-105 transition-transform duration-300" />
             </div>
           </div>
         </div>
@@ -180,7 +180,7 @@ const Index = () => {
             {/* Blood Donation Camp Card */}
             <Card className="overflow-hidden transition-all hover:shadow-xl border-gray-200 hover:border-rotaract-orange transform hover:scale-105 duration-300">
               <div className="h-48 md:h-64 overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=3024&auto=format&fit=crop" alt="Blood Donation Camp" className="w-full h-full object-cover transition-transform hover:scale-110 duration-300" />
+                <img src="/site-photos/flagship-events/BDC.jpg" alt="Blood Donation Camp" className="w-full h-full object-cover transition-transform hover:scale-110 duration-300" />
               </div>
               <CardContent className="p-4 md:p-6">
                 <h3 className="text-xl md:text-2xl font-bold mb-2 text-black">Blood Donation Camp (BDC)</h3>
@@ -206,7 +206,7 @@ const Index = () => {
             {/* Daan Utsav Card */}
             <Card className="overflow-hidden transition-all hover:shadow-xl border-gray-200 hover:border-rotaract-orange transform hover:scale-105 duration-300">
               <div className="h-48 md:h-64 overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=3000&auto=format&fit=crop" alt="Daan Utsav" className="w-full h-full object-cover transition-transform hover:scale-110 duration-300" />
+                <img src="/site-photos/flagship-events/daan utsav.jpg" alt="Daan Utsav" className="w-full h-full object-cover transition-transform hover:scale-110 duration-300" />
               </div>
               <CardContent className="p-4 md:p-6">
                 <h3 className="text-xl md:text-2xl font-bold mb-2 text-black">Daan Utsav</h3>
