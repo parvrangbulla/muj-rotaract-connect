@@ -106,10 +106,16 @@ class EventService {
       
       console.log('EventService: Event exists, proceeding with update');
       
-      await updateDoc(eventDoc, {
+      // Prepare the final update data
+      const finalUpdates = {
         ...updates,
         updatedAt: new Date()
-      });
+      };
+      
+      console.log('EventService: Final updates to send to Firebase:', finalUpdates);
+      console.log('EventService: Update keys:', Object.keys(finalUpdates));
+      
+      await updateDoc(eventDoc, finalUpdates);
       
       console.log('EventService: Event updated successfully');
     } catch (error) {
