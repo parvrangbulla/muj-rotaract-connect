@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/contexts/AuthContext';
 import { eventService } from '@/services/event.service';
+import { authService } from '@/services/auth.service';
 import { toast } from 'sonner';
 
 const Attendance = () => {
@@ -81,14 +82,79 @@ const Attendance = () => {
         attendance: updatedAttendance
       });
 
+      // Award service hours if marked as present
+      if (status === 'present') {
+        try {
+          // Find the user by registration number or name to get their details
+          const user = event?.registeredUsers?.find((u: any) => 
+            (u.registrationNumber || u.fullName) === userId
+          );
+          
+          if (user) {
+            console.log(`Attendance: Attempting to award 2 service hours to user ${userId} for event ${eventId}`);
+            
+            // Try to find the user in the users collection by email or registration number
+            // This is a workaround since we don't store UID in registeredUsers
+            const allUsers = await getAllUsers();
+            const userProfile = allUsers.find(u => 
+              u.registrationNumber === user.registrationNumber || 
+              u.email === user.email
+            );
+            
+            if (userProfile) {
+              // Award 2 service hours to the user
+              await authService.addServiceHours(userProfile.uid, 2);
+              console.log(`Attendance: Successfully awarded 2 service hours to user ${userProfile.fullName}`);
+              toast.success(`Attendance marked as ${status}. 2 service hours awarded to ${userProfile.fullName}!`);
+            } else {
+              console.log(`Attendance: User profile not found for ${userId}, cannot award service hours`);
+              toast.success(`Attendance marked as ${status}. Note: Service hours not awarded (user profile not found).`);
+            }
+          } else {
+            console.log(`Attendance: User not found in registered users for ${userId}`);
+            toast.success(`Attendance marked as ${status}. Note: Service hours not awarded (user not registered).`);
+          }
+        } catch (serviceHoursError) {
+          console.error('Attendance: Error awarding service hours:', serviceHoursError);
+          // Don't fail the attendance update if service hours fail
+          toast.warning('Attendance updated but there was an issue awarding service hours');
+        }
+      } else {
+        toast.success(`Attendance marked as ${status}`);
+      }
+
       console.log('Attendance: Attendance updated successfully in Firebase');
-      toast.success(`Attendance marked as ${status}`);
 
       // Reload events to get updated data
       await loadEventsWithAttendance();
     } catch (error) {
       console.error('Attendance: Error updating attendance:', error);
       toast.error('Failed to update attendance');
+    }
+  };
+
+  // Helper function to get all users (for service hours awarding)
+  const getAllUsers = async () => {
+    try {
+      // Import Firebase functions for querying users collection
+      const { collection, getDocs } = await import('firebase/firestore');
+      const { db } = await import('@/lib/firebase');
+      
+      const usersSnapshot = await getDocs(collection(db, 'users'));
+      const users: any[] = [];
+      
+      usersSnapshot.forEach((doc) => {
+        users.push({
+          uid: doc.id,
+          ...doc.data()
+        });
+      });
+      
+      console.log(`Attendance: Retrieved ${users.length} users from Firebase`);
+      return users;
+    } catch (error) {
+      console.error('Attendance: Error getting users:', error);
+      return [];
     }
   };
 
