@@ -32,10 +32,16 @@ service cloud.firestore {
     match /events/{eventId} {
       allow read: if true; // Allow public read access for guests
       allow create, delete: if isAuthenticated() && isExecutive();
-      // Allow executives to update everything, students to update only specific fields
-      allow update: if isAuthenticated() && (
-        isExecutive() || 
-        (isStudent() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registeredUsers', 'updatedAt']))
+      // Allow executives to update everything, students to update only specific fields, guests to register
+      allow update: if (
+        // Executives can update everything
+        (isAuthenticated() && isExecutive()) ||
+        // Students can update only specific fields
+        (isAuthenticated() && isStudent() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registeredUsers', 'updatedAt'])) ||
+        // Guests can register for events (update only registeredUsers and updatedAt, and only add to registeredUsers)
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registeredUsers', 'updatedAt']) &&
+         // Ensure registeredUsers only grows (guests can't remove other registrations)
+         request.resource.data.registeredUsers.size() >= resource.data.registeredUsers.size())
       );
     }
     
