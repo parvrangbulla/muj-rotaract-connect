@@ -18,6 +18,7 @@ export interface UserProfile {
   serviceHours: number;
   registrationNumber?: string;
   phone?: string;
+  rotaryId?: string; // Added Rotary ID field
   domain?: 'CSD' | 'CMD' | 'ISD' | 'PDD';
   joinedAt: Date;
   isActive: boolean;
@@ -73,6 +74,7 @@ class AuthService {
         serviceHours: 0,
         registrationNumber: userData.registrationNumber,
         phone: userData.phone,
+        rotaryId: userData.rotaryId,
         domain: userData.domain,
         joinedAt: new Date(),
         isActive: true,

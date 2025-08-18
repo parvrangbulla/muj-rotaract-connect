@@ -7,6 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
 import { Edit, Upload, X, Award, ArrowLeft, User } from 'lucide-react';
+import { authService, UserProfile } from '@/services/auth.service';
+import { auth } from '@/lib/firebase';
+import { toast } from 'sonner';
 
 interface ProfileData {
   fullName: string;
@@ -30,40 +33,44 @@ const Profile = () => {
     serviceHours: 0
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    const loadProfileData = () => {
-      const username = localStorage.getItem('username') || '';
-      const savedProfile = localStorage.getItem('userProfile');
-      
-      if (savedProfile) {
-        const profile = JSON.parse(savedProfile);
-        setProfileData({
-          fullName: profile.fullName || username,
-          registrationNumber: profile.registrationNumber || '',
-          rotaryId: profile.rotaryId || profile.dateOfBirth || '', // Migrate old dateOfBirth to rotaryId
-          phoneNumber: profile.phoneNumber || '',
-          profilePicture: profile.profilePicture || null,
-          serviceHours: profile.serviceHours || 0
-        });
-        setImagePreview(profile.profilePicture || null);
-      } else {
-        setProfileData(prev => ({
-          ...prev,
-          fullName: username,
-          serviceHours: 0
-        }));
+    const loadProfileData = async () => {
+      try {
+        // Get current authenticated user
+        const user = auth.currentUser;
+        if (!user) {
+          toast.error('Please log in to view your profile');
+          navigate('/login');
+          return;
+        }
+
+        // Get user profile from Firebase
+        const userProfile = await authService.getUserProfile(user.uid);
+        if (userProfile) {
+          setCurrentUser(userProfile);
+          setProfileData({
+            fullName: userProfile.fullName || '',
+            registrationNumber: userProfile.registrationNumber || '',
+            rotaryId: userProfile.rotaryId || '', // Add rotaryId to UserProfile interface
+            phoneNumber: userProfile.phone || '',
+            profilePicture: userProfile.profilePicture || null,
+            serviceHours: userProfile.serviceHours || 0
+          });
+          setImagePreview(userProfile.profilePicture || null);
+        } else {
+          toast.error('User profile not found');
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        toast.error('Error loading profile');
       }
     };
 
     loadProfileData();
-
-    // Listen for storage changes
-    const handleStorageChange = () => loadProfileData();
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [navigate]);
 
   const handleInputChange = (field: string, value: string) => {
     setProfileData(prev => ({ ...prev, [field]: value }));
@@ -87,37 +94,52 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
+    if (!currentUser) {
+      toast.error('User not authenticated');
+      return;
+    }
+
     setIsSaving(true);
     try {
-      // Save to localStorage (excluding serviceHours from being directly edited)
-      const dataToSave = {
+      // Update profile in Firebase
+      await authService.updateUserProfile(currentUser.uid, {
         fullName: profileData.fullName,
         registrationNumber: profileData.registrationNumber,
-        rotaryId: profileData.rotaryId,
-        phoneNumber: profileData.phoneNumber,
-        profilePicture: profileData.profilePicture,
-        serviceHours: profileData.serviceHours // Keep existing service hours
-      };
-      
-      localStorage.setItem('userProfile', JSON.stringify(dataToSave));
-      
-      // Update username in localStorage if fullName changed
-      if (profileData.fullName) {
-        localStorage.setItem('username', profileData.fullName);
-      }
-      
-      // Trigger storage event to update other components
-      window.dispatchEvent(new Event('storage'));
-      
+        rotaryId: profileData.rotaryId, // Add rotaryId to UserProfile interface
+        phone: profileData.phoneNumber,
+        profilePicture: profileData.profilePicture
+      });
+
+      // Update local state
+      setCurrentUser(prev => prev ? {
+        ...prev,
+        fullName: profileData.fullName,
+        registrationNumber: profileData.registrationNumber,
+        rotaryId: profileData.rotaryId, // Add rotaryId to UserProfile interface
+        phone: profileData.phoneNumber,
+        profilePicture: profileData.profilePicture
+      } : null);
+
       setIsEditing(false);
-      alert('Profile updated successfully!');
+      toast.success('Profile updated successfully!');
     } catch (error) {
       console.error('Error saving profile:', error);
-      alert('Error saving profile. Please try again.');
+      toast.error('Error saving profile. Please try again.');
     } finally {
       setIsSaving(false);
     }
   };
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-stone-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rotaract-orange mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-stone-50 p-6">
