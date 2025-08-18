@@ -265,8 +265,8 @@ const GuestCalendar = () => {
           setShowDetailModal(false);
           setSelectedEvent(null);
         }}
-        onEdit={handleEditEvent}
-        onDelete={handleDeleteEvent}
+        onEdit={() => {}} // No-op function for guests
+        onDelete={() => {}} // No-op function for guests
         isGuestMode={true}
       />
     </div>

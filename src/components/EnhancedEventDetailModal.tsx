@@ -206,14 +206,21 @@ const EnhancedEventDetailModal = ({
       return;
     }
 
+    // Check if this user has already marked attendance for this event
+    const userId = newAttendee.registrationNumber;
+    const existingAttendance = event.attendance?.[userId];
+    
+    if (existingAttendance) {
+      toast.error('Attendance has already been marked for this registration number.');
+      return;
+    }
+
     if (hasMarkedAttendance) {
       toast.error('You have already marked attendance for this session.');
       return;
     }
 
     try {
-      const userId = newAttendee.registrationNumber;
-      
       // Get current attendance data
       const currentAttendance = event.attendance || {};
       const updatedAttendance = { ...currentAttendance, [userId]: status };
