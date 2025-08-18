@@ -107,9 +107,13 @@ async function createOrUpdateExecutiveAccount(executiveData) {
 async function createOrUpdateAllExecutives() {
   const executives = [];
   
+  // Get filename from command line arguments
+  const filename = process.argv[2] || 'executives-template.csv';
+  console.log(`📁 Reading executives from: ${filename}`);
+  
   // Read CSV file
   return new Promise((resolve, reject) => {
-    fs.createReadStream('executives-template.csv')
+    fs.createReadStream(filename)
       .pipe(csv())
       .on('data', (row) => executives.push(row))
       .on('end', async () => {
