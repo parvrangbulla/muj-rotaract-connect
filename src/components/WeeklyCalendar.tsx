@@ -49,7 +49,22 @@ const WeeklyCalendar = () => {
 
     try {
       const now = new Date();
-      const eventDateTime = new Date(`${eventDate}T${eventTime}`);
+      
+      // Create a local date object by parsing the date and time separately
+      // This avoids timezone conversion issues
+      const [year, month, day] = eventDate.split('-').map(Number);
+      const [hours, minutes] = eventTime.split(':').map(Number);
+      
+      // Create date in local timezone (month is 0-indexed in JavaScript Date)
+      const eventDateTime = new Date(year, month - 1, day, hours, minutes, 0, 0);
+      
+      console.log('isEventInPast debug:', {
+        now: now.toISOString(),
+        eventDateTime: eventDateTime.toISOString(),
+        eventDateTimeLocal: eventDateTime.toString(),
+        isPast: eventDateTime < now
+      });
+      
       return eventDateTime < now;
     } catch (error) {
       console.warn('Error checking if event is in past:', error, { eventDate, eventTime });
@@ -172,7 +187,12 @@ const WeeklyCalendar = () => {
   const weekDays = getWeekDays();
 
   const getEventsForDay = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
+    // Use local date formatting to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    
     return events.filter(event => event.date === dateStr);
   };
 
@@ -183,9 +203,14 @@ const WeeklyCalendar = () => {
     }
 
     try {
-      const start = new Date(`2000-01-01T${startTime}`);
-      const end = new Date(`2000-01-01T${endTime}`);
-      const diffInMinutes = (end.getTime() - start.getTime()) / (1000 * 60);
+      // Parse time strings directly to avoid timezone issues
+      const [startHour, startMinute] = startTime.split(':').map(Number);
+      const [endHour, endMinute] = endTime.split(':').map(Number);
+      
+      const startMinutes = startHour * 60 + startMinute;
+      const endMinutes = endHour * 60 + endMinute;
+      const diffInMinutes = endMinutes - startMinutes;
+      
       return Math.max(60, diffInMinutes); // Minimum 1 hour
     } catch (error) {
       console.warn('Error calculating event duration:', error, { startTime, endTime });
