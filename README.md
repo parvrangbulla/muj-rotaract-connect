@@ -1,73 +1,151 @@
-# Welcome to your Lovable project
+# Rotaract Club MUJ - Official Website
 
-## Project info
+## 🌟 About
 
-**URL**: https://lovable.dev/projects/b9a48ead-cb29-411f-8b07-c5f313437861
+Welcome to the official website of the Rotaract Club of Manipal University Jaipur (MUJ). This platform serves as the digital hub for our club's activities, events, and community engagement.
 
-## How can I edit this code?
+## 🚀 Live Website
 
-There are several ways of editing your application.
+**Production URL**: https://rotaractmuj.in  
+**Firebase Hosting**: https://muj-rotaract-club.web.app
 
-**Use Lovable**
+## 🎯 Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b9a48ead-cb29-411f-8b07-c5f313437861) and start prompting.
+### For Club Members
+- **Event Management**: Create, edit, and manage club events
+- **Attendance Tracking**: Mark attendance for events with automatic service hours calculation
+- **Profile Management**: Update personal information and track service hours
+- **Calendar View**: Weekly calendar interface for event scheduling
 
-Changes made via Lovable will be committed automatically to this repo.
+### For Guests & Public
+- **Event Registration**: Register for public events without login
+- **Event Gallery**: View photos and details of past events
+- **Club Information**: Learn about our domains, team, and initiatives
+- **NGO Partnerships**: Information about our community collaborations
 
-**Use your preferred IDE**
+### For Executives
+- **Admin Dashboard**: Full administrative control over events and users
+- **User Management**: Manage member accounts and permissions
+- **Event Analytics**: Track event participation and impact
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🛠️ Technology Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Frontend**: React 18 with TypeScript
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **Backend**: Firebase (Authentication, Firestore, Hosting)
+- **Image Storage**: Cloudinary for optimized image management
+- **Build Tool**: Vite for fast development and building
+- **Deployment**: Firebase Hosting with custom domain support
 
-Follow these steps:
+## 🚀 Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Prerequisites
+- Node.js (v16 or higher)
+- npm or yarn package manager
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Local Development
 
-# Step 3: Install the necessary dependencies.
-npm i
+```bash
+# Clone the repository
+git clone https://github.com/parvrangbulla/muj-rotaract-connect.git
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Navigate to project directory
+cd muj-rotaract-connect
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Building for Production
 
-**Use GitHub Codespaces**
+```bash
+# Build the application
+npm run build
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Preview the production build
+npm run preview
+```
 
-## What technologies are used for this project?
+## 📁 Project Structure
 
-This project is built with:
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/            # shadcn/ui components
+│   ├── EventManagement.tsx
+│   ├── WeeklyCalendar.tsx
+│   └── ...
+├── pages/              # Main page components
+│   ├── About.tsx
+│   ├── Events.tsx
+│   ├── Team.tsx
+│   └── ...
+├── services/           # Firebase and API services
+├── hooks/              # Custom React hooks
+├── lib/                # Utility functions and configurations
+└── contexts/           # React context providers
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🔐 Authentication & Roles
 
-## How can I deploy this project?
+- **Guest**: Can view events and register for public events
+- **Student**: Full access to event registration and profile management
+- **Executive**: Administrative access to create events and manage attendance
 
-Simply open [Lovable](https://lovable.dev/projects/b9a48ead-cb29-411f-8b07-c5f313437861) and click on Share -> Publish.
+## 🌍 Environment Configuration
 
-## Can I connect a custom domain to my Lovable project?
+Create a `.env` file in the root directory with your Firebase and Cloudinary credentials:
 
-Yes, you can!
+```env
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## 📱 Responsive Design
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+The website is fully responsive and optimized for:
+- Desktop computers
+- Tablets
+- Mobile devices
+
+## 🚀 Deployment
+
+The application is automatically deployed to Firebase Hosting when changes are pushed to the main branch.
+
+### Manual Deployment
+
+```bash
+# Deploy to Firebase
+firebase deploy --only hosting
+
+# Deploy Firestore rules
+firebase deploy --only firestore:rules
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📞 Support
+
+For technical support or questions about the website, please contact the club's technical team.
+
+## 📄 License
+
+This project is developed for the Rotaract Club of Manipal University Jaipur. All rights reserved.
+
+---
+
+**Built with ❤️ for the Rotaract Club MUJ Community**
