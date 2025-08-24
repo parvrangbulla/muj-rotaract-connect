@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import csv from 'csv-parser';
 import fs from 'fs';
 
@@ -23,78 +23,48 @@ const db = getFirestore(app);
 // Default password for all students
 const DEFAULT_PASSWORD = "RotaractMUJ@2024!";
 
-// Function to create or update student account
-async function createOrUpdateStudent(studentData) {
+// Function to create student account with retry logic
+async function createStudent(studentData, retryCount = 0) {
   try {
     console.log(`\n--- Processing: ${studentData.fullName} ---`);
     
-    // Check if user already exists
-    try {
-      // Try to sign in with default password
-      const userCredential = await signInWithEmailAndPassword(auth, studentData.email, DEFAULT_PASSWORD);
-      console.log(`✅ User ${studentData.email} already exists, updating profile...`);
-      
-      // Update the user's profile in Firestore
-      const userDocRef = doc(db, 'users', userCredential.user.uid);
-      await setDoc(userDocRef, {
-        fullName: studentData.fullName,
-        email: studentData.email,
-        phoneNumber: studentData.phoneNumber,
-        registrationNumber: studentData.registrationNumber,
-        role: 'student', // Important: Set role as 'student', not 'executive'
-        domain: studentData.domain,
-        position: studentData.role,
-        rotaryId: studentData.registrationNumber,
-        totalServiceHours: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isActive: true
-      }, { merge: true });
-      
-      console.log(`✅ Profile updated for ${studentData.fullName}`);
-      return { success: true, action: 'updated', email: studentData.email };
-      
-    } catch (signInError) {
-      if (signInError.code === 'auth/user-not-found') {
-        // User doesn't exist, create new account
-        console.log(`🆕 Creating new account for ${studentData.email}...`);
-        
-        const userCredential = await createUserWithEmailAndPassword(auth, studentData.email, DEFAULT_PASSWORD);
-        
-        // Create user profile in Firestore
-        const userDocRef = doc(db, 'users', userCredential.user.uid);
-        await setDoc(userDocRef, {
-          fullName: studentData.fullName,
-          email: studentData.email,
-          phoneNumber: studentData.phoneNumber,
-          registrationNumber: studentData.registrationNumber,
-          role: 'student', // Important: Set role as 'student', not 'executive'
-          domain: studentData.domain,
-          position: studentData.role,
-          rotaryId: studentData.registrationNumber,
-          totalServiceHours: 0,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          isActive: true
-        });
-        
-        console.log(`✅ Account created for ${studentData.fullName}`);
-        return { success: true, action: 'created', email: studentData.email };
-        
-      } else if (signInError.code === 'auth/wrong-password') {
-        // User exists but password is different
-        console.log(`⚠️  User ${studentData.email} exists but password is different. Manual password reset required.`);
-        return { success: false, action: 'password_mismatch', email: studentData.email, error: 'Password mismatch' };
-        
-      } else {
-        console.log(`❌ Error signing in: ${signInError.code}`);
-        return { success: false, action: 'error', email: studentData.email, error: signInError.code };
-      }
-    }
+    // Create new account directly
+    console.log(`🆕 Creating new account for ${studentData.email}...`);
+    
+    const userCredential = await createUserWithEmailAndPassword(auth, studentData.email, DEFAULT_PASSWORD);
+    
+    // Create user profile in Firestore
+    const userDocRef = doc(db, 'users', userCredential.user.uid);
+    await setDoc(userDocRef, {
+      fullName: studentData.fullName,
+      email: studentData.email,
+      phoneNumber: studentData.phoneNumber,
+      registrationNumber: studentData.registrationNumber,
+      role: 'student', // Important: Set role as 'student', not 'executive'
+      domain: studentData.domain,
+      position: studentData.role,
+      rotaryId: studentData.registrationNumber,
+      totalServiceHours: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      isActive: true
+    });
+    
+    console.log(`✅ Account created for ${studentData.fullName}`);
+    return { success: true, action: 'created', email: studentData.email };
     
   } catch (error) {
-    console.error(`❌ Error processing ${studentData.email}:`, error);
-    return { success: false, action: 'error', email: studentData.email, error: error.message };
+    if (error.code === 'auth/email-already-in-use') {
+      console.log(`⚠️  User ${studentData.email} already exists, skipping...`);
+      return { success: true, action: 'already_exists', email: studentData.email };
+    } else if (error.code === 'auth/too-many-requests' && retryCount < 3) {
+      console.log(`⏳ Rate limited, waiting 30 seconds before retry ${retryCount + 1}/3...`);
+      await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30 seconds
+      return createStudent(studentData, retryCount + 1);
+    } else {
+      console.error(`❌ Error creating account for ${studentData.email}:`, error.code);
+      return { success: false, action: 'error', email: studentData.email, error: error.code };
+    }
   }
 }
 
@@ -102,6 +72,7 @@ async function createOrUpdateStudent(studentData) {
 async function createStudentAccounts() {
   try {
     console.log('🚀 Starting student account creation process...\n');
+    console.log('⚠️  Note: This process will take time due to Firebase rate limiting\n');
     
     const results = [];
     const csvFile = process.argv[2] || 'students.csv';
@@ -138,47 +109,49 @@ async function createStudentAccounts() {
         
         const summary = {
           created: 0,
-          updated: 0,
-          password_mismatch: 0,
+          already_exists: 0,
           errors: 0
         };
         
-        // Process each student
-        for (const studentData of results) {
-          const result = await createOrUpdateStudent(studentData);
+        // Process each student with longer delays
+        for (let i = 0; i < results.length; i++) {
+          const studentData = results[i];
+          console.log(`\n📝 Progress: ${i + 1}/${results.length}`);
+          
+          const result = await createStudent(studentData);
           
           if (result.success) {
             if (result.action === 'created') summary.created++;
-            else if (result.action === 'updated') summary.updated++;
+            else if (result.action === 'already_exists') summary.already_exists++;
           } else {
-            if (result.action === 'password_mismatch') summary.password_mismatch++;
-            else summary.errors++;
+            summary.errors++;
           }
           
-          // Small delay to avoid overwhelming Firebase
-          await new Promise(resolve => setTimeout(resolve, 500));
+          // Longer delay between requests to avoid rate limiting
+          if (i < results.length - 1) {
+            console.log('⏳ Waiting 5 seconds before next request...');
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+          }
         }
         
         // Print summary
         console.log('\n📋 PROCESSING SUMMARY:');
         console.log('========================');
         console.log(`✅ Created: ${summary.created}`);
-        console.log(`🔄 Updated: ${summary.updated}`);
-        console.log(`⚠️  Password Mismatch: ${summary.password_mismatch}`);
+        console.log(`⚠️  Already Exists: ${summary.already_exists}`);
         console.log(`❌ Errors: ${summary.errors}`);
         console.log(`📊 Total Processed: ${results.length}`);
         
-        if (summary.password_mismatch > 0) {
-          console.log('\n⚠️  NOTE: Some accounts exist with different passwords.');
-          console.log('   These users will need to reset their passwords manually.');
+        if (summary.created > 0) {
+          console.log('\n🎯 STUDENT ACCOUNTS READY!');
+          console.log('============================');
+          console.log('📧 Email: Use the email addresses from the CSV');
+          console.log('🔑 Password: RotaractMUJ@2024!');
+          console.log('👤 Role: Student (not Executive)');
+          console.log('🎯 Access: Can register for events, manage profile, track service hours');
+        } else {
+          console.log('\n⚠️  No accounts were created. Check the errors above.');
         }
-        
-        console.log('\n🎯 STUDENT ACCOUNTS READY!');
-        console.log('============================');
-        console.log('📧 Email: Use the email addresses from the CSV');
-        console.log('🔑 Password: RotaractMUJ@2024!');
-        console.log('👤 Role: Student (not Executive)');
-        console.log('🎯 Access: Can register for events, manage profile, track service hours');
         
       });
       
