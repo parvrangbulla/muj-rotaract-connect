@@ -100,7 +100,7 @@ const Footer = () => {
         <hr className="border-gray-800 my-6" />
         
         <div className="text-center text-gray-400 text-sm">
-          <p>&copy; {new Date().getFullYear()} Rotaract Club, Manipal University Jaipur. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Rotaract Club, Manipal University Jaipur. All rights reserved to Rotaract Club MUJ and <a href="https://www.linkedin.com/in/krish-gupta-51637b1b8/" target="_blank" rel="noopener noreferrer" className="hover:text-rotaract-orange transition-colors">Krish Gupta</a>.</p>
         </div>
       </div>
     </footer>
